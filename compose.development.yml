@@ -1,0 +1,82 @@
+name: culinary-blog-dev
+
+# Infra dependencies only — the API runs natively via `uv run` for real hot reload
+# (no bind-mount / rebuild step). Nginx and the containerized API image are
+# production-only. See ADR-0009.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    env_file:
+      - .env.development
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-culinary}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  cache-redis:
+    build:
+      context: .
+      dockerfile: docker/redis-cache.Dockerfile
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  queue-redis:
+    build:
+      context: .
+      dockerfile: docker/redis-job-queue.Dockerfile
+    volumes:
+      - queuedata:/data
+    ports:
+      - "6381:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ratelimit-redis:
+    build:
+      context: .
+      dockerfile: docker/redis-rate-limit.Dockerfile
+    volumes:
+      - ratelimitdata:/data
+    ports:
+      - "6382:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: quay.io/minio/minio:latest
+    command: server /data --console-address ":9001"
+    env_file:
+      - .env.development
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
+  queuedata:
+  ratelimitdata:
+  miniodata:
