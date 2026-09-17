@@ -35,7 +35,9 @@ class Recipe(BaseModel, table=True):
     servings: int = Field(nullable=False)
     difficulty: RecipeDifficulty = Field(
         default=RecipeDifficulty.EASY,
-        sa_column=Column(SmallInteger, nullable=False, server_default=text(str(int(RecipeDifficulty.EASY))), index=True),
+        sa_column=Column(
+            SmallInteger, nullable=False, server_default=text(str(int(RecipeDifficulty.EASY))), index=True
+        ),
     )
     status: RecipeStatus = Field(
         default=RecipeStatus.DRAFT,
@@ -63,7 +65,9 @@ class RecipeStep(BaseModel, table=True):
     __tablename__ = "recipe_steps"
     __table_args__ = (
         CheckConstraint("step_number > 0", name="ck_recipe_step_number_positive"),
-        CheckConstraint("duration_minutes IS NULL OR duration_minutes >= 0", name="ck_recipe_step_duration_non_negative"),
+        CheckConstraint(
+            "duration_minutes IS NULL OR duration_minutes >= 0", name="ck_recipe_step_duration_non_negative"
+        ),
         UniqueConstraint("recipe_id", "step_number", name="uq_recipe_step_number"),
     )
 
