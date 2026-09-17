@@ -6,22 +6,22 @@ A recipe-sharing web platform: authors publish recipes with images, ingredients,
 
 ## Status
 
-Early scaffold. Backend project structure and dependencies are set up (`pyproject.toml`, `src/culinary_blog/`); no endpoints, models, or Docker Compose stack exist yet. See [`ROADMAP.md`](ROADMAP.md) for the milestone plan, starting at **M0 — Infra skeleton**.
+**M0 — Infra skeleton** complete: `docker compose -f compose.development.yml up` brings up Postgres, all three Redis instances, and MinIO; the API runs natively via `uv run` (hot reload, ADR-0009) and `GET /health` returns 200 with every dependency healthy. SQLModel entities and the initial Alembic migration exist for all core tables. No business endpoints (auth, recipes, categories) yet. See [`ROADMAP.md`](ROADMAP.md) for the milestone plan.
 
 ## Tech Stack
 
-| Layer            | Technology                                          |
-| ---------------- | --------------------------------------------------- |
-| Backend          | Python 3.12, FastAPI (async)                        |
-| ORM / Migrations | SQLModel + Alembic                                  |
-| Frontend         | Next.js (App Router), TypeScript                    |
-| Database         | PostgreSQL 16                                       |
-| Object Storage   | MinIO (S3-compatible)                               |
-| Cache            | Redis 7 — dedicated instance                        |
-| Job Queue        | Redis 7 — dedicated instance, separate from cache   |
+| Layer            | Technology                                                      |
+| ---------------- | --------------------------------------------------------------- |
+| Backend          | Python 3.12, FastAPI (async)                                    |
+| ORM / Migrations | SQLModel + Alembic                                              |
+| Frontend         | Next.js (App Router), TypeScript                                |
+| Database         | PostgreSQL 16                                                   |
+| Object Storage   | MinIO (S3-compatible)                                           |
+| Cache            | Redis 7 — dedicated instance                                    |
+| Job Queue        | Redis 7 — dedicated instance, separate from cache               |
 | Rate Limiting    | Redis 7 — dedicated instance, separate from cache and job queue |
-| Reverse Proxy    | Nginx                                               |
-| Observability    | OpenTelemetry → Tempo / Loki / Prometheus → Grafana |
+| Reverse Proxy    | Nginx                                                           |
+| Observability    | OpenTelemetry → Tempo / Loki / Prometheus → Grafana             |
 
 ## Architecture
 
@@ -76,18 +76,44 @@ RESTful JSON, versioned under `/api/v1`. Auth is cookie-based (`access_token` / 
 
 ## Getting Started
 
-Prerequisites: Python 3.12+, [`uv`](https://docs.astral.sh/uv/).
+Prerequisites: Python 3.12+, [`uv`](https://docs.astral.sh/uv/), Docker Desktop / Docker Engine + Compose v2.
 
 ```bash
 uv sync
+
+docker compose -f compose.development.yml up -d
 ```
 
-The full local stack (Postgres, three Redis instances — cache, job queue, rate limit — MinIO, Nginx, the Grafana observability stack) is planned as a single `docker compose up` — tracked as milestone **M0** in [`ROADMAP.md`](ROADMAP.md) and not yet committed to the repo. Until then there's no runnable API or `.env.example` to point at.
+Brings up Postgres, three Redis instances (cache, job queue, rate limit), and MinIO, each publishing its port to `localhost`. The API is **not** containerized in development — it runs natively for real hot reload (no bind-mount, no rebuild step; see [ADR-0009](docs/adr/0009-dev-api-runs-natively.md)):
+
+```bash
+uv run alembic upgrade head
+uv run culinary-blog
+```
+
+Once running:
+
+```bash
+curl http://localhost:8000/health
+```
+
+returns `200` with every dependency reported healthy; interactive docs are at `http://localhost:8000/docs`. nginx, the containerized API image, and the observability stack (OTel Collector → Tempo/Loki/Prometheus → Grafana) only run in `compose.production.yml`.
 
 ## Project Structure
 
 ```
-src/culinary_blog/   # FastAPI application (routers / services / repositories)
+src/culinary_blog/
+  main.py             # FastAPI app instance, middleware, router registration
+  config.py           # Settings (env vars)
+  database/           # BaseModel mixin, async engine/session
+  cache/              # Cache / Job Queue / Rate Limit Redis clients
+  health/             # router.py / service.py / schemas.py — routers→services layering
+  auth/, categories/, recipes/   # per-domain models.py (schemas/repository/service/router land per-milestone)
+migrations/           # Alembic env + versions
+docker/               # Per-service Dockerfiles (config baked in, not bind-mounted)
+config/               # Redis conf files (per ADR-0003/0004/0007)
+nginx/, observability/
+compose.development.yml, compose.production.yml
 docs/
   container-diagram.png
   srs.md             # Software Requirements Specification

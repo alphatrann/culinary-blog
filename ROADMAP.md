@@ -3,16 +3,18 @@
 ## Must-Have
 
 ### M0 — Infra skeleton
+
 **Covers:** foundational scaffolding, FR-OBS-001 (health checks — skeleton only; structured logging/tracing polish is S4)
 
-- [ ] Docker Compose brings up nginx, FastAPI app, Postgres, Cache Redis (ADR-0003), Job Queue Redis (ADR-0002/0004), Rate Limit Redis (ADR-0006/0007) — three separate Redis instances, each with its own eviction/persistence policy — MinIO, OTel Collector → Tempo/Loki/Prometheus → Grafana
-- [ ] FastAPI project layout scaffolded: routers / services / repositories
-- [ ] SQLModel models for all core entities (User, RefreshToken, Category, Recipe, RecipeStep, RecipeIngredient, RecipeImage) + Alembic initial migration
-- [ ] Bare `GET /health`, `GET /health/live`, `GET /health/ready` (dependency checks wired, no alerting/tracing yet)
+- [x] Docker Compose (`compose.development.yml`) brings up Postgres, Cache Redis (ADR-0003), Job Queue Redis (ADR-0002/0004), Rate Limit Redis (ADR-0006/0007) — three separate Redis instances, each with its own eviction/persistence policy — and MinIO; the API runs natively via `uv run` for real hot reload; nginx, the containerized API image, and the one-shot `migrate` service are production-only (`compose.production.yml`); OTel Collector → Tempo/Loki/Prometheus → Grafana is also production-only, development relies on console/stdout logs
+- [x] FastAPI project layout scaffolded: routers / services / repositories
+- [x] SQLModel models for all core entities (User, RefreshToken, Category, Recipe, RecipeStep, RecipeIngredient, RecipeImage) + Alembic initial migration
+- [x] Bare `GET /health`, `GET /health/live`, `GET /health/ready` (dependency checks wired, no alerting/tracing yet)
 
-**Demo:** `docker compose up`, `GET /health` → 200 with all deps healthy.
+**Demo:** `docker compose -f compose.development.yml up -d` (infra) → `uv run alembic upgrade head` → `uv run culinary-blog`, then `GET /health` → 200 with all deps healthy. The full containerized path (nginx + API image + `migrate`) is validated via `compose.production.yml`.
 
 ### M1 — Auth core
+
 **Covers:** FR-AUTH-001, FR-AUTH-002, FR-AUTH-004, FR-AUTH-005
 
 - [ ] FR-AUTH-001 registration (email/password, hashed storage)
@@ -23,6 +25,7 @@
 **Demo:** via `/docs` — register → cookies set, call a protected endpoint, refresh, logout, confirm the revoked refresh token is now rejected.
 
 ### M2 — Categories
+
 **Covers:** FR-CAT-001, FR-CAT-002, FR-CAT-003, FR-CAT-004
 
 - [ ] FR-CAT-003 Admin create category
@@ -34,6 +37,7 @@
 **Demo:** Admin creates categories, `GET /categories` lists them, `GET /categories/{slug}` resolves.
 
 ### M3a — Recipe CRUD skeleton
+
 **Covers:** FR-RCP-001, FR-RCP-002, FR-RCP-003, FR-RCP-004
 
 - [ ] FR-RCP-003 create recipe (starts as `draft`, slug auto-generated + unique)
@@ -45,6 +49,7 @@
 **Demo:** Author creates a draft recipe and edits it (a stale `row_version` correctly 409s); Guest sees only published recipes in the list while the Author also sees their own draft; an unknown slug 404s.
 
 ### M3b — Ingredients & steps CRUD
+
 **Covers:** FR-RCP-009, FR-RCP-010
 
 - [ ] FR-RCP-009 ingredient add/update/delete; `quantity`/`unit` co-nullable rule enforced (both null or both set, `quantity > 0`)
@@ -54,6 +59,7 @@
 **Demo:** Add two ingredients and two steps to a draft recipe (steps auto-numbered), delete step 1 and confirm step 2 renumbers to 1; posting an ingredient with `quantity` but no `unit` returns 422.
 
 ### M3c — Publish rule validation
+
 **Covers:** FR-RCP-005
 
 - [ ] `PATCH /recipes/{id}/publish` and `/unpublish` endpoints
@@ -63,6 +69,7 @@
 **Demo:** Publishing a recipe with no steps/ingredients yet returns 422; after adding at least one of each (via M3b), publish succeeds and the recipe becomes visible to Guest in the public list/detail.
 
 ### M4 — Recipe images
+
 **Covers:** FR-RCP-008, FR-FILE-001, FR-FILE-002
 
 - [ ] FR-FILE-001 upload to MinIO (MIME allow-list, magic-byte check, ≤5MB, unique `{folder}/{uuid}.{ext}` path)
@@ -75,6 +82,7 @@
 **Demo:** upload an image via multipart form, see it as primary in the recipe detail response; thumbnail/medium URLs populate once the worker finishes; delete it, see it gone.
 
 ### M5a — Recipe soft delete
+
 **Covers:** FR-RCP-007
 
 - [ ] `DELETE /recipes/{id}` sets `is_deleted = true` on the recipe
@@ -84,6 +92,7 @@
 **Demo:** delete a recipe and confirm it's hidden (Guest and Author listings, detail returns 404) while `is_deleted = true` and all child rows are also marked deleted in the DB.
 
 ### M5b — Vietnamese full-text search
+
 **Covers:** FR-SRCH-001
 
 - [ ] `unaccent` + `pg_trgm` Postgres extensions installed
@@ -95,6 +104,7 @@
 **Demo:** searching "pho" matches "phở" via a direct (uncached) DB query; an empty or 1-character query returns 422.
 
 ### M6a — Load-test baseline (uncached)
+
 **Covers:** NFR-PERF-001, NFR-PERF-002, NFR-PERF-004 (measurement phase, run against the M0–M5b API with no Cache Redis reads)
 
 - [ ] k6 smoke test script
@@ -108,6 +118,7 @@
 **Demo:** a k6 report showing baseline p50/p95/p99 against the uncached API, plus a written list of concrete bottlenecks (slow queries / missing indexes / N+1s) found via `EXPLAIN ANALYZE` and the slow query log — this list is the input to M6b.
 
 ### M6b — Cache Redis layer + re-verification
+
 **Covers:** NFR-PERF-001, NFR-PERF-003 (ADR-0003)
 
 - [ ] Cache-aside reads wired: category list/detail (TTL 1h), recipe list/detail (TTL 30min), search results (TTL 5min)
@@ -119,6 +130,7 @@
 **Demo:** the repeated k6 load test now meets NFR-PERF-001 (p50≤150/p95≤500/p99≤1000ms) with Cache Redis hit rate ≥80% (NFR-PERF-003); editing a published recipe immediately invalidates its cached list/detail entry (no stale read on the next request).
 
 ### M7 — Frontend MVP
+
 **Covers:** Next.js UI over M1–M6b
 
 - [ ] Public pages: recipe list, recipe detail, category pages, search results
@@ -130,6 +142,7 @@
 ## Should-Have
 
 ### S1 — Google OAuth
+
 **Covers:** FR-AUTH-003
 
 - [ ] Backend verifies a Google ID token and creates/links the user
@@ -138,6 +151,7 @@
 **Demo:** "Sign in with Google" button on the frontend logs a new user in.
 
 ### S2 — Profile
+
 **Covers:** FR-AUTH-006, FR-AUTH-007
 
 - [ ] View profile endpoint + page
@@ -146,6 +160,7 @@
 **Demo:** `/profile` page, edit display name/avatar/bio, persists.
 
 ### S3 — Archive + category delete guard
+
 **Covers:** FR-RCP-006, FR-CAT-005
 
 - [ ] FR-RCP-006 archive/unarchive: recipe vanishes from public list, stays visible to its owner
@@ -154,6 +169,7 @@
 **Demo:** archive a recipe from the dashboard (vanishes from public list, still visible to owner); deleting a non-empty category is blocked with a clear error, deleting an empty one succeeds.
 
 ### S4 — Worker jobs, CronJobs & SEO polish
+
 **Covers:** FR-JOB-001, FR-JOB-002, FR-JOB-003, FR-OBS-001 (full logging/tracing), NFR-SEO-001–004
 
 - [ ] `welcome-email-worker` (FR-JOB-001): enqueued after registration, retry 3x (1m/5m/30m backoff) → `welcome_email:dlq`
