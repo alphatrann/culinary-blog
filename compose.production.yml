@@ -1,0 +1,165 @@
+name: culinary-blog-prod
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      cache-redis:
+        condition: service_healthy
+      queue-redis:
+        condition: service_healthy
+      ratelimit-redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["alembic", "upgrade", "head"]
+    env_file:
+      - .env.production
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-culinary}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  cache-redis:
+    build:
+      context: .
+      dockerfile: docker/redis-cache.Dockerfile
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  queue-redis:
+    build:
+      context: .
+      dockerfile: docker/redis-job-queue.Dockerfile
+    restart: unless-stopped
+    volumes:
+      - queuedata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ratelimit-redis:
+    build:
+      context: .
+      dockerfile: docker/redis-rate-limit.Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ratelimitdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: quay.io/minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    env_file:
+      - .env.production
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  otel-collector:
+    build:
+      context: .
+      dockerfile: docker/otel-collector.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - tempo
+      - loki
+      - prometheus
+
+  tempo:
+    build:
+      context: .
+      dockerfile: docker/tempo.Dockerfile
+    restart: unless-stopped
+    volumes:
+      - tempodata:/var/tempo
+
+  loki:
+    build:
+      context: .
+      dockerfile: docker/loki.Dockerfile
+    restart: unless-stopped
+    volumes:
+      - lokidata:/loki
+
+  prometheus:
+    build:
+      context: .
+      dockerfile: docker/prometheus.Dockerfile
+    restart: unless-stopped
+    volumes:
+      - prometheusdata:/prometheus
+
+  grafana:
+    build:
+      context: .
+      dockerfile: docker/grafana.Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    volumes:
+      - grafanadata:/var/lib/grafana
+    depends_on:
+      - tempo
+      - loki
+      - prometheus
+
+volumes:
+  pgdata:
+  queuedata:
+  ratelimitdata:
+  miniodata:
+  tempodata:
+  lokidata:
+  prometheusdata:
+  grafanadata:

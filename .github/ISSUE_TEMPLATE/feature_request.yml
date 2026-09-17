@@ -1,0 +1,43 @@
+name: Feature request
+description: Propose a new feature or enhancement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What need or gap this addresses. Link the relevant SRS section or ROADMAP milestone if applicable.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - auth
+        - recipes
+        - categories
+        - health
+        - database
+        - cache / queue / rate-limit (Redis)
+        - infra (Docker, Nginx)
+        - observability
+        - docs
+        - other
+    validations:
+      required: true

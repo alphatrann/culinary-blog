@@ -1,0 +1,27 @@
+name: Chore / tooling
+description: Infrastructure, tooling, CI, or other non-user-facing work
+labels: ["chore"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What needs to be done
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: Motivation — e.g. missing safety net, dev-experience gap, ROADMAP milestone.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      value: |
+        - [ ]
+    validations:
+      required: false
