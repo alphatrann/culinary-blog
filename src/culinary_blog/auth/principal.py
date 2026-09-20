@@ -2,6 +2,7 @@ import uuid
 from dataclasses import dataclass
 
 ADMIN_ROLE = "admin"
+AUTHOR_ROLE = "author"
 
 
 @dataclass(frozen=True)
@@ -14,3 +15,7 @@ class Principal:
     @property
     def is_admin(self) -> bool:
         return ADMIN_ROLE in self.roles
+
+    @property
+    def can_write_recipes(self) -> bool:
+        return self.is_admin or AUTHOR_ROLE in self.roles

@@ -29,6 +29,13 @@ class ConflictError(DomainError):
     title = "Conflict"
 
 
+class UnprocessableError(DomainError):
+    """A well-formed request that references something invalid (e.g. a category that doesn't exist)."""
+
+    status_code = 422
+    title = "Unprocessable Entity"
+
+
 class LockedError(DomainError):
     status_code = 423
     title = "Locked"

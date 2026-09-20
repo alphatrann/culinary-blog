@@ -59,7 +59,7 @@ layers = [
     "(repository)",
     "(models) | (schemas)",
 ]
-containers = ["culinary_blog.health", "culinary_blog.auth", "culinary_blog.categories"]
+containers = ["culinary_blog.health", "culinary_blog.auth", "culinary_blog.categories", "culinary_blog.recipes"]
 
 [[tool.importlinter.contracts]]
 name = "Handlers and repositories are HTTP-free (NFR-MAINT-004)"
