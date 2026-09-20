@@ -12,8 +12,8 @@ Tiêu chuẩn IEEE 830 / ISO/IEC/IEEE 29148:2018
 
 |                    |                                                 |
 | ------------------ | ----------------------------------------------- |
-| Phiên bản tài liệu | 2.1.0                                           |
-| Ngày phát hành     | 17/09/2026                                      |
+| Phiên bản tài liệu | 2.2.0                                           |
+| Ngày phát hành     | 20/09/2026                                      |
 | Trạng thái         | Đã duyệt (Approved)                             |
 | Công nghệ Backend  | Python 3.12, FastAPI                            |
 | ORM / Migration    | SQLModel + Alembic                              |
@@ -30,6 +30,7 @@ Tài liệu này được biên soạn theo tiêu chuẩn IEEE 830 / ISO/IEC/IEE
 
 | Phiên bản | Ngày       | Tác giả / Vai trò     | Nội dung thay đổi                                                                                                                                                                                              | Trạng thái   |
 | --------- | ---------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| 2.2.0     | 20/09/2026 | Senior BA / Architect | Chuyển kiến trúc backend từ phân lớp `routers → services → repositories` sang CQRS nhẹ (không MediatR, không event sourcing, một database): `router → command/query handlers → repositories → models`; cập nhật CONS-001, NFR-MAINT-004, mục 6.2, 6.3 — xem ADR-0001. | Approved     |
 | 2.1.0     | 17/09/2026 | Senior BA / Architect | Bổ sung instance Redis thứ ba (Rate Limit Redis), tách biệt hoàn toàn với Cache Redis và Job Queue Redis, cho bộ đếm rate limiting (`allkeys-lru`, `maxmemory` 4GB, RDB `save 60 1` — xem ADR-0006, ADR-0007). | Approved     |
 | 2.0.0     | 16/09/2026 | Senior BA / Architect | Chuyển backend sang Python/FastAPI với hai instance Redis riêng biệt (cache và job queue); đồng bộ toàn bộ số liệu, tên trường (snake_case) và HTTP status code; chuyển sang cookie-based authentication.      | Approved     |
 | 1.0.0     | 04/06/2026 | Senior BA / Architect | Phát hành lần đầu – Bản hoàn chỉnh theo IEEE 830 / ISO 29148.                                                                                                                                                  | Approved     |
@@ -288,7 +289,7 @@ Các ràng buộc sau đây là bắt buộc và không thể thương lượng 
 
 | Mã ràng buộc | Loại                 | Mô tả ràng buộc                                                                                                                                                                                                                             |
 | ------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| CONS-001     | Kiến trúc            | Backend PHẢI phân lớp theo mô hình routers → services → repositories: routers (FastAPI `APIRouter`, chỉ HTTP concerns), services (business logic), repositories (truy cập dữ liệu qua SQLModel). Domain models không phụ thuộc router/HTTP. |
+| CONS-001     | Kiến trúc            | Backend PHẢI theo CQRS nhẹ (một database, không event sourcing, không mediator): routers (FastAPI `APIRouter`, chỉ HTTP concerns) → handlers (`commands/` xử lý ghi, `queries/` xử lý đọc; mỗi use case là một handler class) → repositories (truy cập dữ liệu qua SQLModel). Command handler và query handler KHÔNG import lẫn nhau. Domain models không phụ thuộc router/HTTP. |
 | CONS-002     | Validation           | Toàn bộ request/response schema PHẢI khai báo qua Pydantic models. Validation chạy tại tầng router/schema, không viết validation thủ công trong service.                                                                                    |
 | CONS-003     | Ngôn ngữ / Framework | Backend: Python 3.12, FastAPI (async). Frontend: Next.js App Router (không dùng Pages Router).                                                                                                                                              |
 | CONS-004     | Bảo mật              | Xác thực PHẢI dùng JWT stateless (access token 15 phút, refresh token 7 ngày, 512-bit random), truyền qua HttpOnly cookie (`SameSite=Lax`, `Secure`). Mật khẩu PHẢI hash bằng thuật toán an toàn (Argon2id hoặc bcrypt) qua `passlib`.      |
@@ -345,7 +346,7 @@ Module này quản lý toàn bộ vòng đời xác thực người dùng: đăn
 | Luồng chính (Happy Path) | 1. Client gửi `POST /api/v1/auth/register` với body: `{ "display_name": "...", "email": "...", "password": "..." }`.                                                                                                                                                                                                                                                    |
 
 2. Pydantic schema validate: `display_name` 2–100 ký tự, `email` đúng format, `password` tối thiểu 8 ký tự (1 chữ hoa, 1 chữ số, 1 ký tự đặc biệt).
-3. Service kiểm tra `email` chưa tồn tại.
+3. Command handler kiểm tra `email` chưa tồn tại.
 4. Tạo `User` mới, hash `password` bằng Argon2id (`passlib`), gán role "author".
 5. Tạo access token (JWT HS256, 15 phút) và refresh token (512-bit random, hash SHA-256 trước khi lưu DB, 7 ngày).
 6. Lưu refresh token hash vào bảng `refresh_tokens`.
@@ -517,7 +518,7 @@ Module quản lý danh mục (Category) phân loại công thức nấu ăn. Dan
 | Điều kiện tiên quyết     | 1. Không yêu cầu xác thực.                                                                                                                                                                |
 | Luồng chính (Happy Path) | 1. Client gửi `GET /api/v1/categories`.                                                                                                                                                   |
 
-2. Service kiểm tra Cache Redis key `categories:all`.
+2. Query handler kiểm tra Cache Redis key `categories:all`.
 3. Cache hit: trả dữ liệu từ cache.
 4. Cache miss: query database, map sang `CategoryOut[]`.
 5. Lưu vào Cache Redis với TTL 1 giờ.
@@ -540,7 +541,7 @@ Module quản lý danh mục (Category) phân loại công thức nấu ăn. Dan
 | Điều kiện tiên quyết     | 1. Danh mục với `slug` tương ứng tồn tại. 2. Không yêu cầu xác thực.                                                                                                                                    |
 | Luồng chính (Happy Path) | 1. Client gửi `GET /api/v1/categories/{slug}?page=1&page_size=12`.                                                                                                                                      |
 
-2. Service tìm category theo `slug`.
+2. Query handler tìm category theo `slug`.
 3. Query recipes thuộc category với `status == published` (+ draft/archived của current user nếu đã đăng nhập).
 4. Áp dụng offset pagination (`OFFSET (page-1)*page_size LIMIT page_size`).
 5. Trả HTTP 200 OK. |
@@ -623,7 +624,7 @@ Module quản lý danh mục (Category) phân loại công thức nấu ăn. Dan
 
 ## 3.3. Module Quản lý Công thức Nấu ăn (FR-RCP)
 
-Module cốt lõi của hệ thống. Recipe là aggregate root chứa các child entity: `recipe_step`, `recipe_ingredient`, `recipe_image` và các cột dinh dưỡng nhúng (`recipe_nutrition_*`). Mọi mutation đi qua service layer để đảm bảo tính nhất quán transaction. Concurrency được xử lý qua `row_version` (bộ đếm optimistic concurrency) để phát hiện lost update khi hai Author cùng sửa một recipe. Recipe và mọi công thức đều dùng **soft delete** (`is_deleted`), nhất quán với toàn bộ entity khác trong hệ thống.
+Module cốt lõi của hệ thống. Recipe là aggregate root chứa các child entity: `recipe_step`, `recipe_ingredient`, `recipe_image` và các cột dinh dưỡng nhúng (`recipe_nutrition_*`). Mọi mutation đi qua command handler để đảm bảo tính nhất quán transaction. Concurrency được xử lý qua `row_version` (bộ đếm optimistic concurrency) để phát hiện lost update khi hai Author cùng sửa một recipe. Recipe và mọi công thức đều dùng **soft delete** (`is_deleted`), nhất quán với toàn bộ entity khác trong hệ thống.
 
 ### FR-RCP-001: Xem Danh sách Công thức (Paginated + Filtered + Sorted)
 
@@ -638,7 +639,7 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 | Điều kiện tiên quyết     | 1. Không yêu cầu xác thực (endpoint public cho Published). 2. `page >= 1`, `page_size` trong [1, 50].                                                                                                                                                                                                                                                                                                                                      |
 | Luồng chính (Happy Path) | 1. Client gửi `GET /api/v1/recipes?page=1&page_size=12&category_id={id}&difficulty=easy&max_cook_time=30&sort=-created_at`.                                                                                                                                                                                                                                                                                                                |
 
-2. Service kiểm tra Cache Redis theo key `recipes:list:{query_hash}`.
+2. Query handler kiểm tra Cache Redis theo key `recipes:list:{query_hash}`.
 3. Cache miss: xây query với filter theo tham số.
 4. Áp dụng authorization filter: Guest → chỉ published; Author → published OR (draft/archived AND author_id == current_user_id); Admin → tất cả.
 5. Apply sorting: `sort=-created_at` → `ORDER BY created_at DESC`.
@@ -664,7 +665,7 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 | Điều kiện tiên quyết     | 1. Recipe với `slug` tương ứng tồn tại (`is_deleted = false`). 2. Nếu Recipe ở trạng thái `draft`/`archived`: người yêu cầu phải là Admin hoặc là tác giả sở hữu (`author_id == current_user_id`).                                                                                 |
 | Luồng chính (Happy Path) | 1. Client gửi `GET /api/v1/recipes/{slug}`.                                                                                                                                                                                                                                        |
 
-2. Service query Recipe kèm eager loading: steps, ingredients, images, category, author.
+2. Query handler query Recipe kèm eager loading: steps, ingredients, images, category, author.
 3. Nếu không tìm thấy → HTTP 404.
 4. Kiểm tra `status`: nếu `draft`/`archived` → chỉ Admin hoặc tác giả sở hữu mới được xem.
 5. Map sang `RecipeDetailOut`.
@@ -915,7 +916,7 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 
 ## 3.5. Module Quản lý Tệp tin (FR-FILE)
 
-Module xử lý mọi thao tác với file binary trên MinIO S3-compatible. Abstraction `FileStorageService` cho phép swap implementation (MinIO ↔ AWS S3 ↔ local filesystem) mà không đổi service layer.
+Module xử lý mọi thao tác với file binary trên MinIO S3-compatible. Abstraction `FileStorageService` cho phép swap implementation (MinIO ↔ AWS S3 ↔ local filesystem) mà không đổi handler layer.
 
 | Mã FR       | Tên                   | Mức ưu tiên   | Mô tả                                                                                                                                                     | Ràng buộc kỹ thuật                                                                                                     |
 | ----------- | --------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -1002,7 +1003,7 @@ Input Validation & File Upload Security | • SQL Injection: SQLModel/SQLAlchemy
 | NFR-SEC-005
 Cookies, HTTPS & CORS | Toàn bộ traffic qua HTTPS (TLS 1.2+): Nginx redirect HTTP → HTTPS, HSTS header (`max-age=31536000`). CORS: chỉ origin được cấu hình (không wildcard `*`); allowed origins: `http://localhost:3000` (dev), `https://domain.com` (prod). Cookie `access_token`/`refresh_token`: `HttpOnly`, `Secure`, `SameSite=Lax`, `Path` giới hạn phù hợp — không dùng `SameSite=Strict` để tránh phá vỡ luồng đăng nhập qua redirect (ví dụ Google). |
 | NFR-SEC-006
-Authorization & Resource Ownership | Kiểm tra phân quyền tại service layer (không chỉ ở router): dependency `require_owner_or_admin` xác minh resource ownership; Admin luôn được coi là chủ sở hữu hợp lệ. Sensitive endpoints (DELETE, PATCH publish): double-check `user_id` trước khi commit. Audit trail: log mọi write operation với `user_id` + timestamp. |
+Authorization & Resource Ownership | Kiểm tra phân quyền tại handler layer (không chỉ ở router): dependency `require_owner_or_admin` xác minh resource ownership; Admin luôn được coi là chủ sở hữu hợp lệ. Sensitive endpoints (DELETE, PATCH publish): double-check `user_id` trước khi commit. Audit trail: log mọi write operation với `user_id` + timestamp. |
 | NFR-SEC-007
 Secrets Management | Không bao giờ commit secrets vào Git: Development dùng `.env` (gitignored); Production dùng environment variables (Docker Compose `env_file` / Kubernetes Secrets). Rotation: khuyến nghị rotate JWT signing key mỗi 90 ngày. Scanning: pre-commit hook với `gitleaks`. |
 
@@ -1040,11 +1041,11 @@ Data Durability | PostgreSQL WAL đảm bảo ACID. Backup: `pg_dump` tự độ
 | NFR-MAINT-001
 Code Quality | Toàn bộ code pass static analysis trước khi merge: `ruff` (lint + format), `mypy`/`pyright` (type check) cho backend; ESLint (Airbnb) + Prettier cho frontend. Không compiler/type-check warning trong CI. Code review: ≥1 reviewer phê duyệt PR. |
 | NFR-MAINT-002
-Test Coverage | Unit tests ≥80% line coverage (service layer). Integration tests: mọi API endpoint có ≥1 happy path + 1 error case. E2E tests: 5 critical flow (register, login, create recipe, publish, search). Tool: `pytest` (backend), Jest + Testing Library (frontend), Playwright (E2E). |
+Test Coverage | Unit tests ≥80% line coverage (handler layer). Integration tests: mọi API endpoint có ≥1 happy path + 1 error case. E2E tests: 5 critical flow (register, login, create recipe, publish, search). Tool: `pytest` (backend), Jest + Testing Library (frontend), Playwright (E2E). |
 | NFR-MAINT-003
 Documentation | README.md: setup dev environment (Docker Compose) < 5 phút. API docs: tự sinh tại `/docs` (Swagger) và `/redoc`. ADR: ghi lại mọi quyết định kiến trúc quan trọng (`docs/adr/`). CHANGELOG.md cập nhật mỗi release (Keep a Changelog + SemVer). |
 | NFR-MAINT-004
-Layering Compliance | Tuân thủ nghiêm ngặt phân lớp routers → services → repositories (CONS-001): routers chỉ xử lý HTTP concerns; services chứa business logic, không import FastAPI request/response object; repositories là nơi duy nhất chạy query SQLModel. Vi phạm được phát hiện qua code review + lint rule tùy chỉnh (import-linter). |
+Layering Compliance | Tuân thủ nghiêm ngặt CQRS phân lớp (CONS-001): routers chỉ xử lý HTTP concerns; command/query handlers chứa business logic, không import FastAPI/Starlette; query handler không ghi dữ liệu và không import command handler (và ngược lại); repositories là nơi duy nhất chạy query SQLModel. Vi phạm được phát hiện qua code review + lint rule tùy chỉnh (import-linter). |
 
 ## 4.6. Khả năng Mở rộng (NFR-SCALE)
 
@@ -1162,18 +1163,19 @@ Chương này mô tả tổng quan kiến trúc phần mềm của hệ thống 
 | CronJobs            | Python                                                                                                                                                                       | Enqueue job định kỳ (sitemap hàng ngày 02:00 AM UTC).                                                              | Job Queue Redis                                                           |
 | Observability       | Production: OpenTelemetry → Tempo (traces) / Loki (logs) / Prometheus (metrics) → Grafana (dashboard). Development: structured JSON console logs only, no collector/backends | Logging, metrics, distributed tracing.                                                                             | Backend API, Workers                                                      |
 
-## 6.2. Kiến trúc Backend – Routers / Services / Repositories
+## 6.2. Kiến trúc Backend – CQRS (Routers / Handlers / Repositories)
 
-Backend phân lớp theo CONS-001, dependency luôn đi một chiều: `router → service → repository → model`.
+Backend theo CONS-001, dependency luôn đi một chiều: `router → command/query handler → repository → model`. Mỗi module nghiệp vụ (`src/culinary_blog/<module>/`) có `commands/`, `queries/`, `router.py`, `repository.py`, `schemas.py`, `models.py`. Ghi và đọc dùng chung một database; ranh giới CQRS nằm ở tầng handler, không tách read model. Hạ tầng dùng chung ở `src/culinary_blog/cqrs.py` (`Command`, `Query`, `CommandHandler`, `QueryHandler`). Handler, router và repository là class (OOP), dependency được inject qua constructor; việc ghép dependency chỉ diễn ra ở composition root của module (`wiring.py`).
 
 |                                          |                                                                                                                                                                                            |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Models** (`src/*/models.py`)           | SQLModel entities: `Recipe`, `Category`, `User`, `RecipeStep`, `RecipeIngredient`, `RecipeImage`, `RefreshToken`. Enums: `RecipeDifficulty`, `RecipeStatus`. Không phụ thuộc FastAPI/HTTP. |
 | **Schemas** (`src/*/schemas.py`)         | Pydantic request/response models (`RecipeCreate`, `RecipeOut`, `PagedResult[T]`, ...), toàn bộ field `snake_case`.                                                                         |
 | **Repositories** (`src/*/repository.py`) | Truy vấn SQLModel/asyncpg — nơi DUY NHẤT chạy query. Áp dụng global filter `is_deleted == false` mặc định.                                                                                 |
-| **Services** (`src/*/service.py`)        | Business logic: authorization checks, cache-aside qua Cache Redis, enqueue job lên Job Queue Redis, orchestrate nhiều repository trong 1 transaction.                                      |
-| **Routers** (`src/*/router.py`)          | FastAPI `APIRouter`: nhận request, gọi service, trả response. Không chứa business logic hay query trực tiếp. Auth qua `Depends(get_current_user)` đọc cookie.                              |
-| **Workers** (`src/workers/*.py`)         | Standalone process, `BLPOP`/`XREADGROUP` trên Job Queue Redis, gọi lại service layer tương ứng, đẩy job thất bại vào DLQ sau khi hết retry.                                                |
+| **Command handlers** (`src/*/commands/*.py`) | Một class / use case ghi (`CreateRecipeHandler`, ...): nhận `Command` (frozen dataclass), authorization checks, orchestrate nhiều repository trong 1 transaction, invalidate Cache Redis, enqueue job lên Job Queue Redis. |
+| **Query handlers** (`src/*/queries/*.py`) | Một class / use case đọc (`GetRecipeHandler`, ...): nhận `Query` (frozen dataclass), cache-aside qua Cache Redis, trả schema. Không ghi database, không import command handler. |
+| **Routers** (`src/*/router.py`)          | Class bọc `APIRouter`: nhận request, dựng `Command`/`Query`, gọi handler, trả response. Không chứa business logic hay query trực tiếp. Auth qua `Depends(get_current_user)` đọc cookie.                              |
+| **Workers** (`src/workers/*.py`)         | Standalone process, `BLPOP`/`XREADGROUP` trên Job Queue Redis, gọi lại command handler tương ứng, đẩy job thất bại vào DLQ sau khi hết retry.                                                |
 
 ## 6.3. Request Pipeline
 
@@ -1186,7 +1188,7 @@ Mỗi request đi qua middleware/dependency theo thứ tự:
 | 3      | Pydantic schema validation        | FastAPI tự validate request body/query theo schema đã khai báo. | Endpoint có schema                       |
 | 4      | `Depends(get_current_user)`       | Đọc cookie `access_token`, verify JWT, inject `current_user`.   | Endpoint yêu cầu auth                    |
 | 5      | `Depends(require_owner_or_admin)` | Resource-based authorization check.                             | Endpoint mutate resource sở hữu bởi user |
-| 6      | Router handler → Service          | Thực thi business logic, cache-aside, enqueue job.              | Tất cả (bắt buộc)                        |
+| 6      | Router → Command/Query handler    | Thực thi business logic, cache-aside, enqueue job.              | Tất cả (bắt buộc)                        |
 | 7      | Global exception handler          | Bắt exception, map sang RFC 7807 response.                      | Tất cả request                           |
 
 ## 6.4. Mô hình Quan hệ Thực thể (ERD tóm tắt)
@@ -1314,7 +1316,7 @@ Bảng con độc lập (không phải owned/embedded) — mỗi ảnh là một
 | `medium_url`    | varchar(500) | NULL                                           | URL ảnh medium 800×600 (sinh bởi FR-JOB-002). NULL khi worker chưa chạy xong.                   |
 | `thumbnail_url` | varchar(500) | NULL                                           | URL ảnh thumbnail 300×300 (sinh bởi FR-JOB-002). NULL khi worker chưa chạy xong.                |
 | `alt_text`      | varchar(200) | NULL                                           | Alt text cho accessibility.                                                                     |
-| `is_primary`    | boolean      | NOT NULL, DEFAULT `false`                      | Ảnh chính (hiển thị đầu tiên). Chỉ 1 ảnh `is_primary=true` / Recipe (enforced ở service layer). |
+| `is_primary`    | boolean      | NOT NULL, DEFAULT `false`                      | Ảnh chính (hiển thị đầu tiên). Chỉ 1 ảnh `is_primary=true` / Recipe (enforced ở command handler). |
 | `order_index`   | integer      | NOT NULL, DEFAULT 0                            | Thứ tự hiển thị gallery.                                                                        |
 
 ## 7.6. Category (`categories`)

@@ -40,7 +40,7 @@ Backend → OpenTelemetry Collector → Tempo / Loki / Prometheus → Grafana
 
 See [`docs/container-diagram.png`](docs/container-diagram.png) for the full container diagram, and [`docs/adr/`](docs/adr/) for why the backend is FastAPI (not the originally-specified .NET) and why cache, job-queue, and rate-limit state each live in their own Redis instance with independent eviction/persistence policies.
 
-Backend layering is strict: `routers → services → repositories → models`, one direction only. Routers handle HTTP only; services hold business logic and cache/queue orchestration; repositories are the only place that runs a query.
+Backend is lightweight CQRS, strictly one direction: `router → command/query handlers → repository → models`. Routers handle HTTP only; command handlers own writes, cache invalidation and job enqueueing; query handlers own reads and cache-aside; repositories are the only place that runs a query. Enforced by import-linter in CI.
 
 ## Scope
 
@@ -107,8 +107,9 @@ src/culinary_blog/
   config.py           # Settings (env vars)
   database/           # BaseModel mixin, async engine/session
   cache/              # Cache / Job Queue / Rate Limit Redis clients
-  health/             # router.py / service.py / schemas.py — routers→services layering
-  auth/, categories/, recipes/   # per-domain models.py (schemas/repository/service/router land per-milestone)
+  cqrs.py             # Command / Query / handler base classes
+  health/             # router.py, queries/, repository.py, wiring.py — reference CQRS module
+  auth/, categories/, recipes/   # per-domain models.py (schemas/repository/commands/queries/router land per-milestone)
 migrations/           # Alembic env + versions
 docker/               # Per-service Dockerfiles (config baked in, not bind-mounted)
 config/               # Redis conf files (per ADR-0003/0004/0007)

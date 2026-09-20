@@ -19,5 +19,5 @@ Build the backend in Python 3.12 + FastAPI (async), SQLModel for the ORM, Alembi
 - FastAPI + Pydantic collapses validation, serialization, and OpenAPI generation into one declarative step.
 - Native `async`/`await` end-to-end fits this system's I/O-bound profile (Postgres, two Redis instances, MinIO, outbound HTTP to Google).
 - Broadest Python ecosystem (image processing, scripting, future ML-adjacent features) is the strongest real justification — "mature Redis SDKs" doesn't hold up (`StackExchange.Redis` is arguably more mature than `redis-py`).
-- Lose .NET's compiler-enforced Clean Architecture boundaries — replaced by the `routers → services → repositories` convention (CONS-001), enforced only by code review and `import-linter`.
+- Lose .NET's compiler-enforced Clean Architecture boundaries — replaced by the CQRS layering convention (CONS-001), enforced by code review and `import-linter` (layers contract, command/query handler independence, no FastAPI below the router; run in CI).
 - Cross-cutting concerns (logging, validation, cache invalidation) are no longer free via MediatR pipeline behaviors — must be applied per-router/dependency deliberately; worth a shared base router or lint rule to avoid missing one on a new endpoint.

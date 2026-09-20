@@ -7,7 +7,7 @@
 **Covers:** foundational scaffolding, FR-OBS-001 (health checks — skeleton only; structured logging/tracing polish is S4)
 
 - [x] Docker Compose (`compose.development.yml`) brings up Postgres, Cache Redis (ADR-0003), Job Queue Redis (ADR-0002/0004), Rate Limit Redis (ADR-0006/0007) — three separate Redis instances, each with its own eviction/persistence policy — and MinIO; the API runs natively via `uv run` for real hot reload; nginx, the containerized API image, and the one-shot `migrate` service are production-only (`compose.production.yml`); OTel Collector → Tempo/Loki/Prometheus → Grafana is also production-only, development relies on console/stdout logs
-- [x] FastAPI project layout scaffolded: routers / services / repositories
+- [x] FastAPI project layout scaffolded
 - [x] SQLModel models for all core entities (User, RefreshToken, Category, Recipe, RecipeStep, RecipeIngredient, RecipeImage) + Alembic initial migration
 - [x] Bare `GET /health`, `GET /health/live`, `GET /health/ready` (dependency checks wired, no alerting/tracing yet)
 
