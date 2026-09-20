@@ -1,51 +1,15 @@
-from datetime import timedelta
-
 import pytest
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from culinary_blog.auth.dependencies import Authenticator
-from culinary_blog.auth.security import TokenService
-from culinary_blog.problem_details import register_problem_handlers
-from culinary_blog.recipes.commands.create_recipe import CreateRecipeHandler
-from culinary_blog.recipes.commands.update_recipe import UpdateRecipeHandler
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
-from culinary_blog.recipes.queries.get_recipe import GetRecipeHandler
-from culinary_blog.recipes.queries.list_recipes import ListRecipesHandler
-from culinary_blog.recipes.router import RecipeRouter
-from tests.recipes.fakes import ADMIN, AUTHOR, OTHER_AUTHOR, READER, FakeRecipeRepository
+from tests.recipes.conftest import TOKENS
+from tests.recipes.fakes import ADMIN, AUTHOR, OTHER_AUTHOR, READER
 
 BASE = "/api/v1/recipes"
-TOKENS = TokenService("test-secret-key-at-least-32-bytes-long", timedelta(minutes=15), timedelta(days=7))
 
 
 def as_user(client: TestClient, principal) -> None:
     client.cookies.set("access_token", TOKENS.create_access_token(principal.user_id, list(principal.roles)))
-
-
-@pytest.fixture
-def repo() -> FakeRecipeRepository:
-    return FakeRecipeRepository()
-
-
-@pytest.fixture
-def category_id(repo) -> str:
-    return str(repo.add_category())
-
-
-@pytest.fixture
-def client(repo) -> TestClient:
-    router = RecipeRouter(
-        authenticator=Authenticator(TOKENS),
-        create_recipe=CreateRecipeHandler(repo),
-        update_recipe=UpdateRecipeHandler(repo),
-        list_recipes=ListRecipesHandler(repo),
-        get_recipe=GetRecipeHandler(repo),
-    ).router
-    app = FastAPI()
-    register_problem_handlers(app)
-    app.include_router(router)
-    return TestClient(app)
 
 
 def payload(category_id: str, /, **overrides) -> dict:
