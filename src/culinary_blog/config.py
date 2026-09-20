@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -28,6 +29,19 @@ class Settings(BaseSettings):
     otel_service_name: str = "culinary-blog-api"
 
     cors_origins: str = "http://localhost:3000"
+
+    jwt_secret_key: str = "dev-only-insecure-secret-change-me"
+    access_token_ttl_minutes: int = 15
+    refresh_token_ttl_days: int = 7
+    cookie_secure: bool = True
+    max_failed_logins: int = 5
+    lockout_minutes: int = 15
+
+    @model_validator(mode="after")
+    def _require_real_secret_outside_development(self) -> "Settings":
+        if self.environment != "development" and self.jwt_secret_key.startswith("dev-only"):
+            raise ValueError("JWT_SECRET_KEY must be set outside development")
+        return self
 
     @property
     def cors_origin_list(self) -> list[str]:

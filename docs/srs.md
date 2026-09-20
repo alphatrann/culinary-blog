@@ -330,7 +330,7 @@ Chương này đặc tả chi tiết 29 Functional Requirements (FR) được nh
 
 ## 3.1. Module Xác thực và Quản lý Người dùng (FR-AUTH)
 
-Module này quản lý toàn bộ vòng đời xác thực người dùng: đăng ký, đăng nhập đa phương thức, duy trì phiên làm việc với cơ chế token rotation, đến quản lý hồ sơ cá nhân. Access token và refresh token đều được server set vào **HttpOnly cookie** (`access_token`, `refresh_token`) — không bao giờ trả về trong JSON body, và client không tự tay đính kèm `Authorization: Bearer`. Cookie flags: `HttpOnly`, `Secure`, `SameSite=Lax`, `Path` giới hạn phù hợp (`/api/v1/auth/refresh` cho refresh_token). CSRF được giảm thiểu nhờ `SameSite=Lax` kết hợp CORS whitelist nghiêm ngặt (không wildcard).
+Module này quản lý toàn bộ vòng đời xác thực người dùng: đăng ký, đăng nhập đa phương thức, duy trì phiên làm việc với cơ chế token rotation, đến quản lý hồ sơ cá nhân. Access token và refresh token đều được server set vào **HttpOnly cookie** (`access_token`, `refresh_token`) — không bao giờ trả về trong JSON body, và client không tự tay đính kèm `Authorization: Bearer`. Cookie flags: `HttpOnly`, `Secure`, `SameSite=Lax`, `Path` giới hạn phù hợp (`/api/v1/auth` cho refresh_token — phủ cả `/refresh` và `/logout`, vì logout cần cookie này để revoke). CSRF được giảm thiểu nhờ `SameSite=Lax` kết hợp CORS whitelist nghiêm ngặt (không wildcard).
 
 ### FR-AUTH-001: Đăng ký Tài khoản (User Registration)
 

@@ -6,7 +6,7 @@ A recipe-sharing web platform: authors publish recipes with images, ingredients,
 
 ## Status
 
-**M0 — Infra skeleton** complete: `docker compose -f compose.development.yml up` brings up Postgres, all three Redis instances, and MinIO; the API runs natively via `uv run` (hot reload, ADR-0009) and `GET /health` returns 200 with every dependency healthy. SQLModel entities and the initial Alembic migration exist for all core tables. No business endpoints (auth, recipes, categories) yet. See [`ROADMAP.md`](ROADMAP.md) for the milestone plan.
+**M0 — Infra skeleton** and **M1 — Auth core** complete. M0: `docker compose -f compose.development.yml up` brings up Postgres, all three Redis instances, and MinIO; the API runs natively via `uv run` (hot reload, ADR-0009) and `GET /health` returns 200 with every dependency healthy. SQLModel entities and the initial Alembic migration exist for all core tables. M1 adds `/api/v1/auth/{register,login,refresh,logout,me}` (HttpOnly-cookie JWT auth, rotating refresh tokens); categories and recipes are not implemented yet. See [`ROADMAP.md`](ROADMAP.md) for the milestone plan.
 
 ## Tech Stack
 
@@ -97,7 +97,7 @@ Once running:
 curl http://localhost:8000/health
 ```
 
-returns `200` with every dependency reported healthy; interactive docs are at `http://localhost:8000/docs`. nginx, the containerized API image, and the observability stack (OTel Collector → Tempo/Loki/Prometheus → Grafana) only run in `compose.production.yml`.
+returns `200` with every dependency reported healthy. Auth cookies are `Secure` by default, so for plain-http local runs (cURL, `/docs`) set `COOKIE_SECURE=false` in `.env.development`; outside development `JWT_SECRET_KEY` must be set; interactive docs are at `http://localhost:8000/docs`. nginx, the containerized API image, and the observability stack (OTel Collector → Tempo/Loki/Prometheus → Grafana) only run in `compose.production.yml`.
 
 ## Project Structure
 
@@ -109,7 +109,9 @@ src/culinary_blog/
   cache/              # Cache / Job Queue / Rate Limit Redis clients
   cqrs.py             # Command / Query / handler base classes
   health/             # router.py, queries/, repository.py, wiring.py — reference CQRS module
-  auth/, categories/, recipes/   # per-domain models.py (schemas/repository/commands/queries/router land per-milestone)
+  auth/               # M1: router, commands/, queries/, repository, security (Argon2id + JWT), cookies, wiring
+  errors.py, problem_details.py  # domain errors → RFC 7807 responses
+  categories/, recipes/          # models only so far (rest lands per-milestone)
 migrations/           # Alembic env + versions
 docker/               # Per-service Dockerfiles (config baked in, not bind-mounted)
 config/               # Redis conf files (per ADR-0003/0004/0007)
