@@ -7,10 +7,10 @@ from sqlalchemy import (
     Column,
     DateTime,
     ForeignKey,
+    Index,
     Numeric,
     SmallInteger,
     Text,
-    UniqueConstraint,
     text,
 )
 from sqlmodel import Field
@@ -68,7 +68,14 @@ class RecipeStep(BaseModel, table=True):
         CheckConstraint(
             "duration_minutes IS NULL OR duration_minutes >= 0", name="ck_recipe_step_duration_non_negative"
         ),
-        UniqueConstraint("recipe_id", "step_number", name="uq_recipe_step_number"),
+        # live rows only: a soft-deleted step keeps its number but must not block renumbering (FR-RCP-010)
+        Index(
+            "uq_recipe_step_number",
+            "recipe_id",
+            "step_number",
+            unique=True,
+            postgresql_where=text("is_deleted = false"),
+        ),
     )
 
     recipe_id: uuid.UUID = Field(

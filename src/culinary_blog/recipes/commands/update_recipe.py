@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 
 from culinary_blog.auth.principal import Principal
 from culinary_blog.cqrs import Command, CommandHandler
-from culinary_blog.errors import ConflictError, ForbiddenError, NotFoundError, UnprocessableError
+from culinary_blog.errors import ConflictError, ForbiddenError, NotFoundError
 from culinary_blog.recipes.enums import RecipeDifficulty
 from culinary_blog.recipes.mapping import to_recipe_out
 from culinary_blog.recipes.repository import RecipeRepository
@@ -46,8 +46,6 @@ class UpdateRecipeHandler(CommandHandler[UpdateRecipeCommand, RecipeOut]):
             raise NotFoundError("Không tìm thấy công thức nấu ăn.")
         if not (actor.is_admin or (actor.can_write_recipes and existing.author_id == actor.user_id)):
             raise ForbiddenError("Only the recipe's author or an Admin can update it")
-        if not await self._repository.category_exists(command.category_id):
-            raise UnprocessableError("Category không hợp lệ")
 
         values: dict[str, object] = {
             "title": command.title,
