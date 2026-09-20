@@ -725,9 +725,10 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 8. Trả HTTP 200 OK với `RecipeOut` đã cập nhật. |
    | Luồng thay thế / Ngoại lệ | A1 – Không phải owner (Author khác): HTTP 403 Forbidden.
    A2 – Concurrency conflict (`row_version` mismatch): HTTP 409 Conflict – "Dữ liệu đã bị thay đổi bởi người dùng khác."
-   A3 – ID không tồn tại: HTTP 404. |
+   A3 – ID không tồn tại: HTTP 404.
+   A4 – Thiếu hoặc sai định dạng header `If-Match`: HTTP 422. Giá trị chấp nhận `3`, `"3"` hoặc `W/"3"`. |
    | HTTP Method & Endpoint | `PUT /api/v1/recipes/{id}` |
-   | Kết quả mong đợi | Recipe được cập nhật, cache bị xóa, trả về `RecipeOut` mới nhất. |
+   | Kết quả mong đợi | Recipe được cập nhật, cache bị xóa, trả về `RecipeOut` mới nhất. `slug`, `status`, steps và ingredients không thay đổi qua endpoint này; `nutrition` chỉ được thay thế (toàn bộ) khi có trong body. Response kèm header `ETag: "{row_version}"` (cũng có ở `POST /recipes` và `GET /recipes/{slug}`). Kiểm tra `row_version` và ghi dữ liệu là một câu lệnh `UPDATE ... WHERE id = ? AND row_version = ?` nguyên tử. |
    | HTTP Status Code trả về | 200 OK. 403 Forbidden – Không phải owner. 404 Not Found. 409 Conflict – Concurrency hoặc slug trùng. 422 Unprocessable Entity. |
 
 ### FR-RCP-005: Xuất bản / Hủy Xuất bản Công thức

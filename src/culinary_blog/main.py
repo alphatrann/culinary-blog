@@ -6,6 +6,7 @@ from culinary_blog.categories.wiring import build_categories_router
 from culinary_blog.config import get_settings
 from culinary_blog.health.wiring import build_health_router
 from culinary_blog.problem_details import register_problem_handlers
+from culinary_blog.recipes.wiring import build_recipes_router
 
 settings = get_settings()
 
@@ -24,3 +25,4 @@ app.add_middleware(
 app.include_router(build_health_router())
 app.include_router(build_auth_router())
 app.include_router(build_categories_router())
+app.include_router(build_recipes_router())
