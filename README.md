@@ -6,7 +6,7 @@ A recipe-sharing web platform: authors publish recipes with images, ingredients,
 
 ## Status
 
-**M0 — Infra skeleton** and **M1 — Auth core** complete. M0: `docker compose -f compose.development.yml up` brings up Postgres, all three Redis instances, and MinIO; the API runs natively via `uv run` (hot reload, ADR-0009) and `GET /health` returns 200 with every dependency healthy. SQLModel entities and the initial Alembic migration exist for all core tables. M1 adds `/api/v1/auth/{register,login,refresh,logout,me}` (HttpOnly-cookie JWT auth, rotating refresh tokens); categories and recipes are not implemented yet. See [`ROADMAP.md`](ROADMAP.md) for the milestone plan.
+**M0 — Infra skeleton**, **M1 — Auth core**, **M2 — Categories** and **M3a — Recipe CRUD skeleton** complete. M0: `docker compose -f compose.development.yml up` brings up Postgres, all three Redis instances, and MinIO; the API runs natively via `uv run` (hot reload, ADR-0009) and `GET /health` returns 200 with every dependency healthy. SQLModel entities and the initial Alembic migration exist for all core tables. M1 adds `/api/v1/auth/{register,login,refresh,logout,me}` (HttpOnly-cookie JWT auth, rotating refresh tokens). M2 adds `/api/v1/categories` (public list/detail, Admin create/update). M3a adds `/api/v1/recipes`: `POST` (create as draft), `GET` (paginated/filtered/sorted list with role-based visibility), `GET /{slug}` (full detail) and `PUT /{id}` (update guarded by `If-Match: <row_version>` optimistic concurrency, 409 on a stale version). Ingredient/step CRUD (M3b), publish rules (M3c), images, search and caching are not implemented yet. See [`ROADMAP.md`](ROADMAP.md) for the milestone plan.
 
 ## Tech Stack
 
@@ -112,7 +112,7 @@ src/culinary_blog/
   auth/               # M1: router, commands/, queries/, repository, security (Argon2id + JWT), cookies, wiring
   errors.py, problem_details.py  # domain errors → RFC 7807 responses
   categories/                    # M2: router, commands/, queries/, repository, slug, wiring
-  recipes/                       # models only so far (rest lands per-milestone)
+  recipes/                       # M3a: router, commands/, queries/, repository, mapping, wiring (steps/ingredients/publish/images land in M3b–M4)
 migrations/           # Alembic env + versions
 docker/               # Per-service Dockerfiles (config baked in, not bind-mounted)
 config/               # Redis conf files (per ADR-0003/0004/0007)

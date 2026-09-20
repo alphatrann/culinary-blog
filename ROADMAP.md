@@ -41,11 +41,11 @@
 
 **Covers:** FR-RCP-001, FR-RCP-002, FR-RCP-003, FR-RCP-004
 
-- [ ] FR-RCP-003 create recipe (starts as `draft`, slug auto-generated + unique)
-- [ ] FR-RCP-004 update recipe with optimistic concurrency (`row_version` / `If-Match` → 409 on mismatch)
-- [ ] FR-RCP-001 paginated/filtered/sorted list with role-based visibility (Guest: published only; Author: published + own draft/archived; Admin: all)
-- [ ] FR-RCP-002 recipe detail with eager-loaded steps/ingredients/images/category/author; draft/archived gated to owner or Admin (403 otherwise)
-- [ ] No caching yet — direct DB reads (Cache Redis layer added in M6b)
+- [x] FR-RCP-003 create recipe (starts as `draft`, slug auto-generated + unique)
+- [x] FR-RCP-004 update recipe with optimistic concurrency (`row_version` / `If-Match` → 409 on mismatch)
+- [x] FR-RCP-001 paginated/filtered/sorted list with role-based visibility (Guest: published only; Author: published + own draft/archived; Admin: all)
+- [x] FR-RCP-002 recipe detail with eager-loaded steps/ingredients/images/category/author; draft/archived gated to owner or Admin (403 otherwise)
+- [x] No caching yet — direct DB reads (Cache Redis layer added in M6b)
 
 **Demo:** Author creates a draft recipe and edits it (a stale `row_version` correctly 409s); Guest sees only published recipes in the list while the Author also sees their own draft; an unknown slug 404s.
 
