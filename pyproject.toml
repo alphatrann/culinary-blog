@@ -27,6 +27,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "import-linter>=2.15",
     "pytest>=9.1.1",
     "ruff>=0.16.8",
 ]
@@ -41,3 +42,29 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.importlinter]
+root_package = "culinary_blog"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "CQRS layering (CONS-001)"
+type = "layers"
+layers = [
+    "router",
+    "(commands) | (queries)",
+    "(repository)",
+    "(models) | (schemas)",
+]
+containers = ["culinary_blog.health"]
+
+[[tool.importlinter.contracts]]
+name = "Handlers and repositories are HTTP-free (NFR-MAINT-004)"
+type = "forbidden"
+source_modules = [
+    "culinary_blog.*.commands",
+    "culinary_blog.*.queries",
+    "culinary_blog.*.repository",
+    "culinary_blog.*.models",
+]
+forbidden_modules = ["fastapi", "starlette"]
