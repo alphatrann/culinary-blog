@@ -8,17 +8,10 @@ from culinary_blog.categories.slug import slugify
 from culinary_blog.cqrs import Command, CommandHandler
 from culinary_blog.errors import ForbiddenError, UnprocessableError
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
+from culinary_blog.recipes.mapping import to_recipe_out
 from culinary_blog.recipes.models import Recipe, RecipeIngredient, RecipeStep
 from culinary_blog.recipes.repository import RecipeRepository
-from culinary_blog.recipes.schemas import (
-    IngredientIn,
-    IngredientOut,
-    NutritionIn,
-    NutritionOut,
-    RecipeOut,
-    StepIn,
-    StepOut,
-)
+from culinary_blog.recipes.schemas import IngredientIn, NutritionIn, RecipeOut, StepIn
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +84,7 @@ class CreateRecipeHandler(CommandHandler[CreateRecipeCommand, RecipeOut]):
                 "at": datetime.now(UTC).isoformat(),
             },
         )
-        return _to_out(recipe, steps, ingredients)
+        return to_recipe_out(recipe, steps, ingredients)
 
     async def _unique_slug(self, title: str) -> str:
         base = slugify(title)[:_SLUG_BASE_MAX].strip("-") or "recipe"
@@ -100,14 +93,3 @@ class CreateRecipeHandler(CommandHandler[CreateRecipeCommand, RecipeOut]):
             suffix += 1
             slug = f"{base}-{suffix}"
         return slug
-
-
-def _to_out(recipe: Recipe, steps: list[RecipeStep], ingredients: list[RecipeIngredient]) -> RecipeOut:
-    return RecipeOut(
-        **recipe.model_dump(include=set(RecipeOut.model_fields) - {"nutrition", "steps", "ingredients"}),
-        nutrition=NutritionOut(**{name: getattr(recipe, f"nutrition_{name}") for name in NutritionOut.model_fields}),
-        steps=[StepOut.model_validate(step) for step in steps],
-        ingredients=[
-            IngredientOut.model_validate(item) for item in sorted(ingredients, key=lambda item: item.order_index)
-        ],
-    )

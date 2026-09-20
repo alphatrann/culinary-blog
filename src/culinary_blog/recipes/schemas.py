@@ -2,13 +2,28 @@ import re
 import uuid
 from datetime import datetime
 from decimal import Decimal
-from typing import Self
+from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, field_validator, model_validator
 
+from culinary_blog.categories.schemas import RecipePage
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 
 _HTML = re.compile(r"[<>]")
+
+DifficultyName = Literal["easy", "medium", "hard", "expert"]
+RecipeSort = Literal["created_at", "-created_at", "title", "-title", "cook_time_minutes", "-cook_time_minutes"]
+
+
+def _parse_etag(value: object) -> object:
+    """`If-Match: 3`, `"3"` and `W/"3"` all carry row_version 3."""
+    if isinstance(value, str):
+        return value.strip().removeprefix("W/").strip('"')
+    return value
+
+
+# `If-Match` header value: the row_version the client last saw (FR-RCP-004).
+IfMatchVersion = Annotated[int, BeforeValidator(_parse_etag), Field(ge=0)]
 
 
 class NutritionIn(BaseModel):
@@ -68,7 +83,9 @@ class IngredientIn(BaseModel):
         return self
 
 
-class RecipeCreateRequest(BaseModel):
+class RecipeWrite(BaseModel):
+    """Recipe fields shared by create (FR-RCP-003) and update (FR-RCP-004)."""
+
     title: str = Field(min_length=5, max_length=200)
     description: str = Field(min_length=1)
     category_id: uuid.UUID
@@ -77,8 +94,6 @@ class RecipeCreateRequest(BaseModel):
     servings: int = Field(gt=0)
     difficulty: RecipeDifficulty = RecipeDifficulty.EASY
     nutrition: NutritionIn | None = None
-    steps: list[StepIn] = Field(default_factory=list)
-    ingredients: list[IngredientIn] = Field(default_factory=list)
 
     @field_validator("title")
     @classmethod
@@ -97,6 +112,15 @@ class RecipeCreateRequest(BaseModel):
         if not value:
             raise ValueError("description must not be blank")
         return value
+
+
+class RecipeCreateRequest(RecipeWrite):
+    steps: list[StepIn] = Field(default_factory=list)
+    ingredients: list[IngredientIn] = Field(default_factory=list)
+
+
+class RecipeUpdateRequest(RecipeWrite):
+    """Steps and ingredients are managed through their own endpoints (FR-RCP-009/010)."""
 
 
 class StepOut(BaseModel):
@@ -139,3 +163,44 @@ class RecipeOut(BaseModel):
     nutrition: NutritionOut
     steps: list[StepOut]
     ingredients: list[IngredientOut]
+
+
+class RecipeListOut(RecipePage):
+    has_next_page: bool
+    has_previous_page: bool
+
+
+class CategoryRefOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    name: str
+    slug: str
+
+
+class AuthorOut(BaseModel):
+    """Public author info only: never the email or roles."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    display_name: str
+    avatar_url: str | None
+
+
+class RecipeImageOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    original_url: str
+    medium_url: str | None
+    thumbnail_url: str | None
+    alt_text: str | None
+    is_primary: bool
+    order_index: int
+
+
+class RecipeDetailOut(RecipeOut):
+    category: CategoryRefOut
+    author: AuthorOut
+    images: list[RecipeImageOut]
