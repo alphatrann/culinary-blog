@@ -29,11 +29,11 @@
 
 **Covers:** FR-CAT-001, FR-CAT-002, FR-CAT-003, FR-CAT-004
 
-- [ ] FR-CAT-003 Admin create category
-- [ ] FR-CAT-004 Admin update category
-- [ ] FR-CAT-001 public list categories
-- [ ] FR-CAT-002 public category detail + its published recipes
-- [ ] No caching yet — direct DB reads (Cache Redis layer added in M6b)
+- [x] FR-CAT-003 Admin create category
+- [x] FR-CAT-004 Admin update category
+- [x] FR-CAT-001 public list categories
+- [x] FR-CAT-002 public category detail + its published recipes
+- [x] No caching yet — direct DB reads (Cache Redis layer added in M6b)
 
 **Demo:** Admin creates categories, `GET /categories` lists them, `GET /categories/{slug}` resolves.
 
