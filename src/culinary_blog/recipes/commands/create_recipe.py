@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from culinary_blog.auth.principal import Principal
 from culinary_blog.categories.slug import slugify
 from culinary_blog.cqrs import Command, CommandHandler
-from culinary_blog.errors import ForbiddenError, UnprocessableError
+from culinary_blog.errors import ForbiddenError
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 from culinary_blog.recipes.mapping import to_recipe_out
 from culinary_blog.recipes.models import Recipe, RecipeIngredient, RecipeStep
@@ -34,7 +34,9 @@ class CreateRecipeCommand(Command):
 
 
 class CreateRecipeHandler(CommandHandler[CreateRecipeCommand, RecipeOut]):
-    """FR-RCP-003: an Author/Admin creates a draft recipe, optionally with nested steps, ingredients and nutrition."""
+    """FR-RCP-003: an Author/Admin creates a draft recipe, optionally with nested steps, ingredients and nutrition.
+
+    An unknown `category_id` is rejected by the database foreign key (surfaced by the repository as 422)."""
 
     def __init__(self, repository: RecipeRepository) -> None:
         self._repository = repository
@@ -42,8 +44,6 @@ class CreateRecipeHandler(CommandHandler[CreateRecipeCommand, RecipeOut]):
     async def handle(self, command: CreateRecipeCommand) -> RecipeOut:
         if not command.actor.can_write_recipes:
             raise ForbiddenError("Author or Admin role required")
-        if not await self._repository.category_exists(command.category_id):
-            raise UnprocessableError("Category không hợp lệ")
 
         nutrition = (command.nutrition or NutritionIn()).model_dump()
         recipe = Recipe(
