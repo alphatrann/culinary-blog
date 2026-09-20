@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Self
 
 from pydantic import BaseModel
 
@@ -13,3 +13,8 @@ class HealthEntry(BaseModel):
 class HealthReport(BaseModel):
     status: Status
     entries: dict[str, HealthEntry]
+
+    @classmethod
+    def from_entries(cls, entries: dict[str, HealthEntry]) -> Self:
+        healthy = all(entry.status == "healthy" for entry in entries.values())
+        return cls(status="healthy" if healthy else "unhealthy", entries=entries)
