@@ -111,7 +111,8 @@ src/culinary_blog/
   health/             # router.py, queries/, repository.py, wiring.py — reference CQRS module
   auth/               # M1: router, commands/, queries/, repository, security (Argon2id + JWT), cookies, wiring
   errors.py, problem_details.py  # domain errors → RFC 7807 responses
-  categories/, recipes/          # models only so far (rest lands per-milestone)
+  categories/                    # M2: router, commands/, queries/, repository, slug, wiring
+  recipes/                       # models only so far (rest lands per-milestone)
 migrations/           # Alembic env + versions
 docker/               # Per-service Dockerfiles (config baked in, not bind-mounted)
 config/               # Redis conf files (per ADR-0003/0004/0007)
