@@ -17,12 +17,13 @@
 
 **Covers:** FR-AUTH-001, FR-AUTH-002, FR-AUTH-004, FR-AUTH-005
 
-- [ ] FR-AUTH-001 registration (email/password, hashed storage)
-- [ ] FR-AUTH-002 login issues access + refresh tokens as HttpOnly cookies
-- [ ] FR-AUTH-004 refresh: 512-bit refresh tokens, rotated on every use
-- [ ] FR-AUTH-005 logout revokes the current refresh token; a revoked/rotated-out token is rejected on reuse
+- [x] FR-AUTH-001 registration (email/password, Argon2id hashed; duplicate email rejected by the unique index → 409)
+- [x] FR-AUTH-002 login issues access + refresh tokens as HttpOnly cookies (5 failed attempts → 15 min lock, 423)
+- [x] FR-AUTH-004 refresh: 512-bit refresh tokens, rotated on every use
+- [x] FR-AUTH-005 logout revokes the current refresh token; a revoked/rotated-out token is rejected on reuse (reuse also revokes the user's whole token family)
+- [x] RFC 7807 `application/problem+json` for all errors; `GET /api/v1/auth/me` as the minimal protected endpoint for the demo (full profile FR-AUTH-006 stays in S2)
 
-**Demo:** via `/docs` — register → cookies set, call a protected endpoint, refresh, logout, confirm the revoked refresh token is now rejected.
+**Demo:** via `/docs` or cURL (set `COOKIE_SECURE=false` for plain-http local runs) — register → cookies set, call a protected endpoint, refresh, logout, confirm the revoked refresh token is now rejected.
 
 ### M2 — Categories
 
