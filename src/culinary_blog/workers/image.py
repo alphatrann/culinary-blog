@@ -13,6 +13,8 @@ from collections.abc import Awaitable, Callable
 
 from PIL import Image, ImageOps
 from redis.asyncio import Redis
+from redis.exceptions import ConnectionError as RedisConnectionError
+from redis.exceptions import TimeoutError as RedisTimeoutError
 
 from culinary_blog.cache.redis import get_queue_redis
 from culinary_blog.config import get_settings
@@ -27,7 +29,9 @@ logger = logging.getLogger(__name__)
 MAX_ATTEMPTS = 3
 THUMBNAIL_SIZE = (300, 300)  # cropped to fill
 MEDIUM_SIZE = (800, 600)  # fitted inside, aspect ratio kept, never upscaled
-POLL_TIMEOUT_SECONDS = 5
+# Must stay below the Redis client's socket timeout (redis-py default: 5 s), or every idle BRPOP would raise.
+POLL_TIMEOUT_SECONDS = 2
+RECONNECT_DELAY_SECONDS = 1
 
 
 def render_variants(original: bytes) -> tuple[bytes, bytes]:
@@ -63,7 +67,12 @@ class ImageWorker:
     async def run(self) -> None:
         logger.info("image worker started")
         while True:
-            popped = await self._redis.brpop(list(self._handlers), timeout=POLL_TIMEOUT_SECONDS)  # type: ignore[misc]
+            try:
+                popped = await self._redis.brpop(list(self._handlers), timeout=POLL_TIMEOUT_SECONDS)  # type: ignore[misc]
+            except (RedisConnectionError, RedisTimeoutError):  # Redis restarting or briefly unreachable: keep polling
+                logger.warning("job queue unavailable, retrying", exc_info=True)
+                await self._sleep(RECONNECT_DELAY_SECONDS)
+                continue
             if popped is None:
                 continue
             queue, raw = popped

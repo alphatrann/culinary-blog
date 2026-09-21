@@ -4,6 +4,7 @@ import uuid
 
 import pytest
 from PIL import Image
+from redis.exceptions import TimeoutError as RedisTimeoutError
 
 from culinary_blog.jobs.queue import DELETE_FILE, RESIZE_IMAGE, dead_letter_queue
 from culinary_blog.recipes.enums import RecipeStatus
@@ -115,4 +116,28 @@ async def test_delete_file_job_removes_all_files_and_tolerates_missing_ones(work
     url = await storage.upload(b"x", "recipes/a", ".jpg", "image/jpeg")
     missing = f"http://storage/recipes/a/{uuid.uuid4()}.jpg"
     await worker.process(DELETE_FILE, json.dumps({"urls": [url, missing], "attempts": 0}))
+    assert storage.objects == {}
+
+
+class StopWorker(Exception):
+    pass
+
+
+@pytest.mark.anyio
+async def test_run_survives_redis_timeouts_and_keeps_processing(worker, storage, redis):
+    url = await storage.upload(b"x", "recipes/a", ".jpg", "image/jpeg")
+    calls = iter([RedisTimeoutError("idle"), (b"delete_file", json.dumps({"urls": [url], "attempts": 0}))])
+
+    async def brpop(queues, timeout):
+        try:
+            result = next(calls)
+        except StopIteration:
+            raise StopWorker from None
+        if isinstance(result, Exception):
+            raise result
+        return result
+
+    redis.brpop = brpop
+    with pytest.raises(StopWorker):
+        await worker.run()
     assert storage.objects == {}
