@@ -81,11 +81,13 @@ class ImageWorker:
     async def process(self, queue: str, raw: bytes | str) -> None:
         """Run one job; on failure re-enqueue it, or dead-letter it once attempts are exhausted."""
         payload = json.loads(raw)
+        logger.info("job started: %s %s", queue, payload)
         try:
             await self._handlers[queue](payload)
+            logger.info("job done: %s", queue)
         except Exception:
             attempts = payload.get("attempts", 0) + 1
-            logger.exception("job failed", extra={"queue": queue, "attempts": attempts})
+            logger.exception("job failed: %s (attempt %d/%d)", queue, attempts, MAX_ATTEMPTS)
             if attempts < MAX_ATTEMPTS:
                 await self._sleep(2**attempts)
                 await self._redis.lpush(queue, json.dumps({**payload, "attempts": attempts}))  # type: ignore[misc]
