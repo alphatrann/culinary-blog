@@ -13,9 +13,12 @@ dependencies = [
     "email-validator>=2.2",
     "fastapi>=0.141.1",
     "httpx>=0.28.0",
+    "minio>=7.2.20",
     "passlib[argon2]>=1.7.4",
+    "pillow>=12.3.0",
     "pydantic-settings>=2.6.0",
     "pyjwt>=2.9",
+    "python-multipart>=0.0.32",
     "redis>=8.1.0",
     "sqlmodel>=0.0.42",
     "uvicorn[standard]>=0.53.0",
@@ -23,6 +26,7 @@ dependencies = [
 
 [project.scripts]
 culinary-blog = "culinary_blog:main"
+culinary-blog-image-worker = "culinary_blog.workers.image:main"
 
 [build-system]
 requires = ["uv_build>=0.12.6,<0.13.0"]

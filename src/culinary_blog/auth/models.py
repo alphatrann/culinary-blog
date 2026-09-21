@@ -36,9 +36,7 @@ class RefreshToken(SQLModel, table=True):
         primary_key=True,
         sa_column_kwargs={"server_default": text("gen_random_uuid()")},
     )
-    user_id: uuid.UUID = Field(
-        sa_column=Column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    )
+    user_id: uuid.UUID = Field(sa_column=Column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True))
     token_hash: str = Field(max_length=64, nullable=False, unique=True, index=True)
     expires_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))
     revoked_at: datetime | None = Field(default=None, sa_column=Column(DateTime(timezone=True), nullable=True))
