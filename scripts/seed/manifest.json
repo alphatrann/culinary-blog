@@ -1,0 +1,1002 @@
+{
+  "recipe-001": {
+    "index": 1,
+    "title": "Phở bò Hà Nội",
+    "query": "Phở bò",
+    "file": "recipe-001.jpg",
+    "commons_title": "File:Beef noodle soup (Phở bò) - Pho Hanoi Authentic 2024-12-01.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Beef_noodle_soup_(Ph%E1%BB%9F_b%C3%B2)_-_Pho_Hanoi_Authentic_2024-12-01.jpg",
+    "author": "Andy Li",
+    "license": "CC0"
+  },
+  "recipe-002": {
+    "index": 2,
+    "title": "Bún bò Huế",
+    "query": "Bún bò Huế",
+    "file": "recipe-002.jpg",
+    "commons_title": "File:Bún bò Huế minh28397.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%C3%BAn_b%C3%B2_Hu%E1%BA%BF_minh28397.jpg",
+    "author": "Minh28397",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-003": {
+    "index": 3,
+    "title": "Bún riêu cua",
+    "query": "Bún riêu",
+    "file": "recipe-003.jpg",
+    "commons_title": "File:Bún riêu đặc biệt.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%C3%BAn_ri%C3%AAu_%C4%91%E1%BA%B7c_bi%E1%BB%87t.jpg",
+    "author": "TarnishedPath",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-004": {
+    "index": 4,
+    "title": "Hủ tiếu Nam Vang",
+    "query": "Hủ tiếu",
+    "file": "recipe-004.jpg",
+    "commons_title": "File:Hủ tiếu bò kho.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:H%E1%BB%A7_ti%E1%BA%BFu_b%C3%B2_kho.jpg",
+    "author": "Tonbi ko",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-005": {
+    "index": 5,
+    "title": "Bún chả cá Nha Trang",
+    "query": "Bún chả cá",
+    "file": "recipe-005.jpg",
+    "commons_title": "File:Bún chả cá, tháng 8 năm 2018.JPG",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%C3%BAn_ch%E1%BA%A3_c%C3%A1,_th%C3%A1ng_8_n%C4%83m_2018.JPG",
+    "author": "Phương Huy (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-006": {
+    "index": 6,
+    "title": "Gỏi cuốn tôm thịt",
+    "query": "Gỏi cuốn",
+    "file": "recipe-006.jpg",
+    "commons_title": "File:Goi cuon Phuongnhu.JPG",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Goi_cuon_Phuongnhu.JPG",
+    "author": "Phuongnhu",
+    "license": "CC BY-SA 3.0"
+  },
+  "recipe-007": {
+    "index": 7,
+    "title": "Bánh cuốn nóng Thanh Trì",
+    "query": "Bánh cuốn",
+    "file": "recipe-007.jpg",
+    "commons_title": "File:Bánh cuốn Thanh Trì.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%C3%A1nh_cu%E1%BB%91n_Thanh_Tr%C3%AC.jpg",
+    "author": "Casablanca1911 at vi.wikipedia",
+    "license": "Public domain"
+  },
+  "recipe-008": {
+    "index": 8,
+    "title": "Gỏi đu đủ khô bò",
+    "query": "Gỏi đu đủ khô bò",
+    "file": "recipe-008.jpg",
+    "commons_title": "File:Gỏi đu đủ khô bò.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:G%E1%BB%8Fi_%C4%91u_%C4%91%E1%BB%A7_kh%C3%B4_b%C3%B2.jpg",
+    "author": "stu_spivack",
+    "license": "CC BY-SA 2.0"
+  },
+  "recipe-009": {
+    "index": 9,
+    "title": "Nem nướng Nha Trang",
+    "query": "Nem nướng",
+    "file": "recipe-009.jpg",
+    "commons_title": "File:Nem nướng by Baoothersks.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Nem_n%C6%B0%E1%BB%9Bng_by_Baoothersks.jpg",
+    "author": "Baoothersks",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-010": {
+    "index": 10,
+    "title": "Gỏi xa lát cải tím",
+    "query": "Gỏi xa lát",
+    "file": "recipe-010.jpg",
+    "commons_title": "File:Gỏi xa lát (bắp cải tím, cà rốt, hành tây, dưa leo, chả) cúng đưa Tết 2018.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:G%E1%BB%8Fi_xa_l%C3%A1t_(b%E1%BA%AFp_c%E1%BA%A3i_t%C3%ADm,_c%C3%A0_r%E1%BB%91t,_h%C3%A0nh_t%C3%A2y,_d%C6%B0a_leo,_ch%E1%BA%A3)_c%C3%BAng_%C4%91%C6%B0a_T%E1%BA%BFt_2018.jpg",
+    "author": "Phương Huy (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-011": {
+    "index": 11,
+    "title": "Cơm tấm sườn bì chả",
+    "query": "Cơm tấm",
+    "file": "recipe-011.jpg",
+    "commons_title": "File:Cơm Tấm, Da Nang, Vietnam.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:C%C6%A1m_T%E1%BA%A5m,_Da_Nang,_Vietnam.jpg",
+    "author": "Christopher Crouzet",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-012": {
+    "index": 12,
+    "title": "Cơm cháy chà bông",
+    "query": "Cơm cháy",
+    "file": "recipe-012.jpg",
+    "commons_title": "File:Cơm cháy Ninh Bình.JPG",
+    "source_url": "https://commons.wikimedia.org/wiki/File:C%C6%A1m_ch%C3%A1y_Ninh_B%C3%ACnh.JPG",
+    "author": "Nguyễn Thanh Quang",
+    "license": "CC BY-SA 3.0"
+  },
+  "recipe-013": {
+    "index": 13,
+    "title": "Cơm lam Tây Nguyên",
+    "query": "Cơm lam",
+    "file": "recipe-013.jpg",
+    "commons_title": "File:Cơm lam Tây Nguyên.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:C%C6%A1m_lam_T%C3%A2y_Nguy%C3%AAn.jpg",
+    "author": "Lam Nguyen from Ho Chi Minh City, Vietnam",
+    "license": "CC BY 2.0"
+  },
+  "recipe-014": {
+    "index": 14,
+    "title": "Cơm niêu Huế",
+    "query": "Cơm niêu",
+    "file": "recipe-014.jpg",
+    "commons_title": "File:Cơm niêu Kombo.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:C%C6%A1m_ni%C3%AAu_Kombo.jpg",
+    "author": "Tuantq89",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-015": {
+    "index": 15,
+    "title": "Cơm bò xào cần tỏi",
+    "query": "Cơm Bò Xào",
+    "file": "recipe-015.jpg",
+    "commons_title": "File:Cơm Bò Xào Cần Tỏi (Pho Hanoi), Amsterdam (2021).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:C%C6%A1m_B%C3%B2_X%C3%A0o_C%E1%BA%A7n_T%E1%BB%8Fi_(Pho_Hanoi),_Amsterdam_(2021).jpg",
+    "author": "Donald Trung Quoc Don (Chữ Hán: 徵國單) - Wikimedia Commons - © CC BY-SA 4.0 International.(Want to use this image?)Original publication 📤: --Donald Trung 『徵國單』 (No Fake News 💬) (WikiProject Numismatics 💴) (Articles 📚) 07:58, 18 August 2021 (UTC)",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-016": {
+    "index": 16,
+    "title": "Bánh mì thịt nướng",
+    "query": "Bánh mì",
+    "file": "recipe-016.jpg",
+    "commons_title": "File:Special Baguette (Bánh mì) - Banh Mi Ancient Saigon 2024-12-20.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Special_Baguette_(B%C3%A1nh_m%C3%AC)_-_Banh_Mi_Ancient_Saigon_2024-12-20.jpg",
+    "author": "Andy Li",
+    "license": "CC0"
+  },
+  "recipe-017": {
+    "index": 17,
+    "title": "Bánh xèo miền Tây",
+    "query": "Bánh xèo",
+    "file": "recipe-017.jpg",
+    "commons_title": "File:Bánh xèo 1.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%C3%A1nh_x%C3%A8o_1.jpg",
+    "author": "Kent Wang from Austin, TX",
+    "license": "CC BY-SA 2.0"
+  },
+  "recipe-018": {
+    "index": 18,
+    "title": "Bánh khọt Vũng Tàu",
+    "query": "Bánh khọt",
+    "file": "recipe-018.jpg",
+    "commons_title": "File:Bánh khọt by Nguyenhai314.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%C3%A1nh_kh%E1%BB%8Dt_by_Nguyenhai314.jpg",
+    "author": "Nguyenhai314",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-019": {
+    "index": 19,
+    "title": "Bánh bèo Huế",
+    "query": "Bánh bèo",
+    "file": "recipe-019.jpg",
+    "commons_title": "File:Bánh bèo sucré.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%C3%A1nh_b%C3%A8o_sucr%C3%A9.jpg",
+    "author": "Vietcuongdao",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-020": {
+    "index": 20,
+    "title": "Bánh bột lọc",
+    "query": "Bánh bột lọc",
+    "file": "recipe-020.jpg",
+    "commons_title": "File:Bánh bèo, bột lọc, nem chua.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%C3%A1nh_b%C3%A8o,_b%E1%BB%99t_l%E1%BB%8Dc,_nem_chua.jpg",
+    "author": "Thang Nguyen from Nottingham, United Kingdom",
+    "license": "CC BY-SA 2.0"
+  },
+  "recipe-021": {
+    "index": 21,
+    "title": "Thịt kho tàu",
+    "query": "Thịt kho tàu",
+    "file": "recipe-021.jpg",
+    "commons_title": "File:Thịt kho Tàu.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Th%E1%BB%8Bt_kho_T%C3%A0u.jpg",
+    "author": "Viethavvh",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-022": {
+    "index": 22,
+    "title": "Cá kho tộ",
+    "query": "Cá kho tộ",
+    "file": "recipe-022.jpg",
+    "commons_title": "File:Cá kho tộ, cá hú.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:C%C3%A1_kho_t%E1%BB%99,_c%C3%A1_h%C3%BA.jpg",
+    "author": "Charles Haynes",
+    "license": "CC BY-SA 2.0"
+  },
+  "recipe-023": {
+    "index": 23,
+    "title": "Gà kho sả",
+    "query": "Gà kho",
+    "file": "recipe-023.jpg",
+    "commons_title": "File:Nhà mình dịp Lễ 2th9n2023 (gà kho sả) (1).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Nh%C3%A0_m%C3%ACnh_d%E1%BB%8Bp_L%E1%BB%85_2th9n2023_(g%C3%A0_kho_s%E1%BA%A3)_(1).jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-024": {
+    "index": 24,
+    "title": "Sườn non kho khóm",
+    "query": "Sườn kho",
+    "file": "recipe-024.jpg",
+    "commons_title": "File:Món sườn kho ng4th8n2023 (2).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:M%C3%B3n_s%C6%B0%E1%BB%9Dn_kho_ng4th8n2023_(2).jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-025": {
+    "index": 25,
+    "title": "Bò kho bánh mì",
+    "query": "Bò kho",
+    "file": "recipe-025.jpg",
+    "commons_title": "File:Bo Kho.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Bo_Kho.jpg",
+    "author": "Jason Hutchens",
+    "license": "CC BY 2.0"
+  },
+  "recipe-026": {
+    "index": 26,
+    "title": "Rau muống xào tỏi",
+    "query": "Rau muống xào tỏi",
+    "file": "recipe-026.jpg",
+    "commons_title": "File:Rau muống xào tỏi, tháng 4 năm 2018.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Rau_mu%E1%BB%91ng_x%C3%A0o_t%E1%BB%8Fi,_th%C3%A1ng_4_n%C4%83m_2018.jpg",
+    "author": "Phương Huy (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-027": {
+    "index": 27,
+    "title": "Bò lúc lắc",
+    "query": "Bò lúc lắc",
+    "file": "recipe-027.jpg",
+    "commons_title": "File:Sachko lok lak - beef lok lak thịt bò lúc lắc Khmer food.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Sachko_lok_lak_-_beef_lok_lak_th%E1%BB%8Bt_b%C3%B2_l%C3%BAc_l%E1%BA%AFc_Khmer_food.jpg",
+    "author": "Alexandersingh9",
+    "license": "CC0"
+  },
+  "recipe-028": {
+    "index": 28,
+    "title": "Ốc xào rau muống",
+    "query": "Ốc xào rau muống",
+    "file": "recipe-028.jpg",
+    "commons_title": "File:Ốc xào rau muống sn 2012 (2).JPG",
+    "source_url": "https://commons.wikimedia.org/wiki/File:%E1%BB%90c_x%C3%A0o_rau_mu%E1%BB%91ng_sn_2012_(2).JPG",
+    "author": "Phương Huy (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-029": {
+    "index": 29,
+    "title": "Bò xào hành tây",
+    "query": "Bò xào",
+    "file": "recipe-029.jpg",
+    "commons_title": "File:Phở xào bò.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ph%E1%BB%9F_x%C3%A0o_b%C3%B2.jpg",
+    "author": "Codename5281",
+    "license": "CC BY-SA 3.0"
+  },
+  "recipe-030": {
+    "index": 30,
+    "title": "Phở xào bò",
+    "query": "Phở xào",
+    "file": "recipe-030.jpg",
+    "commons_title": "File:Phở xào bột chiên Bình Long ngày 31 tháng 12 năm 2018 (1).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ph%E1%BB%9F_x%C3%A0o_b%E1%BB%99t_chi%C3%AAn_B%C3%ACnh_Long_ng%C3%A0y_31_th%C3%A1ng_12_n%C4%83m_2018_(1).jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-031": {
+    "index": 31,
+    "title": "Canh chua cá lóc",
+    "query": "Canh chua",
+    "file": "recipe-031.jpg",
+    "commons_title": "File:Canh chua Đông Hà.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Canh_chua_%C4%90%C3%B4ng_H%C3%A0.jpg",
+    "author": "Phương Huy (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-032": {
+    "index": 32,
+    "title": "Canh khổ qua nhồi thịt",
+    "query": "Canh khổ qua",
+    "file": "recipe-032.jpg",
+    "commons_title": "File:Canh khổ qua.JPG",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Canh_kh%E1%BB%95_qua.JPG",
+    "author": "Ngô Trung",
+    "license": "CC BY-SA 3.0"
+  },
+  "recipe-033": {
+    "index": 33,
+    "title": "Súp cua trứng bắc thảo",
+    "query": "Súp cua",
+    "file": "recipe-033.jpg",
+    "commons_title": "File:Nhà mình Lễ 30th4n2023 (súp cua rong biển cà rốt) (5).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Nh%C3%A0_m%C3%ACnh_L%E1%BB%85_30th4n2023_(s%C3%BAp_cua_rong_bi%E1%BB%83n_c%C3%A0_r%E1%BB%91t)_(5).jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-034": {
+    "index": 34,
+    "title": "Canh bí đao nấu tôm",
+    "query": "Canh bí đao",
+    "file": "recipe-034.jpg",
+    "commons_title": "File:Bữa cơm nhà Mheo, ng19th1n2020 (nồi canh bí đao).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%E1%BB%AFa_c%C6%A1m_nh%C3%A0_Mheo,_ng19th1n2020_(n%E1%BB%93i_canh_b%C3%AD_%C4%91ao).jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-035": {
+    "index": 35,
+    "title": "Canh bắp cải cuộn thịt",
+    "query": "Canh bap cai cuon thit",
+    "file": "recipe-035.jpg",
+    "commons_title": "File:Canh bap cai cuon thit.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Canh_bap_cai_cuon_thit.jpg",
+    "author": "Nguyen Thi Quynh Tram",
+    "license": "CC BY 3.0"
+  },
+  "recipe-036": {
+    "index": 36,
+    "title": "Thịt heo nướng sả",
+    "query": "Thịt nướng",
+    "file": "recipe-036.jpg",
+    "commons_title": "File:Bun thit nuong.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Bun_thit_nuong.jpg",
+    "author": "Lưu Ly",
+    "license": "Public domain"
+  },
+  "recipe-037": {
+    "index": 37,
+    "title": "Chả cá Lã Vọng",
+    "query": "Chả cá Lã Vọng",
+    "file": "recipe-037.jpg",
+    "commons_title": "File:Cha ca La Vong.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Cha_ca_La_Vong.jpg",
+    "author": "tuhang",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-038": {
+    "index": 38,
+    "title": "Bò nướng lá lốt",
+    "query": "Bò lá lốt",
+    "file": "recipe-038.jpg",
+    "commons_title": "File:Bò nướng lá lốt tại Manchester.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%C3%B2_n%C6%B0%E1%BB%9Bng_l%C3%A1_l%E1%BB%91t_t%E1%BA%A1i_Manchester.jpg",
+    "author": "Minh28397",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-039": {
+    "index": 39,
+    "title": "Gà nướng mật ong",
+    "query": "grilled chicken honey",
+    "file": "recipe-039.jpg",
+    "commons_title": "File:Lemon and Honey Grilled Chicken Wings.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Lemon_and_Honey_Grilled_Chicken_Wings.jpg",
+    "author": "Peachyeung316",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-040": {
+    "index": 40,
+    "title": "Cá lóc nướng trui",
+    "query": "Cá lóc nướng",
+    "file": "recipe-040.jpg",
+    "commons_title": "File:Cá lóc nướng trui.JPG",
+    "source_url": "https://commons.wikimedia.org/wiki/File:C%C3%A1_l%C3%B3c_n%C6%B0%E1%BB%9Bng_trui.JPG",
+    "author": "Memberofc1",
+    "license": "CC BY-SA 3.0"
+  },
+  "recipe-041": {
+    "index": 41,
+    "title": "Chả giò rế",
+    "query": "Chả giò",
+    "file": "recipe-041.jpg",
+    "commons_title": "File:Chả giò SG (nem rán giòn) ở quán bún riêu Bà Ti ng26th7n2023 (3).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ch%E1%BA%A3_gi%C3%B2_SG_(nem_r%C3%A1n_gi%C3%B2n)_%E1%BB%9F_qu%C3%A1n_b%C3%BAn_ri%C3%AAu_B%C3%A0_Ti_ng26th7n2023_(3).jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-042": {
+    "index": 42,
+    "title": "Cánh gà chiên nước mắm",
+    "query": "Cánh gà chiên nước mắm",
+    "file": "recipe-042.jpg",
+    "commons_title": "File:Cánh gà chiên nước mắm, tháng 8 năm 2018 (1).JPG",
+    "source_url": "https://commons.wikimedia.org/wiki/File:C%C3%A1nh_g%C3%A0_chi%C3%AAn_n%C6%B0%E1%BB%9Bc_m%E1%BA%AFm,_th%C3%A1ng_8_n%C4%83m_2018_(1).JPG",
+    "author": "Phương Huy (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-043": {
+    "index": 43,
+    "title": "Cá nục rán chảo",
+    "query": "Cá nục rán",
+    "file": "recipe-043.jpg",
+    "commons_title": "File:Cá nục rán chảo, ng2th7n2022 (3).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:C%C3%A1_n%E1%BB%A5c_r%C3%A1n_ch%E1%BA%A3o,_ng2th7n2022_(3).jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-044": {
+    "index": 44,
+    "title": "Đậu hũ chiên sả ớt",
+    "query": "Đậu hũ chiên",
+    "file": "recipe-044.jpg",
+    "commons_title": "File:Món đậu hũ chiên, ng19th7n2019 (2).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:M%C3%B3n_%C4%91%E1%BA%ADu_h%C5%A9_chi%C3%AAn,_ng19th7n2019_(2).jpg",
+    "author": "Phương Huy",
+    "license": "CC0"
+  },
+  "recipe-045": {
+    "index": 45,
+    "title": "Bánh tôm Hồ Tây",
+    "query": "Bánh tôm",
+    "file": "recipe-045.jpg",
+    "commons_title": "File:Bánh tôm (tháng 7 năm 2018) (2).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%C3%A1nh_t%C3%B4m_(th%C3%A1ng_7_n%C4%83m_2018)_(2).jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-046": {
+    "index": 46,
+    "title": "Lẩu hải sản",
+    "query": "Lẩu hải sản",
+    "file": "recipe-046.jpg",
+    "commons_title": "File:Lẩu hải sản tại Aellmall năm 2016 (4).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:L%E1%BA%A9u_h%E1%BA%A3i_s%E1%BA%A3n_t%E1%BA%A1i_Aellmall_n%C4%83m_2016_(4).jpg",
+    "author": "Phương Huy (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-047": {
+    "index": 47,
+    "title": "Lẩu mì hải sản",
+    "query": "Lẩu mì hải sản",
+    "file": "recipe-047.jpg",
+    "commons_title": "File:Lẩu mì hải sản tại Aellmall năm 2016 (2).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:L%E1%BA%A9u_m%C3%AC_h%E1%BA%A3i_s%E1%BA%A3n_t%E1%BA%A1i_Aellmall_n%C4%83m_2016_(2).jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-048": {
+    "index": 48,
+    "title": "Lẩu bò",
+    "query": "Lẩu bò",
+    "file": "recipe-048.jpg",
+    "commons_title": "File:Lẩu bò tại quán Bò cười (3).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:L%E1%BA%A9u_b%C3%B2_t%E1%BA%A1i_qu%C3%A1n_B%C3%B2_c%C6%B0%E1%BB%9Di_(3).jpg",
+    "author": "Phương Huy (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-049": {
+    "index": 49,
+    "title": "Lẩu cá dày",
+    "query": "Lẩu cá dày",
+    "file": "recipe-049.jpg",
+    "commons_title": "File:Lẩu cá dày đường Nguyễn Sơn, Tân Phú (3).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:L%E1%BA%A9u_c%C3%A1_d%C3%A0y_%C4%91%C6%B0%E1%BB%9Dng_Nguy%E1%BB%85n_S%C6%A1n,_T%C3%A2n_Ph%C3%BA_(3).jpg",
+    "author": "Phương Huy (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-050": {
+    "index": 50,
+    "title": "Lẩu nấm",
+    "query": "Lẩu nấm",
+    "file": "recipe-050.jpg",
+    "commons_title": "File:Lẩu mì hải sản tại Aellmall năm 2016 (5).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:L%E1%BA%A9u_m%C3%AC_h%E1%BA%A3i_s%E1%BA%A3n_t%E1%BA%A1i_Aellmall_n%C4%83m_2016_(5).jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-051": {
+    "index": 51,
+    "title": "Đậu hũ sốt cà chua",
+    "query": "Đậu hũ sốt cà",
+    "file": "recipe-051.jpg",
+    "commons_title": "File:Bữa cơm gia đình ng6th4n2021 (tô đậu hũ sốt cà) (2).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%E1%BB%AFa_c%C6%A1m_gia_%C4%91%C3%ACnh_ng6th4n2021_(t%C3%B4_%C4%91%E1%BA%ADu_h%C5%A9_s%E1%BB%91t_c%C3%A0)_(2).jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-052": {
+    "index": 52,
+    "title": "Bánh đúc lạc chay",
+    "query": "Bánh đúc lạc",
+    "file": "recipe-052.jpg",
+    "commons_title": "File:Bánh đúc lạc.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%C3%A1nh_%C4%91%C3%BAc_l%E1%BA%A1c.jpg",
+    "author": "Viethavvh (thảo luận)",
+    "license": "CC BY-SA 3.0"
+  },
+  "recipe-053": {
+    "index": 53,
+    "title": "Bánh bao chay nhân nấm",
+    "query": "Bánh bao",
+    "file": "recipe-053.jpg",
+    "commons_title": "File:Bánh bao bánh vạc - hoi an (2024).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%C3%A1nh_bao_b%C3%A1nh_v%E1%BA%A1c_-_hoi_an_(2024).jpg",
+    "author": "Chainwit.",
+    "license": "CC BY 4.0"
+  },
+  "recipe-054": {
+    "index": 54,
+    "title": "Cơm chiên chay",
+    "query": "Cơm chay",
+    "file": "recipe-054.jpg",
+    "commons_title": "File:Món ăn Tết 2023 (bữa cơm gia đình, mâm cơm, món chay) (2).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:M%C3%B3n_%C4%83n_T%E1%BA%BFt_2023_(b%E1%BB%AFa_c%C6%A1m_gia_%C4%91%C3%ACnh,_m%C3%A2m_c%C6%A1m,_m%C3%B3n_chay)_(2).jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-055": {
+    "index": 55,
+    "title": "Chả giò chay",
+    "query": "Chả giò chay",
+    "file": "recipe-055.jpg",
+    "commons_title": "File:Cha Gio Chay - Amazing Taste (東方之味), Charlois, Rotterdam (2023).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Cha_Gio_Chay_-_Amazing_Taste_(%E6%9D%B1%E6%96%B9%E4%B9%8B%E5%91%B3),_Charlois,_Rotterdam_(2023).jpg",
+    "author": "Donald Trung Quoc Don (Chữ Hán: 徵國單) - Wikimedia Commons - © CC BY-SA 4.0 International.(Want to use this image?)Original publication 📤: --Donald Trung 『徵國單』 (No Fake News 💬) (WikiProject Numismatics 💴) (Articles 📚) 07:22, 2 August 2023 (UTC)",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-056": {
+    "index": 56,
+    "title": "Cua rang muối",
+    "query": "Cua rang muối",
+    "file": "recipe-056.jpg",
+    "commons_title": "File:Cua rang muối tại Rạn Biển quán năm 2016 (1).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Cua_rang_mu%E1%BB%91i_t%E1%BA%A1i_R%E1%BA%A1n_Bi%E1%BB%83n_qu%C3%A1n_n%C4%83m_2016_(1).jpg",
+    "author": "Phương Huy (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-057": {
+    "index": 57,
+    "title": "Mực hấp gừng",
+    "query": "Mực hấp",
+    "file": "recipe-057.jpg",
+    "commons_title": "File:Mực hấp gừng Đông Hà 4.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:M%E1%BB%B1c_h%E1%BA%A5p_g%E1%BB%ABng_%C4%90%C3%B4ng_H%C3%A0_4.jpg",
+    "author": "Phương Huy (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-058": {
+    "index": 58,
+    "title": "Ốc hương rang me",
+    "query": "Ốc hương",
+    "file": "recipe-058.jpg",
+    "commons_title": "File:Ốc hương rang me.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:%E1%BB%90c_h%C6%B0%C6%A1ng_rang_me.jpg",
+    "author": "Baoothersks",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-059": {
+    "index": 59,
+    "title": "Sò điệp nướng mỡ hành",
+    "query": "Sò điệp nướng",
+    "file": "recipe-059.jpg",
+    "commons_title": "File:Sò điệp nướng với đậu phộng (1).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:S%C3%B2_%C4%91i%E1%BB%87p_n%C6%B0%E1%BB%9Bng_v%E1%BB%9Bi_%C4%91%E1%BA%ADu_ph%E1%BB%99ng_(1).jpg",
+    "author": "Phương Huy (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-060": {
+    "index": 60,
+    "title": "Tôm nướng muối ớt",
+    "query": "Tôm nướng",
+    "file": "recipe-060.jpg",
+    "commons_title": "File:Tôm nướng sn 2012 (5).JPG",
+    "source_url": "https://commons.wikimedia.org/wiki/File:T%C3%B4m_n%C6%B0%E1%BB%9Bng_sn_2012_(5).JPG",
+    "author": "Phương Huy (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-061": {
+    "index": 61,
+    "title": "Chè chuối chưng",
+    "query": "Chè chuối",
+    "file": "recipe-061.jpg",
+    "commons_title": "File:Chè chuối 20201125.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ch%C3%A8_chu%E1%BB%91i_20201125.jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-062": {
+    "index": 62,
+    "title": "Chè đậu xanh",
+    "query": "Chè đậu xanh",
+    "file": "recipe-062.jpg",
+    "commons_title": "File:Chè đậu xanh nha đam.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ch%C3%A8_%C4%91%E1%BA%ADu_xanh_nha_%C4%91am.jpg",
+    "author": "Baoothersks",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-063": {
+    "index": 63,
+    "title": "Chè đậu đen",
+    "query": "Chè đậu đen",
+    "file": "recipe-063.jpg",
+    "commons_title": "File:Chè đậu đen nhà làm (tháng 1 năm 2018) (1).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ch%C3%A8_%C4%91%E1%BA%ADu_%C4%91en_nh%C3%A0_l%C3%A0m_(th%C3%A1ng_1_n%C4%83m_2018)_(1).jpg",
+    "author": "Phương Huy (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-064": {
+    "index": 64,
+    "title": "Chè khúc bạch",
+    "query": "Chè khúc bạch",
+    "file": "recipe-064.jpg",
+    "commons_title": "File:Chè khúc bạch ở quán Thảo Vy 2020 09 06.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ch%C3%A8_kh%C3%BAc_b%E1%BA%A1ch_%E1%BB%9F_qu%C3%A1n_Th%E1%BA%A3o_Vy_2020_09_06.jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-065": {
+    "index": 65,
+    "title": "Bánh rán ngọt",
+    "query": "Bánh rán",
+    "file": "recipe-065.jpg",
+    "commons_title": "File:Banh Rán.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Banh_R%C3%A1n.jpg",
+    "author": "Francesc Fort",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-066": {
+    "index": 66,
+    "title": "Bánh flan caramel",
+    "query": "caramel flan",
+    "file": "recipe-066.jpg",
+    "commons_title": "File:Flan de café con caramelo líquido.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Flan_de_caf%C3%A9_con_caramelo_l%C3%ADquido.jpg",
+    "author": "Juan Emilio Prades Bel",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-067": {
+    "index": 67,
+    "title": "Bánh đậu xanh Hải Dương",
+    "query": "Bánh đậu xanh",
+    "file": "recipe-067.jpg",
+    "commons_title": "File:Bánh đậu xanh.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%C3%A1nh_%C4%91%E1%BA%ADu_xanh.jpg",
+    "author": "Hoangkid",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-068": {
+    "index": 68,
+    "title": "Bánh da lợn",
+    "query": "Bánh da lợn",
+    "file": "recipe-068.jpg",
+    "commons_title": "File:Green Leaf Cake bánh da lợn.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Green_Leaf_Cake_b%C3%A1nh_da_l%E1%BB%A3n.jpg",
+    "author": "ChildofMidnight at English Wikipedia",
+    "license": "CC BY 3.0"
+  },
+  "recipe-069": {
+    "index": 69,
+    "title": "Bánh bò hấp",
+    "query": "Bánh bò",
+    "file": "recipe-069.jpg",
+    "commons_title": "File:Banh bo hap.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Banh_bo_hap.jpg",
+    "author": "Memberofc1",
+    "license": "CC BY-SA 3.0"
+  },
+  "recipe-070": {
+    "index": 70,
+    "title": "Bánh tét nhân đậu xanh",
+    "query": "Bánh tét",
+    "file": "recipe-070.jpg",
+    "commons_title": "File:Banh tet.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Banh_tet.jpg",
+    "author": "viviandnguyen_",
+    "license": "CC BY-SA 2.0"
+  },
+  "recipe-071": {
+    "index": 71,
+    "title": "Cà phê sữa đá",
+    "query": "Cà phê sữa đá",
+    "file": "recipe-071.jpg",
+    "commons_title": "File:Ca Phe Sua Da.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ca_Phe_Sua_Da.jpg",
+    "author": "Clarin",
+    "license": "CC BY 2.5"
+  },
+  "recipe-072": {
+    "index": 72,
+    "title": "Cà phê trứng Hà Nội",
+    "query": "Cà phê trứng",
+    "file": "recipe-072.jpg",
+    "commons_title": "File:Cà phê trứng.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:C%C3%A0_ph%C3%AA_tr%E1%BB%A9ng.jpg",
+    "author": "travel oriented",
+    "license": "CC BY-SA 2.0"
+  },
+  "recipe-073": {
+    "index": 73,
+    "title": "Sinh tố bơ",
+    "query": "Sinh tố bơ",
+    "file": "recipe-073.jpg",
+    "commons_title": "File:Sinh tố bơ.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Sinh_t%E1%BB%91_b%C6%A1.jpg",
+    "author": "Hoangkid (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-074": {
+    "index": 74,
+    "title": "Nước mía tắc",
+    "query": "sugarcane juice",
+    "file": "recipe-074.jpg",
+    "commons_title": "File:Sugarcane juice Flavours.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Sugarcane_juice_Flavours.jpg",
+    "author": "Sayhi2kojo",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-075": {
+    "index": 75,
+    "title": "Cà phê muối Huế",
+    "query": "Cà Phê Muối",
+    "file": "recipe-075.jpg",
+    "commons_title": "File:Cà Phê Muối - The Big Bowl 2024-07-08.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:C%C3%A0_Ph%C3%AA_Mu%E1%BB%91i_-_The_Big_Bowl_2024-07-08.jpg",
+    "author": "Andy Li",
+    "license": "CC0"
+  },
+  "recipe-076": {
+    "index": 76,
+    "title": "Mắm tôm pha chanh đường",
+    "query": "Mắm tôm",
+    "file": "recipe-076.jpg",
+    "commons_title": "File:Bún đậu mắm tôm.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:B%C3%BAn_%C4%91%E1%BA%ADu_m%E1%BA%AFm_t%C3%B4m.jpg",
+    "author": "trungnguyen299",
+    "license": "CC BY-SA 2.0"
+  },
+  "recipe-077": {
+    "index": 77,
+    "title": "Dưa cải muối chua",
+    "query": "Dưa cải muối",
+    "file": "recipe-077.jpg",
+    "commons_title": "File:Dưa cải muối.JPG",
+    "source_url": "https://commons.wikimedia.org/wiki/File:D%C6%B0a_c%E1%BA%A3i_mu%E1%BB%91i.JPG",
+    "author": "Casablanca1911 at Vietnamese Wikipedia",
+    "license": "Public domain"
+  },
+  "recipe-078": {
+    "index": 78,
+    "title": "Dưa muối xổi",
+    "query": "Dưa muối",
+    "file": "recipe-078.jpg",
+    "commons_title": "File:Ăn nhà hàng ng19th4n2023 (dưa chuột muối chua).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:%C4%82n_nh%C3%A0_h%C3%A0ng_ng19th4n2023_(d%C6%B0a_chu%E1%BB%99t_mu%E1%BB%91i_chua).jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-079": {
+    "index": 79,
+    "title": "Đồ chua cà rốt củ cải",
+    "query": "do chua pickled carrot daikon",
+    "file": "recipe-079.jpg",
+    "commons_title": "File:Jar of pickled carrots and daikon (do chua).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Jar_of_pickled_carrots_and_daikon_(do_chua).jpg",
+    "author": "HungryHuy",
+    "license": "CC BY 2.0"
+  },
+  "recipe-080": {
+    "index": 80,
+    "title": "Nem chua Thanh Hóa",
+    "query": "Nem chua",
+    "file": "recipe-080.jpg",
+    "commons_title": "File:Nem chua.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Nem_chua.jpg",
+    "author": "Ron Diggity",
+    "license": "CC BY 2.0"
+  },
+  "recipe-081": {
+    "index": 81,
+    "title": "Xôi gấc",
+    "query": "Xôi gấc",
+    "file": "recipe-081.jpg",
+    "commons_title": "File:Xôi gấc.JPG",
+    "source_url": "https://commons.wikimedia.org/wiki/File:X%C3%B4i_g%E1%BA%A5c.JPG",
+    "author": "Nguyễn Thanh Quang 07:20, 3 December 2007 (UTC)",
+    "license": "Public domain"
+  },
+  "recipe-082": {
+    "index": 82,
+    "title": "Xôi xéo",
+    "query": "Xôi xéo",
+    "file": "recipe-082.jpg",
+    "commons_title": "File:Xôi xéo.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:X%C3%B4i_x%C3%A9o.jpg",
+    "author": "Viethavvh",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-083": {
+    "index": 83,
+    "title": "Cháo lòng",
+    "query": "Cháo lòng",
+    "file": "recipe-083.jpg",
+    "commons_title": "File:Cháo lòng.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ch%C3%A1o_l%C3%B2ng.jpg",
+    "author": "hongnhung106",
+    "license": "CC BY 2.0"
+  },
+  "recipe-084": {
+    "index": 84,
+    "title": "Cháo gà hành gừng",
+    "query": "Cháo gà",
+    "file": "recipe-084.jpg",
+    "commons_title": "File:Cháo gà nhà làm, tháng 5 năm 2020 (3).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ch%C3%A1o_g%C3%A0_nh%C3%A0_l%C3%A0m,_th%C3%A1ng_5_n%C4%83m_2020_(3).jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-085": {
+    "index": 85,
+    "title": "Xôi ngũ sắc",
+    "query": "Xôi ngũ sắc",
+    "file": "recipe-085.jpg",
+    "commons_title": "File:Xôi ngũ sắc.JPG",
+    "source_url": "https://commons.wikimedia.org/wiki/File:X%C3%B4i_ng%C5%A9_s%E1%BA%AFc.JPG",
+    "author": "Khương Việt Hà",
+    "license": "Public domain"
+  },
+  "recipe-086": {
+    "index": 86,
+    "title": "Mì Quảng",
+    "query": "Mì Quảng",
+    "file": "recipe-086.jpg",
+    "commons_title": "File:Mi Quang 1A Danang.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Mi_Quang_1A_Danang.jpg",
+    "author": "Jpatokal",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-087": {
+    "index": 87,
+    "title": "Miến gà",
+    "query": "Miến gà",
+    "file": "recipe-087.jpg",
+    "commons_title": "File:Vùng Cùa ở Cam Lộ th5n2023-Phương Gia Trang (tô miến gà) (2).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:V%C3%B9ng_C%C3%B9a_%E1%BB%9F_Cam_L%E1%BB%99_th5n2023-Ph%C6%B0%C6%A1ng_Gia_Trang_(t%C3%B4_mi%E1%BA%BFn_g%C3%A0)_(2).jpg",
+    "author": "Phương Huy",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-088": {
+    "index": 88,
+    "title": "Cao lầu Hội An",
+    "query": "Cao lầu",
+    "file": "recipe-088.jpg",
+    "commons_title": "File:Cao lầu Hội An (2024).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Cao_l%E1%BA%A7u_H%E1%BB%99i_An_(2024).jpg",
+    "author": "Chainwit.",
+    "license": "CC BY 4.0"
+  },
+  "recipe-089": {
+    "index": 89,
+    "title": "Mì vịt tiềm",
+    "query": "Mì vịt tiềm",
+    "file": "recipe-089.jpg",
+    "commons_title": "File:Mì vịt tiềm.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:M%C3%AC_v%E1%BB%8Bt_ti%E1%BB%81m.jpg",
+    "author": "SauceSupreme",
+    "license": "CC BY 2.0"
+  },
+  "recipe-090": {
+    "index": 90,
+    "title": "Miến xào cua",
+    "query": "Miến xào",
+    "file": "recipe-090.jpg",
+    "commons_title": "File:Miến xào lòng cật, tháng 8 năm 2018.JPG",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Mi%E1%BA%BFn_x%C3%A0o_l%C3%B2ng_c%E1%BA%ADt,_th%C3%A1ng_8_n%C4%83m_2018.JPG",
+    "author": "Phương Huy (thảo luận)",
+    "license": "Public domain"
+  },
+  "recipe-091": {
+    "index": 91,
+    "title": "Spaghetti sốt bò bằm",
+    "query": "Spaghetti Bolognese",
+    "file": "recipe-091.jpg",
+    "commons_title": "File:Spaghetti Bolognese - Figaros, Brighton 2023-10-06.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Spaghetti_Bolognese_-_Figaros,_Brighton_2023-10-06.jpg",
+    "author": "Andy Li",
+    "license": "CC0"
+  },
+  "recipe-092": {
+    "index": 92,
+    "title": "Pizza Margherita",
+    "query": "Pizza Margherita",
+    "file": "recipe-092.jpg",
+    "commons_title": "File:Margherita pizza on plate.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Margherita_pizza_on_plate.jpg",
+    "author": "Shisma",
+    "license": "CC BY 4.0"
+  },
+  "recipe-093": {
+    "index": 93,
+    "title": "Bít tết sốt tiêu đen",
+    "query": "Steak black pepper sauce",
+    "file": "recipe-093.jpg",
+    "commons_title": "File:Beef Steak in Black Pepper Sauce.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Beef_Steak_in_Black_Pepper_Sauce.jpg",
+    "author": "Ceeseven",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-094": {
+    "index": 94,
+    "title": "Salad Caesar gà nướng",
+    "query": "Caesar salad",
+    "file": "recipe-094.jpg",
+    "commons_title": "File:Caesar Salad - Purezza 2023-11-22.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Caesar_Salad_-_Purezza_2023-11-22.jpg",
+    "author": "Andy Li",
+    "license": "CC0"
+  },
+  "recipe-095": {
+    "index": 95,
+    "title": "Kem trứng crème brûlée",
+    "query": "Crème brûlée",
+    "file": "recipe-095.jpg",
+    "commons_title": "File:Crème brûlée w. whipped cream.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Cr%C3%A8me_br%C3%BBl%C3%A9e_w._whipped_cream.jpg",
+    "author": "Lindsey40186",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-096": {
+    "index": 96,
+    "title": "Kimbap Hàn Quốc",
+    "query": "Kimbap",
+    "file": "recipe-096.jpg",
+    "commons_title": "File:Beef kimbap from a DC lunch counter.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Beef_kimbap_from_a_DC_lunch_counter.jpg",
+    "author": "Ser Amantio di Nicolao",
+    "license": "CC0"
+  },
+  "recipe-097": {
+    "index": 97,
+    "title": "Sushi cuộn California",
+    "query": "California roll",
+    "file": "recipe-097.jpg",
+    "commons_title": "File:California roll from Sarku Japan with wasabi and ginger.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:California_roll_from_Sarku_Japan_with_wasabi_and_ginger.jpg",
+    "author": "Ser Amantio di Nicolao",
+    "license": "CC BY-SA 4.0"
+  },
+  "recipe-098": {
+    "index": 98,
+    "title": "Pad Thái tôm",
+    "query": "Pad Thai",
+    "file": "recipe-098.jpg",
+    "commons_title": "File:Thai-Pad-Thai 2023-06-04.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Thai-Pad-Thai_2023-06-04.jpg",
+    "author": "Andy Li",
+    "license": "CC0"
+  },
+  "recipe-099": {
+    "index": 99,
+    "title": "Tokbokki cay",
+    "query": "Tteokbokki",
+    "file": "recipe-099.jpg",
+    "commons_title": "File:Korean.snacks-Tteokbokki-08.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Korean.snacks-Tteokbokki-08.jpg",
+    "author": "by jetalone (flickr)",
+    "license": "CC BY 2.0"
+  },
+  "recipe-100": {
+    "index": 100,
+    "title": "Ramen shoyu",
+    "query": "Shoyu ramen",
+    "file": "recipe-100.jpg",
+    "commons_title": "File:Shoyu Ramen.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Shoyu_Ramen.jpg",
+    "author": "Guilhem Vellut",
+    "license": "CC BY 2.0"
+  }
+}
