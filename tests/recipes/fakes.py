@@ -4,10 +4,12 @@ from datetime import UTC, datetime
 from culinary_blog.auth.models import User
 from culinary_blog.auth.principal import Principal
 from culinary_blog.categories.models import Category
-from culinary_blog.errors import ConflictError, UnprocessableError
+from culinary_blog.errors import ConflictError, ServiceUnavailableError, UnprocessableError
+from culinary_blog.jobs.queue import JobQueue
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 from culinary_blog.recipes.models import Recipe, RecipeImage, RecipeIngredient, RecipeStep
 from culinary_blog.recipes.repository import RecipeAggregate, RecipeRepository
+from culinary_blog.storage.service import FileStorageService
 
 ADMIN = Principal(uuid.uuid4(), ("admin",))
 AUTHOR = Principal(uuid.uuid4(), ("author",))
@@ -214,3 +216,82 @@ class FakeRecipeRepository(RecipeRepository):
         )
         for position, step in enumerate(survivors, start=1):
             step.step_number = position
+
+    async def get_image(self, recipe_id: uuid.UUID, image_id: uuid.UUID) -> RecipeImage | None:
+        return next(
+            (i for i in self.images if i.id == image_id and i.recipe_id == recipe_id and not i.is_deleted), None
+        )
+
+    def _live_images(self, recipe_id: uuid.UUID) -> list[RecipeImage]:
+        return sorted(
+            (i for i in self.images if i.recipe_id == recipe_id and not i.is_deleted), key=lambda i: i.order_index
+        )
+
+    async def add_image(self, image: RecipeImage) -> RecipeImage:
+        live = self._live_images(image.recipe_id)
+        image.is_primary = not live
+        image.order_index = live[-1].order_index + 1 if live else 0
+        self.images.append(image)
+        return image
+
+    async def set_primary_image(self, recipe_id: uuid.UUID, image_id: uuid.UUID) -> RecipeImage | None:
+        target = await self.get_image(recipe_id, image_id)
+        if target is None:
+            return None
+        for image in self._live_images(recipe_id):
+            image.is_primary = image.id == image_id
+        return target
+
+    async def delete_image(self, recipe_id: uuid.UUID, image_id: uuid.UUID) -> RecipeImage | None:
+        image = await self.get_image(recipe_id, image_id)
+        if image is None:
+            return None
+        image.is_deleted = True
+        remaining = self._live_images(recipe_id)
+        if image.is_primary and remaining:
+            remaining[0].is_primary = True
+        image.is_primary = False
+        return image
+
+    async def set_image_variants(self, image_id: uuid.UUID, *, medium_url: str, thumbnail_url: str) -> bool:
+        image = next((i for i in self.images if i.id == image_id and not i.is_deleted), None)
+        if image is None:
+            return False
+        image.medium_url, image.thumbnail_url = medium_url, thumbnail_url
+        return True
+
+
+class FakeStorage(FileStorageService):
+    """In-memory object store; `fail` simulates MinIO being down."""
+
+    def __init__(self) -> None:
+        self.objects: dict[str, bytes] = {}
+        self.fail = False
+
+    async def upload(self, data: bytes, folder: str, extension: str, content_type: str) -> str:
+        if self.fail:
+            raise ServiceUnavailableError()
+        url = f"http://storage/{folder}/{uuid.uuid4()}{extension}"
+        self.objects[url] = data
+        return url
+
+    async def download(self, url: str) -> bytes:
+        if self.fail:
+            raise ServiceUnavailableError()
+        return self.objects[url]
+
+    async def delete(self, url: str) -> None:
+        if self.fail:
+            raise ServiceUnavailableError()
+        self.objects.pop(url, None)
+
+
+class FakeJobQueue(JobQueue):
+    def __init__(self) -> None:
+        self.jobs: list[tuple[str, dict[str, object]]] = []
+        self.fail = False
+
+    async def enqueue(self, queue: str, payload: dict[str, object]) -> None:
+        if self.fail:
+            raise ConnectionError("redis down")
+        self.jobs.append((queue, payload))
