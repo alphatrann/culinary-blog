@@ -29,11 +29,11 @@
 - `PATCH /recipes/{id}/publish` and `/unpublish`
 - Requires ≥1 step and ≥1 ingredient (else 422)
 
-### M4 — Images (FR-RCP-008, FR-FILE-001/002)
-- [ ] Upload to MinIO (MIME + magic bytes, ≤5 MB)
-- [ ] First image is primary; set-primary endpoint
-- [ ] Delete, auto-promoting another image
-- [ ] `resize_image` job + minimal worker for thumbnails
+### ✅ M4 — Images (FR-RCP-008, FR-FILE-001/002)
+- Upload to MinIO (MIME + magic bytes, ≤5 MB)
+- First image is primary; set-primary endpoint
+- Delete, auto-promoting another image
+- `resize_image` job + minimal worker for thumbnails (`uv run culinary-blog-image-worker`)
 
 ### M5a — Soft delete (FR-RCP-007)
 - [ ] `DELETE /recipes/{id}` cascades to steps, ingredients, images
