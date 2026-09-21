@@ -326,6 +326,113 @@ class RecipeRepository:
             )
             await session.commit()
 
+    async def get_image(self, recipe_id: uuid.UUID, image_id: uuid.UUID) -> RecipeImage | None:
+        async with self._session_factory() as session:
+            result = await session.execute(
+                select(RecipeImage).where(
+                    RecipeImage.id == image_id,
+                    RecipeImage.recipe_id == recipe_id,
+                    col(RecipeImage.is_deleted).is_(False),
+                )
+            )
+            return result.scalars().first()
+
+    async def add_image(self, image: RecipeImage) -> RecipeImage:
+        """Persist an image after the recipe's last one; it becomes primary iff the recipe has no live image yet.
+
+        The recipe row is locked (until commit) so two concurrent first uploads cannot both claim primary.
+        """
+        async with self._session_factory() as session:
+            await session.execute(select(Recipe.id).where(Recipe.id == image.recipe_id).with_for_update())
+            live = await session.execute(
+                select(func.count(), func.max(RecipeImage.order_index)).where(
+                    RecipeImage.recipe_id == image.recipe_id, col(RecipeImage.is_deleted).is_(False)
+                )
+            )
+            count, highest = live.one()
+            image.is_primary = count == 0
+            image.order_index = 0 if highest is None else highest + 1
+            session.add(image)
+            await session.commit()
+            await session.refresh(image)
+            return image
+
+    async def set_primary_image(self, recipe_id: uuid.UUID, image_id: uuid.UUID) -> RecipeImage | None:
+        """Make one image primary and every other live image of the recipe non-primary, atomically."""
+        async with self._session_factory() as session:
+            await session.execute(select(Recipe.id).where(Recipe.id == recipe_id).with_for_update())
+            await session.execute(
+                update(RecipeImage)
+                .where(
+                    col(RecipeImage.recipe_id) == recipe_id,
+                    col(RecipeImage.is_deleted).is_(False),
+                    col(RecipeImage.is_primary) != (col(RecipeImage.id) == image_id),
+                )
+                .values(
+                    is_primary=(col(RecipeImage.id) == image_id),
+                    row_version=col(RecipeImage.row_version) + 1,
+                    updated_at=datetime.now(UTC),
+                )
+            )
+            result = await session.execute(
+                select(RecipeImage).where(RecipeImage.id == image_id, col(RecipeImage.is_deleted).is_(False))
+            )
+            image = result.scalars().first()
+            await session.commit()
+            return image
+
+    async def delete_image(self, recipe_id: uuid.UUID, image_id: uuid.UUID) -> RecipeImage | None:
+        """Soft-delete an image; if it was primary, promote the first remaining one. Returns the deleted image."""
+        async with self._session_factory() as session:
+            await session.execute(select(Recipe.id).where(Recipe.id == recipe_id).with_for_update())
+            result = await session.execute(
+                select(RecipeImage).where(
+                    RecipeImage.id == image_id,
+                    RecipeImage.recipe_id == recipe_id,
+                    col(RecipeImage.is_deleted).is_(False),
+                )
+            )
+            image = result.scalars().first()
+            if image is None:
+                return None
+            now = datetime.now(UTC)
+            was_primary = image.is_primary
+            image.is_deleted = True
+            image.is_primary = False
+            image.row_version += 1
+            image.updated_at = now
+            await session.flush()
+            if was_primary:
+                first = await session.execute(
+                    select(RecipeImage)
+                    .where(RecipeImage.recipe_id == recipe_id, col(RecipeImage.is_deleted).is_(False))
+                    .order_by(col(RecipeImage.order_index), col(RecipeImage.created_at))
+                    .limit(1)
+                )
+                promoted = first.scalars().first()
+                if promoted is not None:
+                    promoted.is_primary = True
+                    promoted.row_version += 1
+                    promoted.updated_at = now
+            await session.commit()
+            return image
+
+    async def set_image_variants(self, image_id: uuid.UUID, *, medium_url: str, thumbnail_url: str) -> bool:
+        """Record the worker-generated variants (FR-JOB-002). False if the image no longer exists."""
+        async with self._session_factory() as session:
+            result = await session.execute(
+                update(RecipeImage)
+                .where(col(RecipeImage.id) == image_id, col(RecipeImage.is_deleted).is_(False))
+                .values(
+                    medium_url=medium_url,
+                    thumbnail_url=thumbnail_url,
+                    row_version=col(RecipeImage.row_version) + 1,
+                    updated_at=datetime.now(UTC),
+                )
+            )
+            await session.commit()
+            return result.rowcount > 0  # type: ignore[attr-defined]
+
     @staticmethod
     def _raise_domain_error(exc: IntegrityError) -> None:
         """Translate the constraint violations callers can cause; anything else is left for the caller to re-raise."""

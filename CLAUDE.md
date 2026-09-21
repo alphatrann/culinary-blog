@@ -11,6 +11,7 @@ uv run lint-imports                           # architecture contracts (must pas
 uv run pytest
 uv run alembic revision --autogenerate -m "msg" && uv run alembic upgrade head
 uv run culinary-blog                          # run API (deps via compose.development.yml)
+uv run culinary-blog-image-worker             # thumbnails + file cleanup jobs (run alongside the API)
 ```
 
 ## Architecture: lightweight CQRS (CONS-001, NFR-MAINT-004, ADR-0001)

@@ -1,19 +1,22 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Header, Query, Request, Response
+from fastapi import APIRouter, File, Form, Header, Query, Request, Response, UploadFile
 
 from culinary_blog.auth.dependencies import Authenticator
 from culinary_blog.recipes.commands.add_ingredient import AddIngredientCommand, AddIngredientHandler
 from culinary_blog.recipes.commands.add_step import AddStepCommand, AddStepHandler
 from culinary_blog.recipes.commands.create_recipe import CreateRecipeCommand, CreateRecipeHandler
+from culinary_blog.recipes.commands.delete_image import DeleteImageCommand, DeleteImageHandler
 from culinary_blog.recipes.commands.delete_ingredient import DeleteIngredientCommand, DeleteIngredientHandler
 from culinary_blog.recipes.commands.delete_step import DeleteStepCommand, DeleteStepHandler
 from culinary_blog.recipes.commands.publish_recipe import PublishRecipeCommand, PublishRecipeHandler
+from culinary_blog.recipes.commands.set_primary_image import SetPrimaryImageCommand, SetPrimaryImageHandler
 from culinary_blog.recipes.commands.unpublish_recipe import UnpublishRecipeCommand, UnpublishRecipeHandler
 from culinary_blog.recipes.commands.update_ingredient import UpdateIngredientCommand, UpdateIngredientHandler
 from culinary_blog.recipes.commands.update_recipe import UpdateRecipeCommand, UpdateRecipeHandler
 from culinary_blog.recipes.commands.update_step import UpdateStepCommand, UpdateStepHandler
+from culinary_blog.recipes.commands.upload_image import UploadImageCommand, UploadImageHandler
 from culinary_blog.recipes.enums import RecipeDifficulty
 from culinary_blog.recipes.queries.get_recipe import GetRecipeHandler, GetRecipeQuery
 from culinary_blog.recipes.queries.list_recipes import ListRecipesHandler, ListRecipesQuery
@@ -24,6 +27,7 @@ from culinary_blog.recipes.schemas import (
     IngredientOut,
     RecipeCreateRequest,
     RecipeDetailOut,
+    RecipeImageOut,
     RecipeListOut,
     RecipeOut,
     RecipeSort,
@@ -31,6 +35,7 @@ from culinary_blog.recipes.schemas import (
     StepIn,
     StepOut,
 )
+from culinary_blog.storage.images import MAX_IMAGE_BYTES, validate_image
 
 
 def _etag(row_version: int) -> str:
@@ -55,6 +60,9 @@ class RecipeRouter:
         add_step: AddStepHandler,
         update_step: UpdateStepHandler,
         delete_step: DeleteStepHandler,
+        upload_image: UploadImageHandler,
+        set_primary_image: SetPrimaryImageHandler,
+        delete_image: DeleteImageHandler,
     ) -> None:
         self._authenticator = authenticator
         self._create_recipe = create_recipe
@@ -69,6 +77,9 @@ class RecipeRouter:
         self._add_step = add_step
         self._update_step = update_step
         self._delete_step = delete_step
+        self._upload_image = upload_image
+        self._set_primary_image = set_primary_image
+        self._delete_image = delete_image
 
         self.router = APIRouter(prefix="/api/v1/recipes", tags=["recipes"])
         self.router.add_api_route("", self.list_recipes, methods=["GET"], response_model=RecipeListOut)
@@ -100,6 +111,18 @@ class RecipeRouter:
             "/{recipe_id}/steps/{step_id}", self.update_step, methods=["PUT"], response_model=StepOut
         )
         self.router.add_api_route("/{recipe_id}/steps/{step_id}", self.delete_step, methods=["DELETE"], status_code=204)
+        self.router.add_api_route(
+            "/{recipe_id}/images", self.upload_image, methods=["POST"], response_model=RecipeImageOut, status_code=201
+        )
+        self.router.add_api_route(
+            "/{recipe_id}/images/{image_id}/primary",
+            self.set_primary_image,
+            methods=["PATCH"],
+            response_model=RecipeImageOut,
+        )
+        self.router.add_api_route(
+            "/{recipe_id}/images/{image_id}", self.delete_image, methods=["DELETE"], status_code=204
+        )
 
     async def list_recipes(
         self,
@@ -216,4 +239,25 @@ class RecipeRouter:
     async def delete_step(self, recipe_id: uuid.UUID, step_id: uuid.UUID, request: Request) -> Response:
         actor = await self._authenticator.require_principal(request)
         await self._delete_step.handle(DeleteStepCommand(actor, recipe_id, step_id))
+        return Response(status_code=204)
+
+    async def upload_image(
+        self,
+        recipe_id: uuid.UUID,
+        request: Request,
+        file: Annotated[UploadFile, File()],
+        alt_text: Annotated[str | None, Form(max_length=200)] = None,
+    ) -> RecipeImageOut:
+        actor = await self._authenticator.require_principal(request)
+        data = await file.read(MAX_IMAGE_BYTES + 1)  # one byte over the limit is enough to reject it
+        image_format = validate_image(file.content_type, data)
+        return await self._upload_image.handle(UploadImageCommand(actor, recipe_id, data, image_format, alt_text))
+
+    async def set_primary_image(self, recipe_id: uuid.UUID, image_id: uuid.UUID, request: Request) -> RecipeImageOut:
+        actor = await self._authenticator.require_principal(request)
+        return await self._set_primary_image.handle(SetPrimaryImageCommand(actor, recipe_id, image_id))
+
+    async def delete_image(self, recipe_id: uuid.UUID, image_id: uuid.UUID, request: Request) -> Response:
+        actor = await self._authenticator.require_principal(request)
+        await self._delete_image.handle(DeleteImageCommand(actor, recipe_id, image_id))
         return Response(status_code=204)

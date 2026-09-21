@@ -9,6 +9,11 @@ class DomainError(Exception):
         self.detail = detail or self.title
 
 
+class BadRequestError(DomainError):
+    status_code = 400
+    title = "Bad Request"
+
+
 class UnauthorizedError(DomainError):
     status_code = 401
     title = "Unauthorized"
@@ -39,3 +44,10 @@ class UnprocessableError(DomainError):
 class LockedError(DomainError):
     status_code = 423
     title = "Locked"
+
+
+class ServiceUnavailableError(DomainError):
+    """A required backing service (e.g. object storage) is unreachable."""
+
+    status_code = 503
+    title = "Service Unavailable"
