@@ -181,6 +181,27 @@ class RecipeRepository:
             await session.commit()
             return recipe
 
+    async def delete(self, recipe_id: uuid.UUID) -> Recipe | None:
+        """Soft-delete a recipe and cascade the soft delete to its steps, ingredients and images."""
+        async with self._session_factory() as session:
+            now = datetime.now(UTC)
+            result = await session.execute(
+                update(Recipe)
+                .where(col(Recipe.id) == recipe_id, col(Recipe.is_deleted).is_(False))
+                .values(is_deleted=True, row_version=col(Recipe.row_version) + 1, updated_at=now)
+                .returning(Recipe)
+            )
+            recipe = result.scalar_one_or_none()
+            if recipe is not None:
+                for model in (RecipeStep, RecipeIngredient, RecipeImage):
+                    await session.execute(
+                        update(model)
+                        .where(col(model.recipe_id) == recipe_id, col(model.is_deleted).is_(False))
+                        .values(is_deleted=True, row_version=col(model.row_version) + 1, updated_at=now)
+                    )
+            await session.commit()
+            return recipe
+
     async def get_ingredient(self, recipe_id: uuid.UUID, ingredient_id: uuid.UUID) -> RecipeIngredient | None:
         async with self._session_factory() as session:
             result = await session.execute(
