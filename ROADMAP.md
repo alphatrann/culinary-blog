@@ -35,8 +35,8 @@
 - Delete, auto-promoting another image
 - `resize_image` job + minimal worker for thumbnails (`uv run culinary-blog-image-worker`)
 
-### M5a — Soft delete (FR-RCP-007)
-- [ ] `DELETE /recipes/{id}` cascades to steps, ingredients, images
+### ✅ M5a — Soft delete (FR-RCP-007)
+- `DELETE /recipes/{id}` cascades to steps, ingredients, images
 
 ### M5b — Full-text search (FR-SRCH-001)
 - [ ] `unaccent` + `pg_trgm`, `search_vector` with GIN index
