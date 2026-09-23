@@ -425,3 +425,43 @@ def test_list_with_invalid_params_is_422_problem_json(client, params):
 def test_list_page_size_boundaries_are_accepted(client):
     assert client.get(BASE, params={"page_size": 1}).status_code == 200
     assert client.get(BASE, params={"page_size": 50}).status_code == 200
+
+
+# --- delete -----------------------------------------------------------------------------------------------------
+
+
+def test_owner_deletes_recipe_204(client, owned):
+    as_user(client, AUTHOR)
+    response = client.delete(f"{BASE}/{owned.id}")
+
+    assert response.status_code == 204
+    assert owned.is_deleted is True
+
+
+def test_admin_can_delete_any_recipe(client, owned):
+    as_user(client, ADMIN)
+    response = client.delete(f"{BASE}/{owned.id}")
+
+    assert response.status_code == 204
+    assert owned.is_deleted is True
+
+
+def test_deleted_recipe_is_no_longer_visible(client, owned):
+    as_user(client, AUTHOR)
+    client.delete(f"{BASE}/{owned.id}")
+
+    assert client.get(f"{BASE}/{owned.slug}").status_code == 404
+
+
+def test_delete_without_cookie_is_401(client, owned):
+    assert_problem(client.delete(f"{BASE}/{owned.id}"), 401)
+
+
+def test_delete_by_another_author_is_403(client, owned):
+    as_user(client, OTHER_AUTHOR)
+    assert_problem(client.delete(f"{BASE}/{owned.id}"), 403)
+
+
+def test_delete_unknown_recipe_is_404(client, owned):
+    as_user(client, AUTHOR)
+    assert_problem(client.delete(f"{BASE}/00000000-0000-0000-0000-000000000000"), 404)

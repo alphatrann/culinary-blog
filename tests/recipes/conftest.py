@@ -12,6 +12,7 @@ from culinary_blog.recipes.commands.add_step import AddStepHandler
 from culinary_blog.recipes.commands.create_recipe import CreateRecipeHandler
 from culinary_blog.recipes.commands.delete_image import DeleteImageHandler
 from culinary_blog.recipes.commands.delete_ingredient import DeleteIngredientHandler
+from culinary_blog.recipes.commands.delete_recipe import DeleteRecipeHandler
 from culinary_blog.recipes.commands.delete_step import DeleteStepHandler
 from culinary_blog.recipes.commands.publish_recipe import PublishRecipeHandler
 from culinary_blog.recipes.commands.set_primary_image import SetPrimaryImageHandler
@@ -58,6 +59,7 @@ def client(repo, storage, queue) -> TestClient:
         get_recipe=GetRecipeHandler(repo),
         publish_recipe=PublishRecipeHandler(repo),
         unpublish_recipe=UnpublishRecipeHandler(repo),
+        delete_recipe=DeleteRecipeHandler(repo),
         add_ingredient=AddIngredientHandler(repo),
         update_ingredient=UpdateIngredientHandler(repo),
         delete_ingredient=DeleteIngredientHandler(repo),

@@ -164,6 +164,20 @@ class FakeRecipeRepository(RecipeRepository):
         recipe.updated_at = datetime.now(UTC)
         return recipe
 
+    async def delete(self, recipe_id: uuid.UUID) -> Recipe | None:
+        recipe = await self.get_by_id(recipe_id)
+        if recipe is None:
+            return None
+        recipe.is_deleted = True
+        recipe.row_version += 1
+        recipe.updated_at = datetime.now(UTC)
+        for child in (*self.steps, *self.ingredients, *self.images):
+            if child.recipe_id == recipe_id and not child.is_deleted:
+                child.is_deleted = True
+                child.row_version += 1
+                child.updated_at = recipe.updated_at
+        return recipe
+
     async def get_ingredient(self, recipe_id: uuid.UUID, ingredient_id: uuid.UUID) -> RecipeIngredient | None:
         return next(
             (i for i in self.ingredients if i.id == ingredient_id and i.recipe_id == recipe_id and not i.is_deleted),

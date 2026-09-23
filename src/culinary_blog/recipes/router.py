@@ -9,6 +9,7 @@ from culinary_blog.recipes.commands.add_step import AddStepCommand, AddStepHandl
 from culinary_blog.recipes.commands.create_recipe import CreateRecipeCommand, CreateRecipeHandler
 from culinary_blog.recipes.commands.delete_image import DeleteImageCommand, DeleteImageHandler
 from culinary_blog.recipes.commands.delete_ingredient import DeleteIngredientCommand, DeleteIngredientHandler
+from culinary_blog.recipes.commands.delete_recipe import DeleteRecipeCommand, DeleteRecipeHandler
 from culinary_blog.recipes.commands.delete_step import DeleteStepCommand, DeleteStepHandler
 from culinary_blog.recipes.commands.publish_recipe import PublishRecipeCommand, PublishRecipeHandler
 from culinary_blog.recipes.commands.set_primary_image import SetPrimaryImageCommand, SetPrimaryImageHandler
@@ -63,6 +64,7 @@ class RecipeRouter:
         upload_image: UploadImageHandler,
         set_primary_image: SetPrimaryImageHandler,
         delete_image: DeleteImageHandler,
+        delete_recipe: DeleteRecipeHandler,
     ) -> None:
         self._authenticator = authenticator
         self._create_recipe = create_recipe
@@ -70,6 +72,7 @@ class RecipeRouter:
         self._list_recipes = list_recipes
         self._get_recipe = get_recipe
         self._publish_recipe = publish_recipe
+        self._delete_recipe = delete_recipe
         self._unpublish_recipe = unpublish_recipe
         self._add_ingredient = add_ingredient
         self._update_ingredient = update_ingredient
@@ -86,6 +89,7 @@ class RecipeRouter:
         self.router.add_api_route("", self.create, methods=["POST"], response_model=RecipeOut, status_code=201)
         self.router.add_api_route("/{slug}", self.detail, methods=["GET"], response_model=RecipeDetailOut)
         self.router.add_api_route("/{recipe_id}", self.update, methods=["PUT"], response_model=RecipeOut)
+        self.router.add_api_route("/{recipe_id}", self.delete, methods=["DELETE"], status_code=204)
         self.router.add_api_route("/{recipe_id}/publish", self.publish, methods=["PATCH"], response_model=RecipeOut)
         self.router.add_api_route("/{recipe_id}/unpublish", self.unpublish, methods=["PATCH"], response_model=RecipeOut)
         self.router.add_api_route(
@@ -200,6 +204,11 @@ class RecipeRouter:
         )
         response.headers["ETag"] = _etag(recipe.row_version)
         return recipe
+
+    async def delete(self, recipe_id: uuid.UUID, request: Request) -> Response:
+        actor = await self._authenticator.require_principal(request)
+        await self._delete_recipe.handle(DeleteRecipeCommand(actor=actor, recipe_id=recipe_id))
+        return Response(status_code=204)
 
     async def publish(self, recipe_id: uuid.UUID, request: Request, response: Response) -> RecipeOut:
         actor = await self._authenticator.require_principal(request)

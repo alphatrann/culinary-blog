@@ -10,6 +10,7 @@ from culinary_blog.recipes.commands.add_step import AddStepHandler
 from culinary_blog.recipes.commands.create_recipe import CreateRecipeHandler
 from culinary_blog.recipes.commands.delete_image import DeleteImageHandler
 from culinary_blog.recipes.commands.delete_ingredient import DeleteIngredientHandler
+from culinary_blog.recipes.commands.delete_recipe import DeleteRecipeHandler
 from culinary_blog.recipes.commands.delete_step import DeleteStepHandler
 from culinary_blog.recipes.commands.publish_recipe import PublishRecipeHandler
 from culinary_blog.recipes.commands.set_primary_image import SetPrimaryImageHandler
@@ -38,6 +39,7 @@ def build_recipes_router() -> APIRouter:
         get_recipe=GetRecipeHandler(repository),
         publish_recipe=PublishRecipeHandler(repository),
         unpublish_recipe=UnpublishRecipeHandler(repository),
+        delete_recipe=DeleteRecipeHandler(repository),
         add_ingredient=AddIngredientHandler(repository),
         update_ingredient=UpdateIngredientHandler(repository),
         delete_ingredient=DeleteIngredientHandler(repository),
