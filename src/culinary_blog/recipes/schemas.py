@@ -6,7 +6,7 @@ from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, field_validator, model_validator
 
-from culinary_blog.categories.schemas import RecipePage
+from culinary_blog.categories.schemas import RecipePage, RecipeSummaryOut
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 
 _HTML = re.compile(r"[<>]")
@@ -166,6 +166,20 @@ class RecipeOut(BaseModel):
 
 
 class RecipeListOut(RecipePage):
+    has_next_page: bool
+    has_previous_page: bool
+
+
+class RecipeSearchResultOut(RecipeSummaryOut):
+    relevance_score: float
+
+
+class RecipeSearchResultsOut(BaseModel):
+    items: list[RecipeSearchResultOut]
+    total_count: int
+    page: int
+    page_size: int
+    total_pages: int
     has_next_page: bool
     has_previous_page: bool
 

@@ -23,6 +23,7 @@ from culinary_blog.recipes.commands.update_step import UpdateStepHandler
 from culinary_blog.recipes.commands.upload_image import UploadImageHandler
 from culinary_blog.recipes.queries.get_recipe import GetRecipeHandler
 from culinary_blog.recipes.queries.list_recipes import ListRecipesHandler
+from culinary_blog.recipes.queries.search_recipes import SearchRecipesHandler
 from culinary_blog.recipes.router import RecipeRouter
 from tests.recipes.fakes import FakeJobQueue, FakeRecipeRepository, FakeStorage
 
@@ -56,6 +57,7 @@ def client(repo, storage, queue) -> TestClient:
         create_recipe=CreateRecipeHandler(repo),
         update_recipe=UpdateRecipeHandler(repo),
         list_recipes=ListRecipesHandler(repo),
+        search_recipes=SearchRecipesHandler(repo),
         get_recipe=GetRecipeHandler(repo),
         publish_recipe=PublishRecipeHandler(repo),
         unpublish_recipe=UnpublishRecipeHandler(repo),

@@ -2,7 +2,7 @@
 
 Recipe-sharing platform. Authors publish recipes with images, ingredients, steps and nutrition info; readers browse, filter and search them (Vietnamese full-text).
 
-**Status:** M0–M5a done (infra, auth, categories, recipes, ingredients/steps, publishing, images, soft delete). Next: full-text search (M5b).
+**Status:** M0–M5b done (infra, auth, categories, recipes, ingredients/steps, publishing, images, soft delete, full-text search). Next: load-test baseline (M6a).
 
 ## Stack
 
