@@ -125,6 +125,48 @@ class RecipeRepository:
             )
             return list(result.scalars().all()), int(total)
 
+    async def search_published(
+        self,
+        *,
+        query: str,
+        category_id: uuid.UUID | None,
+        difficulty: RecipeDifficulty | None,
+        max_cook_time: int | None,
+        page: int,
+        page_size: int,
+    ) -> tuple[list[tuple[Recipe, float]], int]:
+        """Published recipes whose title fuzzy-matches `query` (FR-SRCH-001), ranked by trigram word similarity.
+
+        Both sides are normalized through `f_unaccent(lower(...))` so the match is diacritic-insensitive
+        ("pho" finds "phở"). `%>` is `word_similarity`'s indexed operator: it checks whether `query` matches some
+        word-sized extent of the title, which is what makes short/partial queries useful against long titles.
+        """
+        title_norm = func.f_unaccent(func.lower(col(Recipe.title)))
+        query_norm = func.f_unaccent(func.lower(query))
+        score = func.word_similarity(query_norm, title_norm)
+        conditions: list[ColumnElement[bool]] = [
+            col(Recipe.is_deleted).is_(False),
+            col(Recipe.status) == RecipeStatus.PUBLISHED,
+            title_norm.op("%>", is_comparison=True)(query_norm),
+        ]
+        if category_id is not None:
+            conditions.append(col(Recipe.category_id) == category_id)
+        if difficulty is not None:
+            conditions.append(col(Recipe.difficulty) == difficulty)
+        if max_cook_time is not None:
+            conditions.append(col(Recipe.cook_time_minutes) <= max_cook_time)
+
+        async with self._session_factory() as session:
+            total = (await session.execute(select(func.count()).select_from(Recipe).where(*conditions))).scalar_one()
+            result = await session.execute(
+                select(Recipe, score)
+                .where(*conditions)
+                .order_by(score.desc(), col(Recipe.id))  # id as tie-break keeps pages stable
+                .offset((page - 1) * page_size)
+                .limit(page_size)
+            )
+            return [(recipe, float(relevance)) for recipe, relevance in result.all()], int(total)
+
     async def add(self, recipe: Recipe, steps: list[RecipeStep], ingredients: list[RecipeIngredient]) -> None:
         """Persist a recipe with its steps and ingredients in one transaction."""
         async with self._session_factory() as session:

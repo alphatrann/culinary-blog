@@ -21,6 +21,7 @@ from culinary_blog.recipes.commands.update_step import UpdateStepHandler
 from culinary_blog.recipes.commands.upload_image import UploadImageHandler
 from culinary_blog.recipes.queries.get_recipe import GetRecipeHandler
 from culinary_blog.recipes.queries.list_recipes import ListRecipesHandler
+from culinary_blog.recipes.queries.search_recipes import SearchRecipesHandler
 from culinary_blog.recipes.repository import RecipeRepository
 from culinary_blog.recipes.router import RecipeRouter
 from culinary_blog.storage.minio_storage import MinioFileStorage
@@ -36,6 +37,7 @@ def build_recipes_router() -> APIRouter:
         create_recipe=CreateRecipeHandler(repository),
         update_recipe=UpdateRecipeHandler(repository),
         list_recipes=ListRecipesHandler(repository),
+        search_recipes=SearchRecipesHandler(repository),
         get_recipe=GetRecipeHandler(repository),
         publish_recipe=PublishRecipeHandler(repository),
         unpublish_recipe=UnpublishRecipeHandler(repository),

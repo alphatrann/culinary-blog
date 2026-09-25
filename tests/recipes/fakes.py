@@ -1,5 +1,7 @@
+import unicodedata
 import uuid
 from datetime import UTC, datetime
+from difflib import SequenceMatcher
 
 from culinary_blog.auth.models import User
 from culinary_blog.auth.principal import Principal
@@ -10,6 +12,12 @@ from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 from culinary_blog.recipes.models import Recipe, RecipeImage, RecipeIngredient, RecipeStep
 from culinary_blog.recipes.repository import RecipeAggregate, RecipeRepository
 from culinary_blog.storage.service import FileStorageService
+
+
+def _fold(value: str) -> str:
+    """Lowercase and strip diacritics, mirroring the real `f_unaccent(lower(...))` used by the search index."""
+    return "".join(c for c in unicodedata.normalize("NFD", value.lower()) if unicodedata.category(c) != "Mn")
+
 
 ADMIN = Principal(uuid.uuid4(), ("admin",))
 AUTHOR = Principal(uuid.uuid4(), ("author",))
@@ -130,6 +138,35 @@ class FakeRecipeRepository(RecipeRepository):
         visible.sort(key=lambda r: getattr(r, sort.removeprefix("-")), reverse=sort.startswith("-"))
         start = (page - 1) * page_size
         return visible[start : start + page_size], len(visible)
+
+    async def search_published(
+        self,
+        *,
+        query: str,
+        category_id: uuid.UUID | None,
+        difficulty: RecipeDifficulty | None,
+        max_cook_time: int | None,
+        page: int,
+        page_size: int,
+    ) -> tuple[list[tuple[Recipe, float]], int]:
+        needle = _fold(query)
+        scored: list[tuple[Recipe, float]] = []
+        for recipe in self._live():
+            if recipe.status != RecipeStatus.PUBLISHED:
+                continue
+            if category_id is not None and recipe.category_id != category_id:
+                continue
+            if difficulty is not None and recipe.difficulty != difficulty:
+                continue
+            if max_cook_time is not None and recipe.cook_time_minutes > max_cook_time:
+                continue
+            haystack = _fold(recipe.title)
+            if needle not in haystack:
+                continue
+            scored.append((recipe, SequenceMatcher(None, needle, haystack).ratio()))
+        scored.sort(key=lambda pair: pair[1], reverse=True)
+        start = (page - 1) * page_size
+        return scored[start : start + page_size], len(scored)
 
     async def add(self, recipe: Recipe, steps: list[RecipeStep], ingredients: list[RecipeIngredient]) -> None:
         self._check_category_fk(recipe.category_id)

@@ -21,6 +21,7 @@ from culinary_blog.recipes.commands.upload_image import UploadImageCommand, Uplo
 from culinary_blog.recipes.enums import RecipeDifficulty
 from culinary_blog.recipes.queries.get_recipe import GetRecipeHandler, GetRecipeQuery
 from culinary_blog.recipes.queries.list_recipes import ListRecipesHandler, ListRecipesQuery
+from culinary_blog.recipes.queries.search_recipes import SearchRecipesHandler, SearchRecipesQuery
 from culinary_blog.recipes.schemas import (
     DifficultyName,
     IfMatchVersion,
@@ -31,6 +32,7 @@ from culinary_blog.recipes.schemas import (
     RecipeImageOut,
     RecipeListOut,
     RecipeOut,
+    RecipeSearchResultsOut,
     RecipeSort,
     RecipeUpdateRequest,
     StepIn,
@@ -52,6 +54,7 @@ class RecipeRouter:
         create_recipe: CreateRecipeHandler,
         update_recipe: UpdateRecipeHandler,
         list_recipes: ListRecipesHandler,
+        search_recipes: SearchRecipesHandler,
         get_recipe: GetRecipeHandler,
         publish_recipe: PublishRecipeHandler,
         unpublish_recipe: UnpublishRecipeHandler,
@@ -70,6 +73,7 @@ class RecipeRouter:
         self._create_recipe = create_recipe
         self._update_recipe = update_recipe
         self._list_recipes = list_recipes
+        self._search_recipes = search_recipes
         self._get_recipe = get_recipe
         self._publish_recipe = publish_recipe
         self._delete_recipe = delete_recipe
@@ -87,6 +91,8 @@ class RecipeRouter:
         self.router = APIRouter(prefix="/api/v1/recipes", tags=["recipes"])
         self.router.add_api_route("", self.list_recipes, methods=["GET"], response_model=RecipeListOut)
         self.router.add_api_route("", self.create, methods=["POST"], response_model=RecipeOut, status_code=201)
+        # Registered before "/{slug}": otherwise "/search" would be swallowed by the slug path parameter.
+        self.router.add_api_route("/search", self.search, methods=["GET"], response_model=RecipeSearchResultsOut)
         self.router.add_api_route("/{slug}", self.detail, methods=["GET"], response_model=RecipeDetailOut)
         self.router.add_api_route("/{recipe_id}", self.update, methods=["PUT"], response_model=RecipeOut)
         self.router.add_api_route("/{recipe_id}", self.delete, methods=["DELETE"], status_code=204)
@@ -148,6 +154,26 @@ class RecipeRouter:
                 difficulty=RecipeDifficulty[difficulty.upper()] if difficulty else None,
                 max_cook_time=max_cook_time,
                 viewer=viewer,
+            )
+        )
+
+    async def search(
+        self,
+        q: Annotated[str, Query(min_length=2, max_length=200)],
+        page: Annotated[int, Query(ge=1)] = 1,
+        page_size: Annotated[int, Query(ge=1, le=50)] = 12,
+        category_id: uuid.UUID | None = None,
+        difficulty: DifficultyName | None = None,
+        max_cook_time: Annotated[int | None, Query(ge=0)] = None,
+    ) -> RecipeSearchResultsOut:
+        return await self._search_recipes.handle(
+            SearchRecipesQuery(
+                q=q,
+                page=page,
+                page_size=page_size,
+                category_id=category_id,
+                difficulty=RecipeDifficulty[difficulty.upper()] if difficulty else None,
+                max_cook_time=max_cook_time,
             )
         )
 

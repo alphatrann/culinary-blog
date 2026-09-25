@@ -427,6 +427,80 @@ def test_list_page_size_boundaries_are_accepted(client):
     assert client.get(BASE, params={"page_size": 50}).status_code == 200
 
 
+# --- search -----------------------------------------------------------------------------------------------------
+
+
+def test_guest_search_finds_published_recipes_case_and_diacritic_insensitive(client, repo):
+    repo.seed_recipe(AUTHOR, RecipeStatus.PUBLISHED, title="Phở Bò Hà Nội")
+    repo.seed_recipe(AUTHOR, RecipeStatus.DRAFT, title="Phở Gà")
+    response = client.get(f"{BASE}/search", params={"q": "PHO"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert [i["title"] for i in body["items"]] == ["Phở Bò Hà Nội"]
+    assert body["items"][0]["relevance_score"] > 0
+    assert (body["total_count"], body["page"], body["page_size"]) == (1, 1, 12)
+
+
+def test_search_does_not_leak_other_authors_drafts_even_when_authenticated(client, repo):
+    repo.seed_recipe(AUTHOR, RecipeStatus.DRAFT, title="Pho Ga")
+    as_user(client, OTHER_AUTHOR)
+
+    response = client.get(f"{BASE}/search", params={"q": "pho"})
+
+    assert response.json()["items"] == []
+
+
+def test_search_filters_by_category_difficulty_and_max_cook_time(client, repo):
+    soups = repo.add_category("Soups")
+    repo.seed_recipe(
+        AUTHOR, title="Pho Bo Soup", category_id=soups, difficulty=RecipeDifficulty.EASY, cook_time_minutes=20
+    )
+    repo.seed_recipe(
+        AUTHOR, title="Pho Ga Soup", category_id=soups, difficulty=RecipeDifficulty.HARD, cook_time_minutes=20
+    )
+    response = client.get(
+        f"{BASE}/search",
+        params={"q": "pho bo", "category_id": str(soups), "difficulty": "easy", "max_cook_time": 30},
+    )
+
+    assert [i["title"] for i in response.json()["items"]] == ["Pho Bo Soup"]
+
+
+def test_search_no_match_is_200_with_empty_page(client, repo):
+    repo.seed_recipe(AUTHOR, title="Pho Bo")
+
+    response = client.get(f"{BASE}/search", params={"q": "xyzzy"})
+
+    assert response.status_code == 200
+    assert response.json()["items"] == [] and response.json()["total_count"] == 0
+
+
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"q": "p"},
+        {},
+        {"q": "pho", "page": 0},
+        {"q": "pho", "page_size": 51},
+        {"q": "pho", "difficulty": "impossible"},
+        {"q": "pho", "max_cook_time": -1},
+        {"q": "pho", "category_id": "not-a-uuid"},
+    ],
+)
+def test_search_with_invalid_params_is_422_problem_json(client, params):
+    assert_problem(client.get(f"{BASE}/search", params=params), 422)
+
+
+def test_search_paginates(client, repo):
+    for n in range(3):
+        repo.seed_recipe(AUTHOR, title=f"Pho {n}")
+
+    first = client.get(f"{BASE}/search", params={"q": "pho", "page": 1, "page_size": 2}).json()
+
+    assert len(first["items"]) == 2 and first["total_count"] == 3 and first["has_next_page"] is True
+
+
 # --- delete -----------------------------------------------------------------------------------------------------
 
 

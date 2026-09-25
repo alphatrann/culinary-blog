@@ -25,6 +25,12 @@ class Recipe(BaseModel, table=True):
         CheckConstraint("prep_time_minutes > 0", name="ck_recipe_prep_time_positive"),
         CheckConstraint("cook_time_minutes >= 0", name="ck_recipe_cook_time_non_negative"),
         CheckConstraint("servings > 0", name="ck_recipe_servings_positive"),
+        Index(
+            "idx_recipe_title_trgm_gin",
+            text("f_unaccent(lower(title))"),
+            postgresql_using="gin",
+            postgresql_ops={"f_unaccent(lower(title))": "gin_trgm_ops"},
+        ),
     )
 
     title: str = Field(max_length=200, nullable=False)

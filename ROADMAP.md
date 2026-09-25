@@ -38,9 +38,9 @@
 ### ✅ M5a — Soft delete (FR-RCP-007)
 - `DELETE /recipes/{id}` cascades to steps, ingredients, images
 
-### M5b — Full-text search (FR-SRCH-001)
-- [ ] `unaccent` + `pg_trgm`, `search_vector` with GIN index
-- [ ] `GET /recipes/search`, published only
+### ✅ M5b — Full-text search (FR-SRCH-001)
+- `unaccent` + `pg_trgm`, GIN trigram index on `f_unaccent(lower(title))` (ADR-0008)
+- `GET /recipes/search`, published only, ranked by `word_similarity` (`relevance_score`)
 
 ### M6a — Load-test baseline (NFR-PERF-001/002/004)
 - [ ] k6 smoke, load (≥100 users) and stress scripts
