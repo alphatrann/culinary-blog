@@ -10,3 +10,4 @@ node_modules/
 *.log
 
 scripts/seed/images/
+!.env.example

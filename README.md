@@ -48,6 +48,7 @@ Requires Python 3.12+, [`uv`](https://docs.astral.sh/uv/), Docker Compose v2.
 
 ```bash
 uv sync
+cp .env.example .env.development                  # fill in the blanks
 docker compose -f compose.development.yml up -d   # Postgres, 3× Redis, MinIO
 uv run alembic upgrade head
 uv run culinary-blog
