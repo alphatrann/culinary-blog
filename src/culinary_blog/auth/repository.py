@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.orm import load_only
 from sqlmodel import col, select
 
 from culinary_blog.auth.models import RefreshToken, User
@@ -25,7 +26,11 @@ class AuthRepository:
 
     async def get_user_by_id(self, user_id: uuid.UUID) -> User | None:
         async with self._session_factory() as session:
-            result = await session.execute(select(User).where(User.id == user_id, col(User.is_deleted).is_(False)))
+            result = await session.execute(
+                select(User)
+                .where(User.id == user_id, col(User.is_deleted).is_(False))
+                .options(load_only(User.id, User.email, User.display_name, User.avatar_url, User.roles, User.is_active))
+            )
             return result.scalars().first()
 
     async def create_user_with_refresh_token(self, user: User, token: RefreshToken) -> None:
@@ -57,7 +62,11 @@ class AuthRepository:
 
     async def get_refresh_token(self, token_hash: str) -> RefreshToken | None:
         async with self._session_factory() as session:
-            result = await session.execute(select(RefreshToken).where(RefreshToken.token_hash == token_hash))
+            result = await session.execute(
+                select(RefreshToken)
+                .where(RefreshToken.token_hash == token_hash)
+                .options(load_only(RefreshToken.revoked_at, RefreshToken.expires_at, RefreshToken.user_id))
+            )
             return result.scalars().first()
 
     async def rotate_refresh_token(self, old_hash: str, new_token: RefreshToken) -> bool:

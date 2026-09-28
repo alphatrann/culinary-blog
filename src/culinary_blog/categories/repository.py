@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.orm import load_only
 from sqlmodel import col, or_, select
 
 from culinary_blog.categories.models import Category
@@ -34,13 +35,16 @@ class CategoryRepository:
                 .outerjoin(published, published.c.category_id == Category.id)
                 .where(col(Category.is_deleted).is_(False))
                 .order_by(col(Category.name))
+                .options(load_only(Category.id, Category.name, Category.slug, Category.description, Category.image_url))
             )
             return [(category, int(count)) for category, count in result.all()]
 
     async def get_by_slug(self, slug: str) -> Category | None:
         async with self._session_factory() as session:
             result = await session.execute(
-                select(Category).where(Category.slug == slug, col(Category.is_deleted).is_(False))
+                select(Category)
+                .where(Category.slug == slug, col(Category.is_deleted).is_(False))
+                .options(load_only(Category.id, Category.name, Category.slug, Category.description, Category.image_url))
             )
             return result.scalars().first()
 
@@ -107,6 +111,21 @@ class CategoryRepository:
                 .order_by(col(Recipe.published_at).desc().nulls_last(), col(Recipe.created_at).desc(), col(Recipe.id))
                 .offset((page - 1) * page_size)
                 .limit(page_size)
+                .options(
+                    load_only(
+                        Recipe.id,
+                        Recipe.title,
+                        Recipe.slug,
+                        Recipe.description,
+                        Recipe.prep_time_minutes,
+                        Recipe.cook_time_minutes,
+                        Recipe.servings,
+                        Recipe.difficulty,
+                        Recipe.status,
+                        Recipe.author_id,
+                        Recipe.published_at,
+                    )
+                )
             )
             return list(result.scalars().all()), int(total)
 
