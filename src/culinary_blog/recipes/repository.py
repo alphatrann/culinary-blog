@@ -1,10 +1,12 @@
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import Any
 
-from sqlalchemy import ColumnElement, func, text, update
+from sqlalchemy import ColumnElement, Row, func, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.orm import load_only
 from sqlmodel import col, or_, select
 
 from culinary_blog.auth.models import User
@@ -24,6 +26,48 @@ _SORT_COLUMNS = {
     "title": col(Recipe.title),
     "cook_time_minutes": col(Recipe.cook_time_minutes),
 }
+
+# Columns RecipeSummaryOut/RecipeSearchResultOut actually surface — list/search views never touch nutrition_*.
+_RECIPE_SUMMARY_ONLY = load_only(
+    Recipe.id,
+    Recipe.title,
+    Recipe.slug,
+    Recipe.description,
+    Recipe.prep_time_minutes,
+    Recipe.cook_time_minutes,
+    Recipe.servings,
+    Recipe.difficulty,
+    Recipe.status,
+    Recipe.author_id,
+    Recipe.published_at,
+)
+
+# Columns StepOut/IngredientOut/RecipeImageOut actually surface.
+_STEP_ONLY = load_only(
+    RecipeStep.id,
+    RecipeStep.step_number,
+    RecipeStep.title,
+    RecipeStep.description,
+    RecipeStep.duration_minutes,
+    RecipeStep.image_url,
+)
+_INGREDIENT_ONLY = load_only(
+    RecipeIngredient.id,
+    RecipeIngredient.name,
+    RecipeIngredient.quantity,
+    RecipeIngredient.unit,
+    RecipeIngredient.notes,
+    RecipeIngredient.order_index,
+)
+_IMAGE_ONLY = load_only(
+    RecipeImage.id,
+    RecipeImage.original_url,
+    RecipeImage.medium_url,
+    RecipeImage.thumbnail_url,
+    RecipeImage.alt_text,
+    RecipeImage.is_primary,
+    RecipeImage.order_index,
+)
 
 
 @dataclass
@@ -53,7 +97,9 @@ class RecipeRepository:
     async def get_by_id(self, recipe_id: uuid.UUID) -> Recipe | None:
         async with self._session_factory() as session:
             result = await session.execute(
-                select(Recipe).where(Recipe.id == recipe_id, col(Recipe.is_deleted).is_(False))
+                select(Recipe)
+                .where(Recipe.id == recipe_id, col(Recipe.is_deleted).is_(False))
+                .options(load_only(Recipe.id, Recipe.author_id, Recipe.status))
             )
             return result.scalars().first()
 
@@ -71,6 +117,10 @@ class RecipeRepository:
                     .join(Category, col(Category.id) == col(Recipe.category_id))
                     .join(User, col(User.id) == col(Recipe.author_id))
                     .where(Recipe.slug == slug, col(Recipe.is_deleted).is_(False))
+                    .options(
+                        load_only(Category.id, Category.name, Category.slug),
+                        load_only(User.id, User.display_name, User.avatar_url),
+                    )
                 )
             ).first()
             if head is None:
@@ -82,6 +132,7 @@ class RecipeRepository:
                     select(RecipeImage)
                     .where(RecipeImage.recipe_id == recipe.id, col(RecipeImage.is_deleted).is_(False))
                     .order_by(col(RecipeImage.order_index), col(RecipeImage.created_at))
+                    .options(_IMAGE_ONLY)
                 )
             ).scalars()
             return RecipeAggregate(recipe, category, author, steps, ingredients, list(images))
@@ -122,6 +173,7 @@ class RecipeRepository:
                 .order_by(ordering, col(Recipe.id))  # id as tie-break keeps pages stable
                 .offset((page - 1) * page_size)
                 .limit(page_size)
+                .options(_RECIPE_SUMMARY_ONLY)
             )
             return list(result.scalars().all()), int(total)
 
@@ -164,6 +216,7 @@ class RecipeRepository:
                 .order_by(score.desc(), col(Recipe.id))  # id as tie-break keeps pages stable
                 .offset((page - 1) * page_size)
                 .limit(page_size)
+                .options(_RECIPE_SUMMARY_ONLY)
             )
             return [(recipe, float(relevance)) for recipe, relevance in result.all()], int(total)
 
@@ -223,18 +276,22 @@ class RecipeRepository:
             await session.commit()
             return recipe
 
-    async def delete(self, recipe_id: uuid.UUID) -> Recipe | None:
-        """Soft-delete a recipe and cascade the soft delete to its steps, ingredients and images."""
+    async def delete(self, recipe_id: uuid.UUID) -> uuid.UUID | None:
+        """Soft-delete a recipe and cascade the soft delete to its steps, ingredients and images.
+
+        Returns the deleted recipe's id, or None if there was no live row to delete — callers only need the
+        existence signal, never the recipe's other columns.
+        """
         async with self._session_factory() as session:
             now = datetime.now(UTC)
             result = await session.execute(
                 update(Recipe)
                 .where(col(Recipe.id) == recipe_id, col(Recipe.is_deleted).is_(False))
                 .values(is_deleted=True, row_version=col(Recipe.row_version) + 1, updated_at=now)
-                .returning(Recipe)
+                .returning(Recipe.id)
             )
-            recipe = result.scalar_one_or_none()
-            if recipe is not None:
+            deleted_id = result.scalar_one_or_none()
+            if deleted_id is not None:
                 for model in (RecipeStep, RecipeIngredient, RecipeImage):
                     await session.execute(
                         update(model)
@@ -242,16 +299,18 @@ class RecipeRepository:
                         .values(is_deleted=True, row_version=col(model.row_version) + 1, updated_at=now)
                     )
             await session.commit()
-            return recipe
+            return deleted_id
 
     async def get_ingredient(self, recipe_id: uuid.UUID, ingredient_id: uuid.UUID) -> RecipeIngredient | None:
         async with self._session_factory() as session:
             result = await session.execute(
-                select(RecipeIngredient).where(
+                select(RecipeIngredient)
+                .where(
                     RecipeIngredient.id == ingredient_id,
                     RecipeIngredient.recipe_id == recipe_id,
                     col(RecipeIngredient.is_deleted).is_(False),
                 )
+                .options(_INGREDIENT_ONLY)
             )
             return result.scalars().first()
 
@@ -272,15 +331,23 @@ class RecipeRepository:
             await session.refresh(ingredient)
             return ingredient
 
-    async def update_ingredient(self, ingredient_id: uuid.UUID, values: dict[str, object]) -> RecipeIngredient | None:
+    async def update_ingredient(self, ingredient_id: uuid.UUID, values: dict[str, object]) -> Row[Any] | None:
+        """Returns just the columns `IngredientOut` surfaces; the caller never re-persists this row."""
         async with self._session_factory() as session:
             result = await session.execute(
                 update(RecipeIngredient)
                 .where(col(RecipeIngredient.id) == ingredient_id, col(RecipeIngredient.is_deleted).is_(False))
                 .values(**values, row_version=col(RecipeIngredient.row_version) + 1, updated_at=datetime.now(UTC))
-                .returning(RecipeIngredient)
+                .returning(
+                    RecipeIngredient.id,
+                    RecipeIngredient.name,
+                    RecipeIngredient.quantity,
+                    RecipeIngredient.unit,
+                    RecipeIngredient.notes,
+                    RecipeIngredient.order_index,
+                )
             )
-            ingredient = result.scalar_one_or_none()
+            ingredient = result.one_or_none()
             await session.commit()
             return ingredient
 
@@ -298,11 +365,13 @@ class RecipeRepository:
     async def get_step(self, recipe_id: uuid.UUID, step_id: uuid.UUID) -> RecipeStep | None:
         async with self._session_factory() as session:
             result = await session.execute(
-                select(RecipeStep).where(
+                select(RecipeStep)
+                .where(
                     RecipeStep.id == step_id,
                     RecipeStep.recipe_id == recipe_id,
                     col(RecipeStep.is_deleted).is_(False),
                 )
+                .options(_STEP_ONLY)
             )
             return result.scalars().first()
 
@@ -342,15 +411,23 @@ class RecipeRepository:
                 raise ConflictError("Another step was added at the same time, please retry") from exc
             return saved
 
-    async def update_step(self, step_id: uuid.UUID, values: dict[str, object]) -> RecipeStep | None:
+    async def update_step(self, step_id: uuid.UUID, values: dict[str, object]) -> Row[Any] | None:
+        """Returns just the columns `StepOut` surfaces; the caller never re-persists this row."""
         async with self._session_factory() as session:
             result = await session.execute(
                 update(RecipeStep)
                 .where(col(RecipeStep.id) == step_id, col(RecipeStep.is_deleted).is_(False))
                 .values(**values, row_version=col(RecipeStep.row_version) + 1, updated_at=datetime.now(UTC))
-                .returning(RecipeStep)
+                .returning(
+                    RecipeStep.id,
+                    RecipeStep.step_number,
+                    RecipeStep.title,
+                    RecipeStep.description,
+                    RecipeStep.duration_minutes,
+                    RecipeStep.image_url,
+                )
             )
-            step = result.scalar_one_or_none()
+            step = result.one_or_none()
             await session.commit()
             return step
 
@@ -392,11 +469,13 @@ class RecipeRepository:
     async def get_image(self, recipe_id: uuid.UUID, image_id: uuid.UUID) -> RecipeImage | None:
         async with self._session_factory() as session:
             result = await session.execute(
-                select(RecipeImage).where(
+                select(RecipeImage)
+                .where(
                     RecipeImage.id == image_id,
                     RecipeImage.recipe_id == recipe_id,
                     col(RecipeImage.is_deleted).is_(False),
                 )
+                .options(_IMAGE_ONLY)
             )
             return result.scalars().first()
 
@@ -515,10 +594,12 @@ class RecipeRepository:
             select(RecipeStep)
             .where(RecipeStep.recipe_id == recipe_id, col(RecipeStep.is_deleted).is_(False))
             .order_by(col(RecipeStep.step_number))
+            .options(_STEP_ONLY)
         )
         ingredients = await session.execute(
             select(RecipeIngredient)
             .where(RecipeIngredient.recipe_id == recipe_id, col(RecipeIngredient.is_deleted).is_(False))
             .order_by(col(RecipeIngredient.order_index), col(RecipeIngredient.created_at))
+            .options(_INGREDIENT_ONLY)
         )
         return list(steps.scalars().all()), list(ingredients.scalars().all())
