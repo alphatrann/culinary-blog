@@ -1,0 +1,143 @@
+### 1. Guest list, newest first (GET /recipes)
+                                                       QUERY PLAN                                                       
+------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=1748.65..1748.68 rows=12 width=491) (actual time=4.408..4.410 rows=12 loops=1)
+   Buffers: shared hit=1435
+   ->  Sort  (cost=1748.65..1769.88 rows=8491 width=491) (actual time=4.408..4.409 rows=12 loops=1)
+         Sort Key: created_at DESC, id
+         Sort Method: top-N heapsort  Memory: 39kB
+         Buffers: shared hit=1435
+         ->  Seq Scan on recipes  (cost=0.00..1554.00 rows=8491 width=491) (actual time=0.005..2.768 rows=8491 loops=1)
+               Filter: ((is_deleted IS FALSE) AND (status = 1))
+               Rows Removed by Filter: 1509
+               Buffers: shared hit=1429
+ Planning:
+   Buffers: shared hit=291
+ Planning Time: 1.838 ms
+ Execution Time: 4.578 ms
+(14 rows)
+
+### 2. Guest list, category + difficulty filter
+                                                                      QUERY PLAN                                                                       
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=223.42..223.45 rows=12 width=491) (actual time=0.224..0.226 rows=12 loops=1)
+   Buffers: shared hit=63
+   InitPlan 1 (returns $0)
+     ->  Limit  (cost=0.14..0.40 rows=1 width=27) (actual time=0.013..0.013 rows=1 loops=1)
+           Buffers: shared hit=2
+           ->  Index Scan using ix_categories_slug on categories  (cost=0.14..12.89 rows=50 width=27) (actual time=0.012..0.012 rows=1 loops=1)
+                 Buffers: shared hit=2
+   ->  Sort  (cost=223.02..223.13 rows=43 width=491) (actual time=0.224..0.224 rows=12 loops=1)
+         Sort Key: recipes.created_at DESC, recipes.id
+         Sort Method: top-N heapsort  Memory: 40kB
+         Buffers: shared hit=63
+         ->  Bitmap Heap Scan on recipes  (cost=49.22..222.04 rows=43 width=491) (actual time=0.181..0.207 rows=42 loops=1)
+               Recheck Cond: ((category_id = $0) AND (difficulty = 2))
+               Filter: ((is_deleted IS FALSE) AND (status = 1))
+               Rows Removed by Filter: 9
+               Heap Blocks: exact=50
+               Buffers: shared hit=63
+               ->  BitmapAnd  (cost=49.22..49.22 rows=50 width=0) (actual time=0.172..0.172 rows=0 loops=1)
+                     Buffers: shared hit=13
+                     ->  Bitmap Index Scan on ix_recipes_category_id  (cost=0.00..5.79 rows=200 width=0) (actual time=0.028..0.028 rows=185 loops=1)
+                           Index Cond: (category_id = $0)
+                           Buffers: shared hit=4
+                     ->  Bitmap Index Scan on ix_recipes_difficulty  (cost=0.00..43.16 rows=2517 width=0) (actual time=0.130..0.130 rows=2517 loops=1)
+                           Index Cond: (difficulty = 2)
+                           Buffers: shared hit=9
+ Planning:
+   Buffers: shared hit=67
+ Planning Time: 0.310 ms
+ Execution Time: 0.281 ms
+(29 rows)
+
+### 3. Total count for a category (pagination total)
+                                                                   QUERY PLAN                                                                   
+------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=554.71..554.72 rows=1 width=8) (actual time=0.122..0.123 rows=1 loops=1)
+   Buffers: shared hit=171
+   InitPlan 1 (returns $0)
+     ->  Limit  (cost=0.14..0.40 rows=1 width=27) (actual time=0.005..0.006 rows=1 loops=1)
+           Buffers: shared hit=2
+           ->  Index Scan using ix_categories_slug on categories  (cost=0.14..12.89 rows=50 width=27) (actual time=0.005..0.005 rows=1 loops=1)
+                 Buffers: shared hit=2
+   ->  Bitmap Heap Scan on recipes  (cost=5.83..553.89 rows=170 width=0) (actual time=0.027..0.115 rows=155 loops=1)
+         Recheck Cond: (category_id = $0)
+         Filter: ((is_deleted IS FALSE) AND (status = 1))
+         Rows Removed by Filter: 30
+         Heap Blocks: exact=167
+         Buffers: shared hit=171
+         ->  Bitmap Index Scan on ix_recipes_category_id  (cost=0.00..5.79 rows=200 width=0) (actual time=0.015..0.015 rows=185 loops=1)
+               Index Cond: (category_id = $0)
+               Buffers: shared hit=4
+ Planning:
+   Buffers: shared hit=6
+ Planning Time: 0.066 ms
+ Execution Time: 0.155 ms
+(20 rows)
+
+### 4. Non-admin list (published OR own)
+                                                       QUERY PLAN                                                        
+-------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=1814.26..1814.29 rows=12 width=64) (actual time=2.862..2.864 rows=12 loops=1)
+   Buffers: shared hit=1435
+   InitPlan 1 (returns $0)
+     ->  Limit  (cost=0.00..6.01 rows=1 width=16) (actual time=0.028..0.029 rows=1 loops=1)
+           Buffers: shared hit=6
+           ->  Seq Scan on users  (cost=0.00..6.01 rows=1 width=16) (actual time=0.028..0.028 rows=1 loops=1)
+                 Buffers: shared hit=6
+   ->  Sort  (cost=1808.25..1833.25 rows=10000 width=64) (actual time=2.862..2.863 rows=12 loops=1)
+         Sort Key: recipes.created_at DESC, recipes.id
+         Sort Method: top-N heapsort  Memory: 28kB
+         Buffers: shared hit=1435
+         ->  Seq Scan on recipes  (cost=0.00..1579.00 rows=10000 width=64) (actual time=0.003..1.717 rows=10000 loops=1)
+               Filter: ((is_deleted IS FALSE) AND ((status = 1) OR (author_id = $0)))
+               Buffers: shared hit=1435
+ Planning:
+   Buffers: shared hit=55
+ Planning Time: 0.195 ms
+ Execution Time: 2.885 ms
+(18 rows)
+
+### 5. Recipe detail by slug
+                                                           QUERY PLAN                                                            
+---------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using ix_recipes_slug on recipes  (cost=0.44..8.46 rows=1 width=588) (actual time=0.019..0.020 rows=1 loops=1)
+   Index Cond: ((slug)::text = ($0)::text)
+   Filter: (is_deleted IS FALSE)
+   Buffers: shared hit=4
+   InitPlan 1 (returns $0)
+     ->  Limit  (cost=0.00..0.15 rows=1 width=11) (actual time=0.006..0.006 rows=1 loops=1)
+           Buffers: shared hit=1
+           ->  Seq Scan on recipes recipes_1  (cost=0.00..1529.00 rows=10000 width=11) (actual time=0.005..0.005 rows=1 loops=1)
+                 Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=24
+ Planning Time: 0.234 ms
+ Execution Time: 0.031 ms
+(13 rows)
+
+### 6. Search "pho" (trigram GIN, word_similarity)
+                                                                    QUERY PLAN                                                                     
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=1459.97..1460.00 rows=12 width=20) (actual time=5.638..5.640 rows=12 loops=1)
+   Buffers: shared hit=610
+   ->  Sort  (cost=1459.97..1461.26 rows=515 width=20) (actual time=5.637..5.638 rows=12 loops=1)
+         Sort Key: (word_similarity('pho'::text, f_unaccent(lower((title)::text)))) DESC, id
+         Sort Method: top-N heapsort  Memory: 26kB
+         Buffers: shared hit=610
+         ->  Bitmap Heap Scan on recipes  (cost=42.01..1448.17 rows=515 width=20) (actual time=0.238..5.550 rows=557 loops=1)
+               Recheck Cond: (f_unaccent(lower((title)::text)) %> 'pho'::text)
+               Filter: ((is_deleted IS FALSE) AND (status = 1))
+               Rows Removed by Filter: 109
+               Heap Blocks: exact=597
+               Buffers: shared hit=607
+               ->  Bitmap Index Scan on idx_recipe_title_trgm_gin  (cost=0.00..41.89 rows=606 width=0) (actual time=0.144..0.144 rows=666 loops=1)
+                     Index Cond: (f_unaccent(lower((title)::text)) %> 'pho'::text)
+                     Buffers: shared hit=10
+ Planning:
+   Buffers: shared hit=36
+ Planning Time: 3.264 ms
+ Execution Time: 5.715 ms
+(19 rows)
+
