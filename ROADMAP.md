@@ -42,10 +42,10 @@
 - `unaccent` + `pg_trgm`, GIN trigram index on `f_unaccent(lower(title))` (ADR-0008)
 - `GET /recipes/search`, published only, ranked by `word_similarity` (`relevance_score`)
 
-### M6a — Load-test baseline (NFR-PERF-001/002/004)
-- [ ] k6 smoke, load (≥100 users) and stress scripts
-- [ ] Record p50/p95/p99 vs. targets (150 / 500 / 1000 ms)
-- [ ] Slow query log, `EXPLAIN ANALYZE`, list bottlenecks
+### ✅ M6a — Load-test baseline (NFR-PERF-001/002/004)
+- k6 smoke, load (100 users) and stress scripts, 10k-recipe seed, `EXPLAIN ANALYZE` script (`loadtest/`)
+- Baseline passes NFR-PERF-001/002 uncached (p95 ≤ 30 ms reads at 100 users); knee at ~100–150 stress VUs (API CPU-bound)
+- Decision: no new indexes at SRS scale; DB round-trip fixes, nginx/OTel fixes (see `loadtest/README.md`)
 
 ### M6b — Cache layer (NFR-PERF-001/003, ADR-0003)
 - [ ] Cache-aside: categories 1h, recipes 30m, search 5m

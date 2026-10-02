@@ -38,7 +38,9 @@ class GetCategoryHandler(QueryHandler[GetCategoryQuery, CategoryDetailOut]):
             page=query.page,
             page_size=query.page_size,
         )
-        recipe_count = await self._repository.count_published_recipes(category.id)
+        # A guest only sees published recipes, so the page total already is the published count.
+        is_guest = viewer is None
+        recipe_count = total if is_guest else await self._repository.count_published_recipes(category.id)
         return CategoryDetailOut(
             category=CategoryOut(
                 **category.model_dump(include=set(CategoryOut.model_fields) - {"recipe_count"}),

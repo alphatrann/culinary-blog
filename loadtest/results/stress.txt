@@ -1,0 +1,79 @@
+
+
+  █ THRESHOLDS 
+
+    http_req_duration{scenario:s100}
+    ✓ 'p(95)<1e9' p(95)=84.39ms
+
+    http_req_duration{scenario:s150}
+    ✓ 'p(95)<1e9' p(95)=536.81ms
+
+    http_req_duration{scenario:s200}
+    ✓ 'p(95)<1e9' p(95)=1.19s
+
+    http_req_duration{scenario:s300}
+    ✓ 'p(95)<1e9' p(95)=2.39s
+
+    http_req_duration{scenario:s400}
+    ✓ 'p(95)<1e9' p(95)=2.55s
+
+    http_req_failed{scenario:s100}
+    ✓ 'rate<=1' rate=0.00%
+
+    http_req_failed{scenario:s150}
+    ✓ 'rate<=1' rate=0.00%
+
+    http_req_failed{scenario:s200}
+    ✓ 'rate<=1' rate=0.00%
+
+    http_req_failed{scenario:s300}
+    ✓ 'rate<=1' rate=0.00%
+
+    http_req_failed{scenario:s400}
+    ✓ 'rate<=1' rate=0.01%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 74925  158.62725/s
+    checks_succeeded...: 99.99% 74923 out of 74925
+    checks_failed......: 0.00%  2 out of 74925
+
+    ✓ search 2xx
+    ✗ list_recipes 2xx
+      ↳  99% — ✓ 18722 / ✗ 2
+    ✓ category_detail 2xx
+    ✓ recipe_detail 2xx
+    ✓ categories 2xx
+    ✓ login 200
+    ✓ list_recipes_auth 2xx
+    ✓ me 2xx
+
+    HTTP
+    http_req_duration..............: med=272.91ms p(95)=2.02s    p(99)=3.05s    max=9.77s
+      { expected_response:true }...: med=272.9ms  p(95)=2.02s    p(99)=3.05s    max=9.77s
+      { scenario:s100 }............: med=7.97ms   p(95)=84.39ms  p(99)=386.47ms max=2.53s
+      { scenario:s150 }............: med=14.83ms  p(95)=536.81ms p(99)=1.28s    max=2.41s
+      { scenario:s200 }............: med=212.94ms p(95)=1.19s    p(99)=2.39s    max=4.82s
+      { scenario:s300 }............: med=929.88ms p(95)=2.39s    p(99)=3.87s    max=5.28s
+      { scenario:s400 }............: med=1.44s    p(95)=2.55s    p(99)=4.08s    max=9.77s
+    http_req_failed................: 0.00%  2 out of 74930
+      { scenario:s100 }............: 0.00%  0 out of 11810
+      { scenario:s150 }............: 0.00%  0 out of 16378
+      { scenario:s200 }............: 0.00%  0 out of 16500
+      { scenario:s300 }............: 0.00%  0 out of 14439
+      { scenario:s400 }............: 0.01%  2 out of 15798
+    http_reqs......................: 74930  158.637835/s
+
+    EXECUTION
+    iteration_duration.............: med=1.11s    p(95)=2.81s    p(99)=4.04s    max=10.9s
+    iterations.....................: 74225  157.145247/s
+    vus............................: 22     min=0          max=400
+    vus_max........................: 700    min=700        max=700
+
+    NETWORK
+    data_received..................: 498 MB 1.1 MB/s
+    data_sent......................: 25 MB  53 kB/s
+
+
+

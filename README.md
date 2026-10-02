@@ -2,7 +2,7 @@
 
 Recipe-sharing platform. Authors publish recipes with images, ingredients, steps and nutrition info; readers browse, filter and search them (Vietnamese full-text).
 
-**Status:** M0–M5b done (infra, auth, categories, recipes, ingredients/steps, publishing, images, soft delete, full-text search). Next: load-test baseline (M6a).
+**Status:** M0–M6a done (infra, auth, categories, recipes, ingredients/steps, publishing, images, soft delete, full-text search, load-test baseline). Next: cache layer (M6b).
 
 ## Stack
 
@@ -62,6 +62,14 @@ API docs: `/docs` (Swagger) · `/redoc`
 - REST + JSON under `/api/v1`, `snake_case` fields
 - Auth via `HttpOnly` cookies
 - Errors as RFC 7807 problem details
+
+## Observability
+
+`docker compose -f compose.production.yml up -d --build`, then open Grafana on http://localhost:3000. Provisioned
+(`observability/grafana/provisioning/`): Prometheus/Tempo/Loki datasources and two dashboards, **RED** (rate, errors,
+duration, slow/errored traces) and **USE** (event loop, DB pool, Docker VM, Postgres, Redis). Container-level USE panels
+need cAdvisor per-container labels, which Docker Desktop doesn't expose (VM-level panels still work).
+After editing `observability/*` rebuild the image (`up -d --build <service>`): configs are baked in, not mounted.
 
 ## Layout
 

@@ -16,16 +16,21 @@ UNIQUE_VIOLATION = "23505"  # PostgreSQL SQLSTATE
 class AuthRepository:
     """The only place that runs auth queries. Multi-step writes are single methods so they commit atomically."""
 
-    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
+    def __init__(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        read_session_factory: async_sessionmaker[AsyncSession] | None = None,
+    ) -> None:
         self._session_factory = session_factory
+        self._read_session_factory = read_session_factory or session_factory  # AUTOCOMMIT reads when provided
 
     async def get_user_by_email(self, email: str) -> User | None:
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             result = await session.execute(select(User).where(User.email == email, col(User.is_deleted).is_(False)))
             return result.scalars().first()
 
     async def get_user_by_id(self, user_id: uuid.UUID) -> User | None:
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             result = await session.execute(
                 select(User)
                 .where(User.id == user_id, col(User.is_deleted).is_(False))

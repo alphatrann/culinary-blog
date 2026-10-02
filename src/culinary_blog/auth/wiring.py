@@ -15,7 +15,7 @@ from culinary_blog.auth.router import AuthRouter
 from culinary_blog.auth.security import PasswordHasher, TokenService
 from culinary_blog.auth.session_issuer import SessionIssuer
 from culinary_blog.config import get_settings
-from culinary_blog.database.session import async_session_factory
+from culinary_blog.database.session import async_session_factory, read_session_factory
 
 
 @lru_cache
@@ -38,7 +38,7 @@ def build_auth_router() -> APIRouter:
     """Composition root for the auth module: the only place that binds concrete dependencies."""
     settings = get_settings()
     tokens = get_token_service()
-    repository = AuthRepository(async_session_factory)
+    repository = AuthRepository(async_session_factory, read_session_factory)
     hasher = PasswordHasher()
     issuer = SessionIssuer(tokens)
     return AuthRouter(

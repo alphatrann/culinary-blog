@@ -16,8 +16,9 @@ exporters:
       insecure: true
   prometheus:
     endpoint: 0.0.0.0:8889
-  loki:
-    endpoint: http://loki:3100/loki/api/v1/push
+  # The dedicated `loki` exporter was removed from the contrib collector; Loki ingests OTLP natively.
+  otlphttp/loki:
+    endpoint: http://loki:3100/otlp
 
 service:
   pipelines:
@@ -32,4 +33,4 @@ service:
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [loki]
+      exporters: [otlphttp/loki]

@@ -14,6 +14,11 @@ class Settings(BaseSettings):
     environment: str = "development"
 
     database_url: str = "postgresql+asyncpg://culinary:culinary@localhost:5432/culinary_blog"
+    # Pre-ping costs 3 extra round trips (BEGIN; ; ROLLBACK) on every pool checkout - most of a read request's DB
+    # spans in the M6a traces. Off by default; `pool_recycle` bounds connection age instead. Turn on if the DB is
+    # restarted often (a stale connection then fails the first request that draws it).
+    db_pool_pre_ping: bool = False
+    db_pool_recycle_seconds: int = 1800
 
     cache_redis_url: str = "redis://localhost:6380/0"
     queue_redis_url: str = "redis://localhost:6381/0"
