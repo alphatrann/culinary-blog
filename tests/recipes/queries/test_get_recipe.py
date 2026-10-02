@@ -4,12 +4,13 @@ from culinary_blog.errors import ForbiddenError, NotFoundError
 from culinary_blog.recipes.enums import RecipeStatus
 from culinary_blog.recipes.models import RecipeImage, RecipeIngredient, RecipeStep
 from culinary_blog.recipes.queries.get_recipe import GetRecipeHandler, GetRecipeQuery
+from tests.cache.fakes import FakeCache
 from tests.recipes.fakes import ADMIN, AUTHOR, OTHER_AUTHOR, FakeRecipeRepository
 
 
 def make_handler():
     repo = FakeRecipeRepository()
-    return repo, GetRecipeHandler(repo)
+    return repo, GetRecipeHandler(repo, FakeCache())
 
 
 @pytest.mark.anyio

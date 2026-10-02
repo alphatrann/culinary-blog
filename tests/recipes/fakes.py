@@ -8,10 +8,12 @@ from culinary_blog.auth.principal import Principal
 from culinary_blog.categories.models import Category
 from culinary_blog.errors import ConflictError, ServiceUnavailableError, UnprocessableError
 from culinary_blog.jobs.queue import JobQueue
+from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 from culinary_blog.recipes.models import Recipe, RecipeImage, RecipeIngredient, RecipeStep
 from culinary_blog.recipes.repository import RecipeAggregate, RecipeRepository
 from culinary_blog.storage.service import FileStorageService
+from tests.cache.fakes import FakeCache
 
 
 def _fold(value: str) -> str:
@@ -346,3 +348,7 @@ class FakeJobQueue(JobQueue):
         if self.fail:
             raise ConnectionError("redis down")
         self.jobs.append((queue, payload))
+
+
+def invalidator(cache: FakeCache | None = None) -> RecipeCacheInvalidator:
+    return RecipeCacheInvalidator(cache or FakeCache())

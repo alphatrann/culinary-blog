@@ -8,7 +8,7 @@ from culinary_blog.recipes.commands.publish_recipe import PublishRecipeCommand, 
 from culinary_blog.recipes.commands.unpublish_recipe import UnpublishRecipeCommand, UnpublishRecipeHandler
 from culinary_blog.recipes.enums import RecipeStatus
 from culinary_blog.recipes.models import RecipeIngredient, RecipeStep
-from tests.recipes.fakes import ADMIN, AUTHOR, OTHER_AUTHOR, READER, FakeRecipeRepository
+from tests.recipes.fakes import ADMIN, AUTHOR, OTHER_AUTHOR, READER, FakeRecipeRepository, invalidator
 
 
 def draft(repo, *, steps=1, ingredients=1, **overrides):
@@ -24,7 +24,7 @@ def draft(repo, *, steps=1, ingredients=1, **overrides):
 async def test_publish_sets_status_and_first_published_at():
     repo = FakeRecipeRepository()
     recipe = draft(repo)
-    out = await PublishRecipeHandler(repo).handle(PublishRecipeCommand(AUTHOR, recipe.id))
+    out = await PublishRecipeHandler(repo, invalidator()).handle(PublishRecipeCommand(AUTHOR, recipe.id))
 
     assert out.status == RecipeStatus.PUBLISHED and out.published_at is not None and out.row_version == 1
 
@@ -35,7 +35,7 @@ async def test_publish_blocked_without_a_step_and_an_ingredient(steps, ingredien
     repo = FakeRecipeRepository()
     recipe = draft(repo, steps=steps, ingredients=ingredients)
     with pytest.raises(UnprocessableError):
-        await PublishRecipeHandler(repo).handle(PublishRecipeCommand(AUTHOR, recipe.id))
+        await PublishRecipeHandler(repo, invalidator()).handle(PublishRecipeCommand(AUTHOR, recipe.id))
     assert recipe.status == RecipeStatus.DRAFT and recipe.published_at is None
 
 
@@ -45,14 +45,14 @@ async def test_soft_deleted_children_do_not_count():
     recipe = draft(repo)
     repo.steps[0].is_deleted = True
     with pytest.raises(UnprocessableError):
-        await PublishRecipeHandler(repo).handle(PublishRecipeCommand(AUTHOR, recipe.id))
+        await PublishRecipeHandler(repo, invalidator()).handle(PublishRecipeCommand(AUTHOR, recipe.id))
 
 
 @pytest.mark.anyio
 async def test_publish_is_idempotent_and_does_not_touch_the_recipe():
     repo = FakeRecipeRepository()
     recipe = draft(repo)
-    handler = PublishRecipeHandler(repo)
+    handler = PublishRecipeHandler(repo, invalidator())
     first = await handler.handle(PublishRecipeCommand(AUTHOR, recipe.id))
     second = await handler.handle(PublishRecipeCommand(AUTHOR, recipe.id))
 
@@ -63,7 +63,7 @@ async def test_publish_is_idempotent_and_does_not_touch_the_recipe():
 async def test_already_published_recipe_skips_the_children_check():
     repo = FakeRecipeRepository()
     recipe = repo.seed_recipe(AUTHOR, RecipeStatus.PUBLISHED)  # no steps/ingredients, but already published
-    out = await PublishRecipeHandler(repo).handle(PublishRecipeCommand(AUTHOR, recipe.id))
+    out = await PublishRecipeHandler(repo, invalidator()).handle(PublishRecipeCommand(AUTHOR, recipe.id))
     assert out.status == RecipeStatus.PUBLISHED and out.row_version == 0
 
 
@@ -72,7 +72,7 @@ async def test_republish_keeps_the_original_published_at():
     repo = FakeRecipeRepository()
     original = datetime(2026, 1, 1, tzinfo=UTC)
     recipe = draft(repo, published_at=original)
-    out = await PublishRecipeHandler(repo).handle(PublishRecipeCommand(AUTHOR, recipe.id))
+    out = await PublishRecipeHandler(repo, invalidator()).handle(PublishRecipeCommand(AUTHOR, recipe.id))
     assert out.published_at == original
 
 
@@ -80,7 +80,7 @@ async def test_republish_keeps_the_original_published_at():
 async def test_unpublish_returns_to_draft_and_is_idempotent():
     repo = FakeRecipeRepository()
     recipe = repo.seed_recipe(AUTHOR, RecipeStatus.PUBLISHED)
-    handler = UnpublishRecipeHandler(repo)
+    handler = UnpublishRecipeHandler(repo, invalidator())
     first = await handler.handle(UnpublishRecipeCommand(AUTHOR, recipe.id))
     second = await handler.handle(UnpublishRecipeCommand(AUTHOR, recipe.id))
 
@@ -92,8 +92,10 @@ async def test_unpublish_returns_to_draft_and_is_idempotent():
 async def test_admin_can_publish_and_unpublish_any_recipe():
     repo = FakeRecipeRepository()
     recipe = draft(repo)
-    assert (await PublishRecipeHandler(repo).handle(PublishRecipeCommand(ADMIN, recipe.id))).status == 1
-    assert (await UnpublishRecipeHandler(repo).handle(UnpublishRecipeCommand(ADMIN, recipe.id))).status == 0
+    assert (await PublishRecipeHandler(repo, invalidator()).handle(PublishRecipeCommand(ADMIN, recipe.id))).status == 1
+    assert (
+        await UnpublishRecipeHandler(repo, invalidator()).handle(UnpublishRecipeCommand(ADMIN, recipe.id))
+    ).status == 0
 
 
 @pytest.mark.anyio
@@ -102,15 +104,15 @@ async def test_forbidden_for_non_owner(actor):
     repo = FakeRecipeRepository()
     recipe = draft(repo)
     with pytest.raises(ForbiddenError):
-        await PublishRecipeHandler(repo).handle(PublishRecipeCommand(actor, recipe.id))
+        await PublishRecipeHandler(repo, invalidator()).handle(PublishRecipeCommand(actor, recipe.id))
     with pytest.raises(ForbiddenError):
-        await UnpublishRecipeHandler(repo).handle(UnpublishRecipeCommand(actor, recipe.id))
+        await UnpublishRecipeHandler(repo, invalidator()).handle(UnpublishRecipeCommand(actor, recipe.id))
 
 
 @pytest.mark.anyio
 async def test_unknown_recipe_is_not_found():
     repo = FakeRecipeRepository()
     with pytest.raises(NotFoundError):
-        await PublishRecipeHandler(repo).handle(PublishRecipeCommand(AUTHOR, uuid.uuid4()))
+        await PublishRecipeHandler(repo, invalidator()).handle(PublishRecipeCommand(AUTHOR, uuid.uuid4()))
     with pytest.raises(NotFoundError):
-        await UnpublishRecipeHandler(repo).handle(UnpublishRecipeCommand(AUTHOR, uuid.uuid4()))
+        await UnpublishRecipeHandler(repo, invalidator()).handle(UnpublishRecipeCommand(AUTHOR, uuid.uuid4()))

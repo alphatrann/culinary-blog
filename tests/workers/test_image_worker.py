@@ -6,11 +6,13 @@ import pytest
 from PIL import Image
 from redis.exceptions import TimeoutError as RedisTimeoutError
 
+from culinary_blog.cache import keys
 from culinary_blog.jobs.queue import DELETE_FILE, RESIZE_IMAGE, dead_letter_queue
 from culinary_blog.recipes.enums import RecipeStatus
 from culinary_blog.recipes.models import RecipeImage
 from culinary_blog.workers.image import MAX_ATTEMPTS, ImageWorker, render_variants
-from tests.recipes.fakes import AUTHOR, FakeRecipeRepository, FakeStorage
+from tests.cache.fakes import FakeCache
+from tests.recipes.fakes import AUTHOR, FakeRecipeRepository, FakeStorage, invalidator
 
 
 class FakeRedis:
@@ -46,13 +48,18 @@ def storage() -> FakeStorage:
 
 
 @pytest.fixture
+def cache() -> FakeCache:
+    return FakeCache()
+
+
+@pytest.fixture
 def repo() -> FakeRecipeRepository:
     return FakeRecipeRepository()
 
 
 @pytest.fixture
-def worker(redis, storage, repo) -> ImageWorker:
-    return ImageWorker(redis, storage, repo, sleep=no_sleep)  # type: ignore[arg-type]
+def worker(redis, storage, repo, cache) -> ImageWorker:
+    return ImageWorker(redis, storage, repo, invalidator(cache), sleep=no_sleep)  # type: ignore[arg-type]
 
 
 async def seed_image(repo, storage, data: bytes) -> RecipeImage:
@@ -141,3 +148,20 @@ async def test_run_survives_redis_timeouts_and_keeps_processing(worker, storage,
     with pytest.raises(StopWorker):
         await worker.run()
     assert storage.objects == {}
+
+
+@pytest.mark.anyio
+async def test_resize_drops_the_cached_recipe_detail_so_the_variants_show_up(worker, repo, storage, cache):
+    image = await seed_image(repo, storage, make_jpeg())
+    await worker.process(RESIZE_IMAGE, job(image))
+
+    assert cache.deleted == [keys.recipe(repo.recipes[image.recipe_id].slug)]
+
+
+@pytest.mark.anyio
+async def test_resize_job_for_a_deleted_image_leaves_the_cache_alone(worker, repo, storage, cache):
+    image = await seed_image(repo, storage, make_jpeg())
+    await repo.delete_image(image.recipe_id, image.id)
+    await worker.process(RESIZE_IMAGE, job(image))
+
+    assert cache.deleted == []

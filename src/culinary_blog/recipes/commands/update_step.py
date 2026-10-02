@@ -7,6 +7,7 @@ from culinary_blog.auth.principal import Principal
 from culinary_blog.cqrs import Command, CommandHandler
 from culinary_blog.errors import NotFoundError
 from culinary_blog.recipes.access import ensure_can_edit
+from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.repository import RecipeRepository
 from culinary_blog.recipes.schemas import StepIn, StepOut
 
@@ -24,8 +25,9 @@ class UpdateStepCommand(Command):
 class UpdateStepHandler(CommandHandler[UpdateStepCommand, StepOut]):
     """FR-RCP-010: replace a step's content; its `step_number` never changes here."""
 
-    def __init__(self, repository: RecipeRepository) -> None:
+    def __init__(self, repository: RecipeRepository, cache: RecipeCacheInvalidator) -> None:
         self._repository = repository
+        self._cache = cache
 
     async def handle(self, command: UpdateStepCommand) -> StepOut:
         recipe = await self._repository.get_by_id(command.recipe_id)
@@ -38,6 +40,7 @@ class UpdateStepHandler(CommandHandler[UpdateStepCommand, StepOut]):
         updated = await self._repository.update_step(command.step_id, command.data.model_dump())
         if updated is None:  # deleted between the lookup and the write
             raise NotFoundError("Không tìm thấy bước thực hiện.")
+        await self._cache.detail_changed(recipe.slug)
         logger.info(
             "recipe step updated",
             extra={

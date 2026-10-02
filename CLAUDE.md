@@ -58,6 +58,7 @@ src/culinary_blog/
 - Unit tests for handlers with a faked repository, ≥80% line coverage on the handler layer.
 - Every endpoint: at least one happy-path and one error-case integration test.
 - Test files mirror source in `tests/`; see `tests/test_health.py`.
+- Cache concurrency tests need a real Redis: `export TEST_REDIS_URL=$(scripts/test-redis.sh start)` (and `scripts/test-redis.sh stop` after). They skip when it's unset; CI runs the same script. The DB is flushed.
 
 ## Process
 

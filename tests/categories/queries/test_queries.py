@@ -4,12 +4,13 @@ from culinary_blog.categories.queries.get_category import GetCategoryHandler, Ge
 from culinary_blog.categories.queries.list_categories import ListCategoriesHandler, ListCategoriesQuery
 from culinary_blog.errors import NotFoundError
 from culinary_blog.recipes.enums import RecipeStatus
+from tests.cache.fakes import FakeCache
 from tests.categories.fakes import ADMIN, AUTHOR, OTHER_AUTHOR, FakeCategoryRepository, make_category
 
 
 @pytest.mark.anyio
 async def test_list_is_empty_when_no_categories():
-    assert await ListCategoriesHandler(FakeCategoryRepository()).handle(ListCategoriesQuery()) == []
+    assert await ListCategoriesHandler(FakeCategoryRepository(), FakeCache()).handle(ListCategoriesQuery()) == []
 
 
 @pytest.mark.anyio
@@ -23,7 +24,7 @@ async def test_list_is_sorted_by_name_and_counts_only_published():
     repo.add_recipe(zed, AUTHOR, RecipeStatus.ARCHIVED)
     make_category(repo, "Gone", "gone", is_deleted=True)
 
-    out = await ListCategoriesHandler(repo).handle(ListCategoriesQuery())
+    out = await ListCategoriesHandler(repo, FakeCache()).handle(ListCategoriesQuery())
 
     assert [(c.name, c.recipe_count) for c in out] == [("Alpha", 2), ("Zed", 0)]
 
@@ -34,7 +35,7 @@ def detail_setup():
     published = repo.add_recipe(category, OTHER_AUTHOR, RecipeStatus.PUBLISHED, "Pub")
     own_draft = repo.add_recipe(category, AUTHOR, RecipeStatus.DRAFT, "Mine")
     other_draft = repo.add_recipe(category, OTHER_AUTHOR, RecipeStatus.DRAFT, "Theirs")
-    return GetCategoryHandler(repo), published, own_draft, other_draft
+    return GetCategoryHandler(repo, FakeCache()), published, own_draft, other_draft
 
 
 @pytest.mark.anyio
@@ -68,7 +69,7 @@ async def test_pagination_metadata():
     for i in range(5):
         repo.add_recipe(category, AUTHOR, RecipeStatus.PUBLISHED, f"R{i}")
 
-    out = await GetCategoryHandler(repo).handle(GetCategoryQuery("main", 3, 2))
+    out = await GetCategoryHandler(repo, FakeCache()).handle(GetCategoryQuery("main", 3, 2))
 
     assert (out.recipes.page, out.recipes.page_size, out.recipes.total_count, out.recipes.total_pages) == (3, 2, 5, 3)
     assert len(out.recipes.items) == 1
@@ -84,7 +85,7 @@ async def test_page_past_the_end_is_empty_not_an_error():
 @pytest.mark.anyio
 async def test_unknown_slug_is_not_found():
     with pytest.raises(NotFoundError):
-        await GetCategoryHandler(FakeCategoryRepository()).handle(GetCategoryQuery("nope", 1, 12))
+        await GetCategoryHandler(FakeCategoryRepository(), FakeCache()).handle(GetCategoryQuery("nope", 1, 12))
 
 
 @pytest.mark.anyio

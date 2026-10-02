@@ -2,11 +2,13 @@ import uuid
 from datetime import UTC, datetime
 
 from culinary_blog.auth.principal import Principal
+from culinary_blog.categories.cache import CategoryCacheInvalidator
 from culinary_blog.categories.models import Category
 from culinary_blog.categories.repository import CategoryRepository
 from culinary_blog.errors import ConflictError
 from culinary_blog.recipes.enums import RecipeStatus
 from culinary_blog.recipes.models import Recipe
+from tests.cache.fakes import FakeCache
 
 ADMIN = Principal(uuid.uuid4(), ("admin",))
 AUTHOR = Principal(uuid.uuid4(), ("author",))
@@ -94,3 +96,7 @@ def make_category(repository: FakeCategoryRepository, name: str = "Main", slug: 
     category = Category(name=name, slug=slug, **kw)  # type: ignore[arg-type]
     repository.categories[category.id] = category
     return category
+
+
+def invalidator(cache: FakeCache | None = None) -> CategoryCacheInvalidator:
+    return CategoryCacheInvalidator(cache or FakeCache())

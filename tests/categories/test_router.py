@@ -14,7 +14,8 @@ from culinary_blog.categories.queries.list_categories import ListCategoriesHandl
 from culinary_blog.categories.router import CategoryRouter
 from culinary_blog.problem_details import register_problem_handlers
 from culinary_blog.recipes.enums import RecipeStatus
-from tests.categories.fakes import ADMIN, AUTHOR, FakeCategoryRepository, make_category
+from tests.cache.fakes import FakeCache
+from tests.categories.fakes import ADMIN, AUTHOR, FakeCategoryRepository, invalidator, make_category
 
 BASE = "/api/v1/categories"
 TOKENS = TokenService("test-secret-key-at-least-32-bytes-long", timedelta(minutes=15), timedelta(days=7))
@@ -25,18 +26,23 @@ def as_user(client: TestClient, principal) -> None:
 
 
 @pytest.fixture
+def cache() -> FakeCache:
+    return FakeCache()
+
+
+@pytest.fixture
 def repo() -> FakeCategoryRepository:
     return FakeCategoryRepository()
 
 
 @pytest.fixture
-def client(repo) -> TestClient:
+def client(repo, cache) -> TestClient:
     router = CategoryRouter(
         authenticator=Authenticator(TOKENS),
-        create_category=CreateCategoryHandler(repo),
-        update_category=UpdateCategoryHandler(repo),
-        list_categories=ListCategoriesHandler(repo),
-        get_category=GetCategoryHandler(repo),
+        create_category=CreateCategoryHandler(repo, invalidator(cache)),
+        update_category=UpdateCategoryHandler(repo, invalidator(cache)),
+        list_categories=ListCategoriesHandler(repo, cache),
+        get_category=GetCategoryHandler(repo, cache),
     ).router
     app = FastAPI()
     register_problem_handlers(app)
@@ -198,3 +204,9 @@ def test_detail_unknown_slug_is_404_problem_json(client):
 def test_detail_bad_pagination_is_422(client, repo, query):
     make_category(repo, "Main", "main")
     assert client.get(f"{BASE}/main?{query}").status_code == 422
+
+
+def test_categories_reads_still_succeed_when_the_cache_is_unavailable(client, cache):
+    cache.unavailable = True
+
+    assert client.get(BASE).status_code == 200

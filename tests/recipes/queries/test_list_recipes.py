@@ -5,12 +5,13 @@ import pytest
 
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 from culinary_blog.recipes.queries.list_recipes import ListRecipesHandler, ListRecipesQuery
+from tests.cache.fakes import FakeCache
 from tests.recipes.fakes import ADMIN, AUTHOR, OTHER_AUTHOR, FakeRecipeRepository
 
 
 def make_handler():
     repo = FakeRecipeRepository()
-    return repo, ListRecipesHandler(repo)
+    return repo, ListRecipesHandler(repo, FakeCache())
 
 
 def query(**overrides) -> ListRecipesQuery:

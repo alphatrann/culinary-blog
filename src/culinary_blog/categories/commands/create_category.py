@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from culinary_blog.auth.principal import Principal
+from culinary_blog.categories.cache import CategoryCacheInvalidator
 from culinary_blog.categories.models import Category
 from culinary_blog.categories.repository import CategoryRepository
 from culinary_blog.categories.schemas import CategoryOut
@@ -24,8 +25,9 @@ class CreateCategoryCommand(Command):
 class CreateCategoryHandler(CommandHandler[CreateCategoryCommand, CategoryOut]):
     """FR-CAT-003: Admin creates a category; the slug is derived from the name and made unique with a numeric suffix."""
 
-    def __init__(self, repository: CategoryRepository) -> None:
+    def __init__(self, repository: CategoryRepository, cache: CategoryCacheInvalidator) -> None:
         self._repository = repository
+        self._cache = cache
 
     async def handle(self, command: CreateCategoryCommand) -> CategoryOut:
         if not command.actor.is_admin:
@@ -40,6 +42,7 @@ class CreateCategoryHandler(CommandHandler[CreateCategoryCommand, CategoryOut]):
             image_url=command.image_url,
         )
         await self._repository.add(category)
+        await self._cache.created()
         logger.info(
             "category created",
             extra={

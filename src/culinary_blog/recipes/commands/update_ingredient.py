@@ -7,6 +7,7 @@ from culinary_blog.auth.principal import Principal
 from culinary_blog.cqrs import Command, CommandHandler
 from culinary_blog.errors import NotFoundError
 from culinary_blog.recipes.access import ensure_can_edit
+from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.repository import RecipeRepository
 from culinary_blog.recipes.schemas import IngredientIn, IngredientOut
 
@@ -24,8 +25,9 @@ class UpdateIngredientCommand(Command):
 class UpdateIngredientHandler(CommandHandler[UpdateIngredientCommand, IngredientOut]):
     """FR-RCP-009: replace an ingredient's fields (an omitted `order_index` keeps the current position)."""
 
-    def __init__(self, repository: RecipeRepository) -> None:
+    def __init__(self, repository: RecipeRepository, cache: RecipeCacheInvalidator) -> None:
         self._repository = repository
+        self._cache = cache
 
     async def handle(self, command: UpdateIngredientCommand) -> IngredientOut:
         recipe = await self._repository.get_by_id(command.recipe_id)
@@ -46,6 +48,7 @@ class UpdateIngredientHandler(CommandHandler[UpdateIngredientCommand, Ingredient
         updated = await self._repository.update_ingredient(command.ingredient_id, values)
         if updated is None:  # deleted between the lookup and the write
             raise NotFoundError("Không tìm thấy nguyên liệu.")
+        await self._cache.detail_changed(recipe.slug)
         logger.info(
             "recipe ingredient updated",
             extra={

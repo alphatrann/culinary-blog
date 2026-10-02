@@ -6,7 +6,7 @@ from culinary_blog.errors import ForbiddenError, NotFoundError
 from culinary_blog.recipes.commands.delete_recipe import DeleteRecipeCommand, DeleteRecipeHandler
 from culinary_blog.recipes.enums import RecipeStatus
 from culinary_blog.recipes.models import RecipeImage, RecipeIngredient, RecipeStep
-from tests.recipes.fakes import ADMIN, AUTHOR, OTHER_AUTHOR, READER, FakeRecipeRepository
+from tests.recipes.fakes import ADMIN, AUTHOR, OTHER_AUTHOR, READER, FakeRecipeRepository, invalidator
 
 
 def recipe_with_children(repo: FakeRecipeRepository):
@@ -22,7 +22,7 @@ async def test_delete_soft_deletes_the_recipe_and_bumps_row_version():
     repo = FakeRecipeRepository()
     recipe = recipe_with_children(repo)
 
-    await DeleteRecipeHandler(repo).handle(DeleteRecipeCommand(AUTHOR, recipe.id))
+    await DeleteRecipeHandler(repo, invalidator()).handle(DeleteRecipeCommand(AUTHOR, recipe.id))
 
     assert recipe.is_deleted is True
     assert recipe.row_version == 1
@@ -33,7 +33,7 @@ async def test_delete_cascades_to_steps_ingredients_and_images():
     repo = FakeRecipeRepository()
     recipe = recipe_with_children(repo)
 
-    await DeleteRecipeHandler(repo).handle(DeleteRecipeCommand(AUTHOR, recipe.id))
+    await DeleteRecipeHandler(repo, invalidator()).handle(DeleteRecipeCommand(AUTHOR, recipe.id))
 
     assert all(s.is_deleted for s in repo.steps if s.recipe_id == recipe.id)
     assert all(i.is_deleted for i in repo.ingredients if i.recipe_id == recipe.id)
@@ -45,7 +45,7 @@ async def test_deleted_recipe_no_longer_visible():
     repo = FakeRecipeRepository()
     recipe = recipe_with_children(repo)
 
-    await DeleteRecipeHandler(repo).handle(DeleteRecipeCommand(AUTHOR, recipe.id))
+    await DeleteRecipeHandler(repo, invalidator()).handle(DeleteRecipeCommand(AUTHOR, recipe.id))
 
     assert await repo.get_by_id(recipe.id) is None
 
@@ -55,7 +55,7 @@ async def test_admin_can_delete_any_recipe():
     repo = FakeRecipeRepository()
     recipe = repo.seed_recipe(AUTHOR, RecipeStatus.PUBLISHED)
 
-    await DeleteRecipeHandler(repo).handle(DeleteRecipeCommand(ADMIN, recipe.id))
+    await DeleteRecipeHandler(repo, invalidator()).handle(DeleteRecipeCommand(ADMIN, recipe.id))
 
     assert recipe.is_deleted is True
 
@@ -67,7 +67,7 @@ async def test_forbidden_for_non_owner(actor):
     recipe = repo.seed_recipe(AUTHOR, RecipeStatus.PUBLISHED)
 
     with pytest.raises(ForbiddenError):
-        await DeleteRecipeHandler(repo).handle(DeleteRecipeCommand(actor, recipe.id))
+        await DeleteRecipeHandler(repo, invalidator()).handle(DeleteRecipeCommand(actor, recipe.id))
     assert recipe.is_deleted is False
 
 
@@ -75,14 +75,14 @@ async def test_forbidden_for_non_owner(actor):
 async def test_unknown_recipe_is_not_found():
     repo = FakeRecipeRepository()
     with pytest.raises(NotFoundError):
-        await DeleteRecipeHandler(repo).handle(DeleteRecipeCommand(AUTHOR, uuid.uuid4()))
+        await DeleteRecipeHandler(repo, invalidator()).handle(DeleteRecipeCommand(AUTHOR, uuid.uuid4()))
 
 
 @pytest.mark.anyio
 async def test_already_deleted_recipe_is_not_found():
     repo = FakeRecipeRepository()
     recipe = repo.seed_recipe(AUTHOR, RecipeStatus.PUBLISHED)
-    handler = DeleteRecipeHandler(repo)
+    handler = DeleteRecipeHandler(repo, invalidator())
     await handler.handle(DeleteRecipeCommand(AUTHOR, recipe.id))
 
     with pytest.raises(NotFoundError):

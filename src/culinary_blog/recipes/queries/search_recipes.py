@@ -2,6 +2,8 @@ import math
 import uuid
 from dataclasses import dataclass
 
+from culinary_blog.cache import keys
+from culinary_blog.cache.service import Cache
 from culinary_blog.categories.schemas import RecipeSummaryOut
 from culinary_blog.cqrs import Query, QueryHandler
 from culinary_blog.recipes.enums import RecipeDifficulty
@@ -25,10 +27,28 @@ class SearchRecipesHandler(QueryHandler[SearchRecipesQuery, RecipeSearchResultsO
     Published recipes only, regardless of who is asking — search has no author-owned-drafts carve-out.
     """
 
-    def __init__(self, repository: RecipeRepository) -> None:
+    def __init__(self, repository: RecipeRepository, cache: Cache, ttl_seconds: int = keys.SEARCH_TTL_SECONDS) -> None:
         self._repository = repository
+        self._cache = cache
+        self._ttl_seconds = ttl_seconds
 
     async def handle(self, query: SearchRecipesQuery) -> RecipeSearchResultsOut:
+        return await self._cache.get_or_load_versioned(
+            keys.NS_SEARCH,
+            keys.query_hash(
+                q=query.q.strip().lower(),
+                page=query.page,
+                page_size=query.page_size,
+                category_id=query.category_id,
+                difficulty=query.difficulty,
+                max_cook_time=query.max_cook_time,
+            ),
+            self._ttl_seconds,
+            RecipeSearchResultsOut,
+            lambda: self._load(query),
+        )
+
+    async def _load(self, query: SearchRecipesQuery) -> RecipeSearchResultsOut:
         results, total = await self._repository.search_published(
             query=query.q,
             category_id=query.category_id,

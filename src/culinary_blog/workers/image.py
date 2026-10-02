@@ -16,10 +16,12 @@ from redis.asyncio import Redis
 from redis.exceptions import ConnectionError as RedisConnectionError
 from redis.exceptions import TimeoutError as RedisTimeoutError
 
-from culinary_blog.cache.redis import get_queue_redis
+from culinary_blog.cache.redis import get_cache_redis, get_queue_redis
+from culinary_blog.cache.service import RedisCache
 from culinary_blog.config import get_settings
 from culinary_blog.database.session import async_session_factory
 from culinary_blog.jobs.queue import DELETE_FILE, RESIZE_IMAGE, dead_letter_queue
+from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.repository import RecipeRepository
 from culinary_blog.storage.minio_storage import MinioFileStorage
 from culinary_blog.storage.service import FileStorageService
@@ -56,11 +58,13 @@ class ImageWorker:
         redis: Redis,
         storage: FileStorageService,
         repository: RecipeRepository,
+        cache: RecipeCacheInvalidator,
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
     ) -> None:
         self._redis = redis
         self._storage = storage
         self._repository = repository
+        self._cache = cache
         self._sleep = sleep
         self._handlers = {RESIZE_IMAGE: self._resize_image, DELETE_FILE: self._delete_files}
 
@@ -105,6 +109,11 @@ class ImageWorker:
         if not await self._repository.set_image_variants(image.id, medium_url=medium_url, thumbnail_url=thumbnail_url):
             await self._storage.delete(medium_url)  # the image was deleted meanwhile; don't leak the variants
             await self._storage.delete(thumbnail_url)
+            return
+        # The cached recipe detail still lists the image without its variants.
+        recipe = await self._repository.get_by_id(image.recipe_id)
+        if recipe is not None:
+            await self._cache.detail_changed(recipe.slug)
 
     async def _delete_files(self, payload: dict) -> None:
         for url in payload["urls"]:
@@ -113,7 +122,12 @@ class ImageWorker:
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
-    worker = ImageWorker(get_queue_redis(), MinioFileStorage(get_settings()), RecipeRepository(async_session_factory))
+    worker = ImageWorker(
+        get_queue_redis(),
+        MinioFileStorage(get_settings()),
+        RecipeRepository(async_session_factory),
+        RecipeCacheInvalidator(RedisCache(get_cache_redis())),
+    )
     asyncio.run(worker.run())
 
 

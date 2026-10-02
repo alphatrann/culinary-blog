@@ -104,7 +104,7 @@ class RecipeRepository:
             result = await session.execute(
                 select(Recipe)
                 .where(Recipe.id == recipe_id, col(Recipe.is_deleted).is_(False))
-                .options(load_only(Recipe.id, Recipe.author_id, Recipe.status))
+                .options(load_only(Recipe.id, Recipe.slug, Recipe.category_id, Recipe.author_id, Recipe.status))
             )
             return result.scalars().first()
 

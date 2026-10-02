@@ -8,6 +8,7 @@ from culinary_blog.cqrs import Command, CommandHandler
 from culinary_blog.errors import NotFoundError
 from culinary_blog.jobs.queue import DELETE_FILE, JobQueue
 from culinary_blog.recipes.access import ensure_can_edit
+from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.repository import RecipeRepository
 
 logger = logging.getLogger(__name__)
@@ -24,8 +25,9 @@ class DeleteImageHandler(CommandHandler[DeleteImageCommand, None]):
     """FR-RCP-008 delete: soft-delete the record (the repository promotes another image if it was primary), then
     enqueue removal of the files from storage (FR-FILE-002)."""
 
-    def __init__(self, repository: RecipeRepository, queue: JobQueue) -> None:
+    def __init__(self, repository: RecipeRepository, queue: JobQueue, cache: RecipeCacheInvalidator) -> None:
         self._repository = repository
+        self._cache = cache
         self._queue = queue
 
     async def handle(self, command: DeleteImageCommand) -> None:
@@ -38,6 +40,7 @@ class DeleteImageHandler(CommandHandler[DeleteImageCommand, None]):
         if image is None:
             raise NotFoundError("Không tìm thấy ảnh.")
 
+        await self._cache.detail_changed(recipe.slug)
         urls = [u for u in (image.original_url, image.medium_url, image.thumbnail_url) if u]
         try:
             await self._queue.enqueue(DELETE_FILE, {"urls": urls})

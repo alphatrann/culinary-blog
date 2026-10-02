@@ -21,6 +21,12 @@ class Settings(BaseSettings):
     db_pool_recycle_seconds: int = 1800
 
     cache_redis_url: str = "redis://localhost:6380/0"
+    # A dead Cache Redis must cost milliseconds, not a hang on the OS connect timeout (NFR-REL-002).
+    cache_socket_timeout_seconds: float = 0.25
+    # ADR-0003 TTL tiers. Overridable only so load tests can force expiry churn; keep the defaults in production.
+    cache_ttl_categories_seconds: int = 3600
+    cache_ttl_recipes_seconds: int = 1800
+    cache_ttl_search_seconds: int = 300
     queue_redis_url: str = "redis://localhost:6381/0"
     ratelimit_redis_url: str = "redis://localhost:6382/0"
 

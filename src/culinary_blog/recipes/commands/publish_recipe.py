@@ -7,6 +7,7 @@ from culinary_blog.auth.principal import Principal
 from culinary_blog.cqrs import Command, CommandHandler
 from culinary_blog.errors import NotFoundError, UnprocessableError
 from culinary_blog.recipes.access import ensure_can_edit
+from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.enums import RecipeStatus
 from culinary_blog.recipes.mapping import to_recipe_out
 from culinary_blog.recipes.repository import RecipeRepository
@@ -25,8 +26,9 @@ class PublishRecipeHandler(CommandHandler[PublishRecipeCommand, RecipeOut]):
     """FR-RCP-005: publish needs ≥1 step and ≥1 ingredient (422). `published_at` is set on first publish only;
     publishing an already-published recipe is an idempotent no-op."""
 
-    def __init__(self, repository: RecipeRepository) -> None:
+    def __init__(self, repository: RecipeRepository, cache: RecipeCacheInvalidator) -> None:
         self._repository = repository
+        self._cache = cache
 
     async def handle(self, command: PublishRecipeCommand) -> RecipeOut:
         recipe = await self._repository.get_by_id(command.recipe_id)
@@ -42,6 +44,7 @@ class PublishRecipeHandler(CommandHandler[PublishRecipeCommand, RecipeOut]):
             if updated is None:
                 raise NotFoundError("Không tìm thấy công thức nấu ăn.")
             recipe = updated
+            await self._cache.visibility_changed(recipe.slug)
             logger.info(
                 "recipe published",
                 extra={

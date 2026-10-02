@@ -7,6 +7,7 @@ from culinary_blog.auth.principal import Principal
 from culinary_blog.cqrs import Command, CommandHandler
 from culinary_blog.errors import NotFoundError
 from culinary_blog.recipes.access import ensure_can_edit
+from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.models import RecipeIngredient
 from culinary_blog.recipes.repository import RecipeRepository
 from culinary_blog.recipes.schemas import IngredientIn, IngredientOut
@@ -24,8 +25,9 @@ class AddIngredientCommand(Command):
 class AddIngredientHandler(CommandHandler[AddIngredientCommand, IngredientOut]):
     """FR-RCP-009: the owning Author or an Admin adds an ingredient; without `order_index` it goes last."""
 
-    def __init__(self, repository: RecipeRepository) -> None:
+    def __init__(self, repository: RecipeRepository, cache: RecipeCacheInvalidator) -> None:
         self._repository = repository
+        self._cache = cache
 
     async def handle(self, command: AddIngredientCommand) -> IngredientOut:
         recipe = await self._repository.get_by_id(command.recipe_id)
@@ -43,6 +45,7 @@ class AddIngredientHandler(CommandHandler[AddIngredientCommand, IngredientOut]):
             order_index=data.order_index or 0,
         )
         saved = await self._repository.add_ingredient(ingredient, append=data.order_index is None)
+        await self._cache.detail_changed(recipe.slug)
         logger.info(
             "recipe ingredient added",
             extra={

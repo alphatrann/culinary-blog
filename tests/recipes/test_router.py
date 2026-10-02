@@ -539,3 +539,9 @@ def test_delete_by_another_author_is_403(client, owned):
 def test_delete_unknown_recipe_is_404(client, owned):
     as_user(client, AUTHOR)
     assert_problem(client.delete(f"{BASE}/00000000-0000-0000-0000-000000000000"), 404)
+
+
+def test_recipes_reads_still_succeed_when_the_cache_is_unavailable(client, cache):
+    cache.unavailable = True
+
+    assert client.get(BASE).status_code == 200

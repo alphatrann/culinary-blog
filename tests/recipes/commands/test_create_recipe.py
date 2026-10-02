@@ -7,12 +7,12 @@ from culinary_blog.errors import ConflictError, ForbiddenError, UnprocessableErr
 from culinary_blog.recipes.commands.create_recipe import CreateRecipeCommand, CreateRecipeHandler
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 from culinary_blog.recipes.schemas import IngredientIn, NutritionIn, StepIn
-from tests.recipes.fakes import ADMIN, AUTHOR, NO_ROLES, READER, FakeRecipeRepository
+from tests.recipes.fakes import ADMIN, AUTHOR, NO_ROLES, READER, FakeRecipeRepository, invalidator
 
 
 def make_handler():
     repo = FakeRecipeRepository()
-    return repo, CreateRecipeHandler(repo), repo.add_category()
+    return repo, CreateRecipeHandler(repo, invalidator()), repo.add_category()
 
 
 def command(category_id: uuid.UUID, actor=AUTHOR, title: str = "Phở Bò Hà Nội", **overrides) -> CreateRecipeCommand:
@@ -138,7 +138,7 @@ async def test_slug_race_surfaces_as_conflict():
 
     repo = RacyRepository()
     category_id = repo.add_category()
-    handler = CreateRecipeHandler(repo)
+    handler = CreateRecipeHandler(repo, invalidator())
     await handler.handle(command(category_id))
 
     with pytest.raises(ConflictError):

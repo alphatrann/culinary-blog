@@ -1,4 +1,4 @@
-# Load tests (k6) — M6a, NFR-PERF-001/002/004
+# Load tests (k6) — M6a/M6b, NFR-PERF-001/002/003/004
 
 Baseline numbers for the API at the SRS data size (up to 10,000 recipes, 5,000 users, 50 categories), and a look at the
 query plans to decide whether we need more indexes. Short answer: we don't (see [Judgment](#judgment)).
@@ -24,7 +24,8 @@ Raw outputs of the run below are in [`results/`](results/): `smoke.txt`, `load.t
 ## Methodology
 
 - **Stack:** compose stack behind nginx, API with 2 uvicorn workers, 2 CPU / 2 GB Docker VM (the SRS reference box).
-  No cache and no rate limiter yet (M6b), so this is the uncached path.
+  The M6a numbers below are the uncached path (no cache, no rate limiter yet). M6b results are in
+  [Cache layer (M6b)](#cache-layer-m6b).
 - **Data:** `seed_10k.sql` — 10,000 recipes (8,491 published), 50 categories (168–228 recipes each), random difficulty /
   cook time / status, 4–7 steps and 6–10 ingredients per recipe.
 - **Traffic mix** (`lib.js`): guest list 25%, logged-in non-admin list 10% (`status = published OR author_id = me`),
@@ -132,3 +133,65 @@ is_deleted = false` and `(category_id, created_at DESC, id)`, and stop computing
 
 Next is M6b. Cache-aside (hit rate ≥ 80%) should help most with the CPU-bound knee, and these scripts should be re-run
 after it lands.
+
+## Cache layer (M6b)
+
+Same stack, seed and scripts as above, API rebuilt with the cache (ADR-0010), cache flushed before each run.
+TTLs lowered to 1/30 (recipes 60 s, categories 120 s, search 10 s) so a 6-minute run sees expiries; production keeps
+ADR-0003's values. Uncached = rerun on the same machine (`results/load-pre-cache.txt`); cached =
+`results/load-cached-ttl-lowered.txt`.
+
+### Load: 100 VUs, 5 min (ms, uncached → cached)
+
+| Endpoint | p50 | p95 | p99 |
+|---|---|---|---|
+| categories | 6.9 → **2.4** | 12.0 → **4.8** | 26.1 → **8.4** |
+| recipe detail | 5.4 → **2.6** | 11.1 → **7.2** | 19.5 → **12.6** |
+| search | 16.1 → **3.3** | 30.8 → **20.4** | 40.2 → **31.7** |
+| list (guest) | 6.7 → 6.8 | 14.2 → 13.9 | 21.5 → 21.2 |
+| category detail | 6.4 → 6.6 | 12.8 → 11.8 | 21.2 → 19.3 |
+| list (signed in, never cached) | 6.6 → 6.5 | 13.5 → 13.4 | 22.4 → 20.0 |
+| `/auth/me` | 3.0 → 3.1 | 6.0 → 6.0 | 10.6 → 9.4 |
+| **all** | 6.4 → **4.4** | 21.4 → **13.1** | 36.0 → **27.7** |
+
+~59 req/s and 0% errors in both runs. At 100 users the API was already far inside NFR-PERF-001.
+
+### Cache hit rate (`cache_requests_total`, load run)
+
+| Tier | Hit | Stale | Miss | From cache |
+|---|---|---|---|---|
+| categories | 2,276 | – | 3 | 99.9% |
+| recipe detail | 4,555 | 600 | 495 | 91.2% |
+| search | 2,229 | – | 1,286 | 63.4% |
+| category page (guest) | 22 | – | 18 | 54% |
+| recipe list (guest) | 14 | – | 102 | 12% |
+| **total** | 9,096 | 600 | 1,904 | **83.6%** (78.4% fresh hits only) |
+
+- Meets NFR-PERF-003 (≥ 80%), counting stale-while-revalidate responses as served from cache.
+- Low tiers reflect k6's random filters/pages against 10–60 s TTLs, not the cache. Signed-in lists and `/auth/me`
+  bypass it.
+
+### Stress: latest run (ms, uncached → cached)
+
+Plain `k6 run`, Tempo and the OTel collector stopped. `results/stress-cached-ttl-lowered.txt`.
+
+| VUs | p50 | p95 | p99 | errors |
+|---|---|---|---|---|
+| 100 | 8 → **4.5** | 84 → **22** | 386 → **184** | 0% → 0% |
+| 150 | 15 → **5.6** | 537 → **195** | 1282 → **938** | 0% → 0.23% |
+| 200 | 213 → **6.9** | 1199 → **596** | 2397 → **1430** | 0% → 0.23% |
+| 300 | 930 → **23** | 2393 → **1790** | 3870 → 11280 | 0% → 0.31% |
+| 400 | 1450 → **197** | 2554 → **335** | 4086 → **402** | 0.01% → 0.16% |
+
+112,276 requests, 238 req/s (uncached: 74,930, ~160 req/s), 0.20% errors.
+
+- 150 VUs now meets p95 < 500 ms (195 ms); 200 VUs still misses (596 ms). Spread above 200 VUs is large between runs.
+- **API workers are OOM-killed at step ramp-in** (3–4 per run, 2 GB VM), which causes the errors and the 300-VU tail;
+  400 VUs ramped in without a kill. Cause: every new VU logs in and Argon2 uses 64 MiB per hash (300 simultaneous
+  logins: 250 → 667 MB, 31 × 502, one worker killed). Unrelated to the cache; the uncached run had the same exposure.
+  Not fixed (options: cap concurrent hashes, lower `memory_cost`, stagger logins in `stress.js`).
+
+### Not done
+
+- Run with the real ADR-0003 TTLs.
+- Stress with logins staggered or capped, to see 300 VUs without worker restarts.

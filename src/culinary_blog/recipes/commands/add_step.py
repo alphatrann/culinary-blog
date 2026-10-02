@@ -7,6 +7,7 @@ from culinary_blog.auth.principal import Principal
 from culinary_blog.cqrs import Command, CommandHandler
 from culinary_blog.errors import NotFoundError
 from culinary_blog.recipes.access import ensure_can_edit
+from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.models import RecipeStep
 from culinary_blog.recipes.repository import RecipeRepository
 from culinary_blog.recipes.schemas import StepIn, StepOut
@@ -24,8 +25,9 @@ class AddStepCommand(Command):
 class AddStepHandler(CommandHandler[AddStepCommand, StepOut]):
     """FR-RCP-010: add a step; the repository assigns `step_number = max + 1` (the client never sends it)."""
 
-    def __init__(self, repository: RecipeRepository) -> None:
+    def __init__(self, repository: RecipeRepository, cache: RecipeCacheInvalidator) -> None:
         self._repository = repository
+        self._cache = cache
 
     async def handle(self, command: AddStepCommand) -> StepOut:
         recipe = await self._repository.get_by_id(command.recipe_id)
@@ -36,6 +38,7 @@ class AddStepHandler(CommandHandler[AddStepCommand, StepOut]):
         saved = await self._repository.add_step(
             RecipeStep(recipe_id=recipe.id, step_number=0, **command.data.model_dump())
         )
+        await self._cache.detail_changed(recipe.slug)
         logger.info(
             "recipe step added",
             extra={

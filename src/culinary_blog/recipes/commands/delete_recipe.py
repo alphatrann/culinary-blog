@@ -7,6 +7,7 @@ from culinary_blog.auth.principal import Principal
 from culinary_blog.cqrs import Command, CommandHandler
 from culinary_blog.errors import NotFoundError
 from culinary_blog.recipes.access import ensure_can_edit
+from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.repository import RecipeRepository
 
 logger = logging.getLogger(__name__)
@@ -23,8 +24,9 @@ class DeleteRecipeHandler(CommandHandler[DeleteRecipeCommand, None]):
 
     Image files are NOT removed from storage here (only via explicit image deletion or the cleanup job)."""
 
-    def __init__(self, repository: RecipeRepository) -> None:
+    def __init__(self, repository: RecipeRepository, cache: RecipeCacheInvalidator) -> None:
         self._repository = repository
+        self._cache = cache
 
     async def handle(self, command: DeleteRecipeCommand) -> None:
         recipe = await self._repository.get_by_id(command.recipe_id)
@@ -36,6 +38,7 @@ class DeleteRecipeHandler(CommandHandler[DeleteRecipeCommand, None]):
         if deleted is None:
             raise NotFoundError("Không tìm thấy công thức nấu ăn.")
 
+        await self._cache.visibility_changed(recipe.slug)
         logger.info(
             "recipe deleted",
             extra={

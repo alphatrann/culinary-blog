@@ -47,10 +47,11 @@
 - Baseline passes NFR-PERF-001/002 uncached (p95 ≤ 30 ms reads at 100 users); knee at ~100–150 stress VUs (API CPU-bound)
 - Decision: no new indexes at SRS scale; DB round-trip fixes, nginx/OTel fixes (see `loadtest/README.md`)
 
-### M6b — Cache layer (NFR-PERF-001/003, ADR-0003)
-- [ ] Cache-aside: categories 1h, recipes 30m, search 5m
-- [ ] Invalidate on create / update / publish / delete
-- [ ] Apply fixes from M6a, re-run load test (hit rate ≥80%)
+### ✅ M6b — Cache layer (NFR-PERF-001/003, ADR-0003, ADR-0005, ADR-0010)
+- Cache-aside: categories 1h, recipes 30m, search 5m; guest-only for lists/category pages; detail uses SWR + mutex
+- Invalidation on create / update / publish / unpublish / delete / children / image variants; generation counter for query keys
+- Cache Redis down → Postgres fallback
+- Load test re-run (TTLs lowered): 83.6% served from cache, p95 21 → 13 ms overall; stress p95 passes at 150 VUs (195 ms, was 537 ms), still misses at 200 (`loadtest/README.md`)
 
 ### M7 — Frontend MVP
 - [ ] Public: list, detail, categories, search

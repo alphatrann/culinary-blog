@@ -8,13 +8,13 @@ from culinary_blog.recipes.commands.update_recipe import UpdateRecipeCommand, Up
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 from culinary_blog.recipes.models import Recipe, RecipeIngredient, RecipeStep
 from culinary_blog.recipes.schemas import NutritionIn
-from tests.recipes.fakes import ADMIN, AUTHOR, NO_ROLES, OTHER_AUTHOR, READER, FakeRecipeRepository
+from tests.recipes.fakes import ADMIN, AUTHOR, NO_ROLES, OTHER_AUTHOR, READER, FakeRecipeRepository, invalidator
 
 
 def make_handler():
     repo = FakeRecipeRepository()
     recipe = repo.seed_recipe(AUTHOR, RecipeStatus.PUBLISHED, title="Pho Bo", nutrition_calories=Decimal("100"))
-    return repo, UpdateRecipeHandler(repo), recipe
+    return repo, UpdateRecipeHandler(repo, invalidator()), recipe
 
 
 def command(recipe: Recipe, repo: FakeRecipeRepository, actor=AUTHOR, **overrides) -> UpdateRecipeCommand:
@@ -143,7 +143,7 @@ async def test_losing_the_compare_and_swap_race_is_a_conflict():
     recipe = repo.seed_recipe(AUTHOR)
 
     with pytest.raises(ConflictError):
-        await UpdateRecipeHandler(repo).handle(command(recipe, repo))
+        await UpdateRecipeHandler(repo, invalidator()).handle(command(recipe, repo))
 
 
 # --- authorization / lookup / validation ----------------------------------------------------------------------------
