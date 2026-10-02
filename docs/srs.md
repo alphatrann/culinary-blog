@@ -980,7 +980,7 @@ Throughput | Hệ thống xử lý đồng thời ≥ 100 concurrent users khôn
 | NFR-PERF-003
 Cache Effectiveness | Cache Redis hit rate ≥ 80% steady-state. TTL theo tầng dữ liệu: • Category list: **1 giờ** (ít thay đổi). • Recipe (list & detail): **30 phút** (thay đổi thường xuyên hơn, TTL cao dễ khiến người dùng thấy dữ liệu cũ). • Search results: **5 phút** (query đa dạng, tránh cache miss tràn ngập database trong thời gian ngắn). Eviction: LFU, `maxmemory` 2GB (xem ADR-0003). Invalidation: event-driven — xóa key liên quan khi Create/Update/Delete. |
 | NFR-PERF-004
-Database Query | • Không N+1 query — dùng eager loading (`selectinload`/`joinedload`) và projection. • Mọi cột `WHERE`/`ORDER BY` có B-tree index tương ứng. • Slow query log: cảnh báo khi query > 100ms. • `EXPLAIN ANALYZE` phải pass review trước khi merge. |
+Database Query | • Không N+1 query — dùng eager loading (`selectinload`/`joinedload`) và projection. • Index B-tree chỉ được thêm khi `EXPLAIN ANALYZE` cho thấy cần thiết, không index mặc định mọi cột `WHERE`/`ORDER BY` (ở quy mô ≤ 10.000 công thức mọi truy vấn danh sách/tìm kiếm < 10 ms, xem `loadtest/README.md`). • Slow query log: cảnh báo khi query > 100ms. • `EXPLAIN ANALYZE` phải pass review trước khi merge. |
 | NFR-PERF-005
 Frontend Performance (Core Web Vitals) | Next.js đạt chuẩn Google Core Web Vitals (Lighthouse CI): • LCP ≤ 2.5s. • CLS ≤ 0.1. • INP ≤ 200ms. • First Load JS Bundle ≤ 200KB (gzipped). Kỹ thuật: ISR, `next/image`, code splitting. |
 
