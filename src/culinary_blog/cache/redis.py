@@ -7,7 +7,9 @@ from culinary_blog.config import get_settings
 
 @lru_cache
 def get_cache_redis() -> Redis:
-    return Redis.from_url(get_settings().cache_redis_url)
+    settings = get_settings()
+    timeout = settings.cache_socket_timeout_seconds
+    return Redis.from_url(settings.cache_redis_url, socket_timeout=timeout, socket_connect_timeout=timeout)
 
 
 @lru_cache

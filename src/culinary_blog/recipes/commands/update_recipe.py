@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from culinary_blog.auth.principal import Principal
 from culinary_blog.cqrs import Command, CommandHandler
 from culinary_blog.errors import ConflictError, ForbiddenError, NotFoundError
+from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.enums import RecipeDifficulty
 from culinary_blog.recipes.mapping import to_recipe_out
 from culinary_blog.recipes.repository import RecipeRepository
@@ -36,8 +37,9 @@ class UpdateRecipeHandler(CommandHandler[UpdateRecipeCommand, RecipeOut]):
     status and steps/ingredients are not touched; nutrition is replaced only when supplied.
     """
 
-    def __init__(self, repository: RecipeRepository) -> None:
+    def __init__(self, repository: RecipeRepository, cache: RecipeCacheInvalidator) -> None:
         self._repository = repository
+        self._cache = cache
 
     async def handle(self, command: UpdateRecipeCommand) -> RecipeOut:
         actor = command.actor
@@ -47,6 +49,7 @@ class UpdateRecipeHandler(CommandHandler[UpdateRecipeCommand, RecipeOut]):
         if not (actor.is_admin or (actor.can_write_recipes and existing.author_id == actor.user_id)):
             raise ForbiddenError("Only the recipe's author or an Admin can update it")
 
+        category_changed = existing.category_id != command.category_id
         values: dict[str, object] = {
             "title": command.title,
             "description": command.description,
@@ -63,6 +66,7 @@ class UpdateRecipeHandler(CommandHandler[UpdateRecipeCommand, RecipeOut]):
         if recipe is None:
             raise ConflictError("Dữ liệu đã bị thay đổi bởi người dùng khác.")
 
+        await self._cache.updated(recipe.slug, category_changed=category_changed)
         logger.info(
             "recipe updated",
             extra={

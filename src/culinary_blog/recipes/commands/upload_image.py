@@ -8,6 +8,7 @@ from culinary_blog.cqrs import Command, CommandHandler
 from culinary_blog.errors import NotFoundError
 from culinary_blog.jobs.queue import RESIZE_IMAGE, JobQueue
 from culinary_blog.recipes.access import ensure_can_edit
+from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.models import RecipeImage
 from culinary_blog.recipes.repository import RecipeRepository
 from culinary_blog.recipes.schemas import RecipeImageOut
@@ -29,8 +30,15 @@ class UploadImageCommand(Command):
 class UploadImageHandler(CommandHandler[UploadImageCommand, RecipeImageOut]):
     """FR-RCP-008 upload: store the file, record it (first image is primary), enqueue the thumbnail job."""
 
-    def __init__(self, repository: RecipeRepository, storage: FileStorageService, queue: JobQueue) -> None:
+    def __init__(
+        self,
+        repository: RecipeRepository,
+        storage: FileStorageService,
+        queue: JobQueue,
+        cache: RecipeCacheInvalidator,
+    ) -> None:
         self._repository = repository
+        self._cache = cache
         self._storage = storage
         self._queue = queue
 
@@ -51,6 +59,7 @@ class UploadImageHandler(CommandHandler[UploadImageCommand, RecipeImageOut]):
             await self._discard_orphan(url)
             raise
 
+        await self._cache.detail_changed(recipe.slug)
         try:
             await self._queue.enqueue(RESIZE_IMAGE, {"image_id": str(image.id), "recipe_id": str(recipe.id)})
         except Exception:  # graceful (FR-JOB-002): the original stays usable without thumbnails

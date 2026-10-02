@@ -1,4 +1,6 @@
 import asyncio
+import os
+import socket
 import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -76,7 +78,11 @@ app = FastAPI(title="Culinary Blog API", version="0.1.0", lifespan=lifespan)
 
 # RED metrics + traces for the M6a/M6b load-test dashboards (ADR-0009). Logs stay
 # on plain structured JSON per CONS-010; wiring them into OTel is S4 scope.
-resource = Resource.create({"service.name": settings.otel_service_name})
+# One series per uvicorn worker: without a distinct instance id every worker exports the same counter identity and
+# the collector's Prometheus exporter keeps only one of them (the cache hit-rate counters would undercount).
+resource = Resource.create(
+    {"service.name": settings.otel_service_name, "service.instance.id": f"{socket.gethostname()}-{os.getpid()}"}
+)
 
 trace.set_tracer_provider(TracerProvider(resource=resource))
 trace.get_tracer_provider().add_span_processor(

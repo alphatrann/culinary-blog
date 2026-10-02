@@ -1,0 +1,90 @@
+
+
+  █ THRESHOLDS 
+
+    http_req_duration{endpoint:categories}
+    ✓ 'p(50)<150' p(50)=2.35ms
+    ✓ 'p(95)<500' p(95)=4.79ms
+    ✓ 'p(99)<1000' p(99)=8.39ms
+
+    http_req_duration{endpoint:category_detail}
+    ✓ 'p(50)<150' p(50)=6.63ms
+    ✓ 'p(95)<500' p(95)=11.84ms
+    ✓ 'p(99)<1000' p(99)=19.28ms
+
+    http_req_duration{endpoint:list_recipes_auth}
+    ✓ 'p(50)<150' p(50)=6.47ms
+    ✓ 'p(95)<500' p(95)=13.43ms
+    ✓ 'p(99)<1000' p(99)=19.96ms
+
+    http_req_duration{endpoint:list_recipes}
+    ✓ 'p(50)<150' p(50)=6.78ms
+    ✓ 'p(95)<500' p(95)=13.88ms
+    ✓ 'p(99)<1000' p(99)=21.24ms
+
+    http_req_duration{endpoint:login}
+    ✓ 'p(50)<150' p(50)=93.73ms
+    ✓ 'p(95)<500' p(95)=150.9ms
+    ✓ 'p(99)<1000' p(99)=248.8ms
+
+    http_req_duration{endpoint:me}
+    ✓ 'p(50)<150' p(50)=3.09ms
+    ✓ 'p(95)<500' p(95)=6ms
+    ✓ 'p(99)<1000' p(99)=9.35ms
+
+    http_req_duration{endpoint:recipe_detail}
+    ✓ 'p(50)<150' p(50)=2.6ms
+    ✓ 'p(95)<500' p(95)=7.23ms
+    ✓ 'p(99)<1000' p(99)=12.61ms
+
+    http_req_duration{endpoint:search}
+    ✓ 'p(50)<150' p(50)=3.27ms
+    ✓ 'p(95)<500' p(95)=20.43ms
+    ✓ 'p(99)<1000' p(99)=31.7ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 23061   58.913691/s
+    checks_succeeded...: 100.00% 23061 out of 23061
+    checks_failed......: 0.00%   0 out of 23061
+
+    ✓ recipe_detail 2xx
+    ✓ search 2xx
+    ✓ categories 2xx
+    ✓ login 200
+    ✓ list_recipes_auth 2xx
+    ✓ list_recipes 2xx
+    ✓ category_detail 2xx
+    ✓ me 2xx
+
+    HTTP
+    http_req_duration..................: med=4.42ms  p(95)=13.05ms p(99)=27.65ms max=263.05ms
+      { endpoint:categories }..........: med=2.35ms  p(95)=4.79ms  p(99)=8.39ms  max=38.25ms 
+      { endpoint:category_detail }.....: med=6.63ms  p(95)=11.84ms p(99)=19.28ms max=48.18ms 
+      { endpoint:list_recipes_auth }...: med=6.47ms  p(95)=13.43ms p(99)=19.96ms max=49.85ms 
+      { endpoint:list_recipes }........: med=6.78ms  p(95)=13.88ms p(99)=21.24ms max=90.54ms 
+      { endpoint:login }...............: med=93.73ms p(95)=150.9ms p(99)=248.8ms max=263.05ms
+      { endpoint:me }..................: med=3.09ms  p(95)=6ms     p(99)=9.35ms  max=52.6ms  
+      { endpoint:recipe_detail }.......: med=2.6ms   p(95)=7.23ms  p(99)=12.61ms max=46.86ms 
+      { endpoint:search }..............: med=3.27ms  p(95)=20.43ms p(99)=31.7ms  max=57.8ms  
+      { expected_response:true }.......: med=4.42ms  p(95)=13.05ms p(99)=27.65ms max=263.05ms
+    http_req_failed....................: 0.00%  0 out of 23066
+    http_reqs..........................: 23066  58.926465/s
+
+    EXECUTION
+    iteration_duration.................: med=1.5s    p(95)=2.41s   p(99)=2.48s   max=2.57s   
+    iterations.........................: 22961  58.658223/s
+    vus................................: 1      min=1          max=100
+    vus_max............................: 100    min=100        max=100
+
+    NETWORK
+    data_received......................: 154 MB 394 kB/s
+    data_sent..........................: 7.9 MB 20 kB/s
+
+
+
+exit=0

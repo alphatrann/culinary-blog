@@ -28,4 +28,9 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --locked
+      # Real Redis for the cache concurrency tests (tests/cache/test_redis_cache_integration.py).
+      - name: Start test Redis
+        run: |
+          url=$(PORT=6379 scripts/test-redis.sh start)
+          echo "TEST_REDIS_URL=$url" >> "$GITHUB_ENV"
       - run: uv run pytest

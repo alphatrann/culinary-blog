@@ -25,7 +25,8 @@ from culinary_blog.recipes.queries.get_recipe import GetRecipeHandler
 from culinary_blog.recipes.queries.list_recipes import ListRecipesHandler
 from culinary_blog.recipes.queries.search_recipes import SearchRecipesHandler
 from culinary_blog.recipes.router import RecipeRouter
-from tests.recipes.fakes import FakeJobQueue, FakeRecipeRepository, FakeStorage
+from tests.cache.fakes import FakeCache
+from tests.recipes.fakes import FakeJobQueue, FakeRecipeRepository, FakeStorage, invalidator
 
 TOKENS = TokenService("test-secret-key-at-least-32-bytes-long", timedelta(minutes=15), timedelta(days=7))
 
@@ -33,6 +34,11 @@ TOKENS = TokenService("test-secret-key-at-least-32-bytes-long", timedelta(minute
 @pytest.fixture
 def repo() -> FakeRecipeRepository:
     return FakeRecipeRepository()
+
+
+@pytest.fixture
+def cache() -> FakeCache:
+    return FakeCache()
 
 
 @pytest.fixture
@@ -51,26 +57,26 @@ def category_id(repo) -> str:
 
 
 @pytest.fixture
-def client(repo, storage, queue) -> TestClient:
+def client(repo, storage, queue, cache) -> TestClient:
     router = RecipeRouter(
         authenticator=Authenticator(TOKENS),
-        create_recipe=CreateRecipeHandler(repo),
-        update_recipe=UpdateRecipeHandler(repo),
-        list_recipes=ListRecipesHandler(repo),
-        search_recipes=SearchRecipesHandler(repo),
-        get_recipe=GetRecipeHandler(repo),
-        publish_recipe=PublishRecipeHandler(repo),
-        unpublish_recipe=UnpublishRecipeHandler(repo),
-        delete_recipe=DeleteRecipeHandler(repo),
-        add_ingredient=AddIngredientHandler(repo),
-        update_ingredient=UpdateIngredientHandler(repo),
-        delete_ingredient=DeleteIngredientHandler(repo),
-        add_step=AddStepHandler(repo),
-        update_step=UpdateStepHandler(repo),
-        delete_step=DeleteStepHandler(repo),
-        upload_image=UploadImageHandler(repo, storage, queue),
-        set_primary_image=SetPrimaryImageHandler(repo),
-        delete_image=DeleteImageHandler(repo, queue),
+        create_recipe=CreateRecipeHandler(repo, invalidator(cache)),
+        update_recipe=UpdateRecipeHandler(repo, invalidator(cache)),
+        list_recipes=ListRecipesHandler(repo, cache),
+        search_recipes=SearchRecipesHandler(repo, cache),
+        get_recipe=GetRecipeHandler(repo, cache),
+        publish_recipe=PublishRecipeHandler(repo, invalidator(cache)),
+        unpublish_recipe=UnpublishRecipeHandler(repo, invalidator(cache)),
+        delete_recipe=DeleteRecipeHandler(repo, invalidator(cache)),
+        add_ingredient=AddIngredientHandler(repo, invalidator(cache)),
+        update_ingredient=UpdateIngredientHandler(repo, invalidator(cache)),
+        delete_ingredient=DeleteIngredientHandler(repo, invalidator(cache)),
+        add_step=AddStepHandler(repo, invalidator(cache)),
+        update_step=UpdateStepHandler(repo, invalidator(cache)),
+        delete_step=DeleteStepHandler(repo, invalidator(cache)),
+        upload_image=UploadImageHandler(repo, storage, queue, invalidator(cache)),
+        set_primary_image=SetPrimaryImageHandler(repo, invalidator(cache)),
+        delete_image=DeleteImageHandler(repo, queue, invalidator(cache)),
     ).router
     app = FastAPI()
     register_problem_handlers(app)

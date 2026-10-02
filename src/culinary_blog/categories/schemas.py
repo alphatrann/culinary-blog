@@ -42,6 +42,12 @@ class CategoryOut(BaseModel):
     recipe_count: int = 0
 
 
+class CategoryListOut(BaseModel):
+    """Cache envelope for `GET /categories` (the cache stores models, the endpoint returns the bare list)."""
+
+    items: list[CategoryOut]
+
+
 class RecipeSummaryOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

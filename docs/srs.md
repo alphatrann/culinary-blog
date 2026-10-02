@@ -30,6 +30,7 @@ Tài liệu này được biên soạn theo tiêu chuẩn IEEE 830 / ISO/IEC/IEE
 
 | Phiên bản | Ngày       | Tác giả / Vai trò     | Nội dung thay đổi                                                                                                                                                                                              | Trạng thái   |
 | --------- | ---------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| 2.3.0     | 02/10/2026 | Senior BA / Architect | Triển khai tầng cache (M6b): cache-aside cho category/recipe/search, chỉ cache góc nhìn Guest cho danh sách, vô hiệu hóa theo `generation` thay cho xóa `recipes:list:*` — xem ADR-0010. | Approved     |
 | 2.2.0     | 20/09/2026 | Senior BA / Architect | Chuyển kiến trúc backend từ phân lớp `routers → services → repositories` sang CQRS nhẹ (không MediatR, không event sourcing, một database): `router → command/query handlers → repositories → models`; cập nhật CONS-001, NFR-MAINT-004, mục 6.2, 6.3 — xem ADR-0001. | Approved     |
 | 2.1.0     | 17/09/2026 | Senior BA / Architect | Bổ sung instance Redis thứ ba (Rate Limit Redis), tách biệt hoàn toàn với Cache Redis và Job Queue Redis, cho bộ đếm rate limiting (`allkeys-lru`, `maxmemory` 4GB, RDB `save 60 1` — xem ADR-0006, ADR-0007). | Approved     |
 | 2.0.0     | 16/09/2026 | Senior BA / Architect | Chuyển backend sang Python/FastAPI với hai instance Redis riêng biệt (cache và job queue); đồng bộ toàn bộ số liệu, tên trường (snake_case) và HTTP status code; chuyển sang cookie-based authentication.      | Approved     |
@@ -635,16 +636,16 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 | Nhóm chức năng           | Module Quản lý Công thức Nấu ăn (FR-RCP)                                                                                                                                                                                                                                                                                                                                                                                                   |
 | Tác nhân                 | Tất cả (Guest / Author / Admin)                                                                                                                                                                                                                                                                                                                                                                                                            |
 | Mức ưu tiên (MoSCoW)     | M – Must Have                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Mô tả                    | Trả về danh sách phân trang các công thức. Guest và Author khác chỉ thấy `status == published`. Author thấy thêm draft/archived của chính mình. Admin thấy tất cả trạng thái (Admin luôn được coi là chủ sở hữu hợp lệ trên mọi recipe). Hỗ trợ lọc theo `category_id`, `difficulty`, thời gian nấu; sắp xếp theo `created_at`, `title`, `cook_time_minutes`. Kết quả cache trong Cache Redis, TTL = 30 phút, cache key theo query string. |
+| Mô tả                    | Trả về danh sách phân trang các công thức. Guest và Author khác chỉ thấy `status == published`. Author thấy thêm draft/archived của chính mình. Admin thấy tất cả trạng thái (Admin luôn được coi là chủ sở hữu hợp lệ trên mọi recipe). Hỗ trợ lọc theo `category_id`, `difficulty`, thời gian nấu; sắp xếp theo `created_at`, `title`, `cook_time_minutes`. Kết quả cache trong Cache Redis, TTL = 30 phút, cache key theo query string. Chỉ cache góc nhìn của Guest (cùng một kết quả cho mọi người); request đã đăng nhập (Author/Admin) luôn đọc database vì tập kết quả phụ thuộc người xem — xem ADR-0010. |
 | Điều kiện tiên quyết     | 1. Không yêu cầu xác thực (endpoint public cho Published). 2. `page >= 1`, `page_size` trong [1, 50].                                                                                                                                                                                                                                                                                                                                      |
 | Luồng chính (Happy Path) | 1. Client gửi `GET /api/v1/recipes?page=1&page_size=12&category_id={id}&difficulty=easy&max_cook_time=30&sort=-created_at`.                                                                                                                                                                                                                                                                                                                |
 
-2. Query handler kiểm tra Cache Redis theo key `recipes:list:{query_hash}`.
+2. Guest: query handler kiểm tra Cache Redis theo key `recipes:list:v{generation}:{query_hash}` (ADR-0010); người dùng đã đăng nhập bỏ qua cache.
 3. Cache miss: xây query với filter theo tham số.
 4. Áp dụng authorization filter: Guest → chỉ published; Author → published OR (draft/archived AND author_id == current_user_id); Admin → tất cả.
 5. Apply sorting: `sort=-created_at` → `ORDER BY created_at DESC`.
 6. `COUNT` tổng trước khi phân trang, sau đó `OFFSET/LIMIT`.
-7. Lưu kết quả vào Cache Redis (TTL 30 phút).
+7. Lưu kết quả của Guest vào Cache Redis (TTL 30 phút).
 8. Trả HTTP 200 OK. |
    | Luồng thay thế / Ngoại lệ | A1 – `page`/`page_size` không hợp lệ: HTTP 422.
    A2 – `category_id` không tồn tại: HTTP 200 với `items: []` (không throw 404). |
@@ -665,9 +666,9 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 | Điều kiện tiên quyết     | 1. Recipe với `slug` tương ứng tồn tại (`is_deleted = false`). 2. Nếu Recipe ở trạng thái `draft`/`archived`: người yêu cầu phải là Admin hoặc là tác giả sở hữu (`author_id == current_user_id`).                                                                                 |
 | Luồng chính (Happy Path) | 1. Client gửi `GET /api/v1/recipes/{slug}`.                                                                                                                                                                                                                                        |
 
-2. Query handler query Recipe kèm eager loading: steps, ingredients, images, category, author.
-3. Nếu không tìm thấy → HTTP 404.
-4. Kiểm tra `status`: nếu `draft`/`archived` → chỉ Admin hoặc tác giả sở hữu mới được xem.
+2. Query handler đọc Cache Redis key `recipe:{slug}` (stale-while-revalidate + mutex, ADR-0005); cache miss thì query Recipe kèm eager loading: steps, ingredients, images, category, author.
+3. Nếu không tìm thấy → HTTP 404 (không cache kết quả not found).
+4. Kiểm tra `status` (trên cả dữ liệu lấy từ cache): nếu `draft`/`archived` → chỉ Admin hoặc tác giả sở hữu mới được xem.
 5. Map sang `RecipeDetailOut`.
 6. Trả HTTP 200 OK; lưu vào Cache Redis key `recipe:{slug}` (TTL 30 phút). |
    | Luồng thay thế / Ngoại lệ | A1 – Slug không tồn tại: HTTP 404 Not Found.
@@ -694,7 +695,7 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 4. Tạo `Recipe` với `status = draft`, `author_id = current_user_id`.
 5. Nếu có `steps`/`ingredients`: tạo kèm (áp dụng cùng rule với FR-RCP-009/010).
 6. Nếu có `nutrition`: set các cột dinh dưỡng.
-7. Lưu DB, xóa cache Redis liên quan (`recipes:list:*`).
+7. Lưu DB, vô hiệu hóa cache danh sách/tìm kiếm (tăng `generation`, ADR-0010).
 8. Trả HTTP 201 Created với `RecipeOut`. |
    | Luồng thay thế / Ngoại lệ | A1 – Không có quyền Author/Admin: HTTP 401/403.
    A2 – `category_id` không tồn tại: HTTP 422 ("Category không hợp lệ").
@@ -721,7 +722,7 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 4. So sánh `row_version` với giá trị hiện tại trong DB; nếu khác → HTTP 409.
 5. Cập nhật field, tăng `row_version`.
 6. Cập nhật nutrition nếu có.
-7. Lưu DB, xóa cache Redis (`recipe:{slug}`, `recipes:list:*`).
+7. Lưu DB, xóa cache Redis `recipe:{slug}` (và `categories:all` nếu đổi `category_id`), tăng `generation` (ADR-0010).
 8. Trả HTTP 200 OK với `RecipeOut` đã cập nhật. |
    | Luồng thay thế / Ngoại lệ | A1 – Không phải owner (Author khác): HTTP 403 Forbidden.
    A2 – Concurrency conflict (`row_version` mismatch): HTTP 409 Conflict – "Dữ liệu đã bị thay đổi bởi người dùng khác."
@@ -747,7 +748,7 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 2. Kiểm tra resource-based authorization.
 3. Nếu publish: kiểm tra `len(steps) >= 1 and len(ingredients) >= 1` → nếu không đạt, HTTP 422.
 4. Set `status = published` (hoặc `draft`), `published_at = now()` (khi publish lần đầu).
-5. Lưu DB, xóa cache Redis.
+5. Lưu DB, xóa cache Redis `recipe:{slug}` và `categories:all` (số lượng recipe của danh mục đổi), tăng `generation`.
 6. Trả HTTP 200 OK với `RecipeOut`. |
    | Luồng thay thế / Ngoại lệ | A1 – Recipe thiếu step hoặc thiếu ingredient: HTTP 422 Unprocessable Entity ("Recipe phải có ít nhất 1 nguyên liệu và 1 bước thực hiện.").
    A2 – Recipe đã ở trạng thái mong muốn: idempotent, trả HTTP 200 OK. |
@@ -793,7 +794,7 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 2. Kiểm tra xác thực và resource-based authorization.
 3. Đánh dấu `recipe.is_deleted = true`, cascade `is_deleted = true` cho steps/ingredients/images liên quan.
 4. Lưu DB.
-5. Xóa cache Redis (`recipe:{slug}`, `recipes:list:*`).
+5. Xóa cache Redis (`recipe:{slug}`, `categories:all`), tăng `generation`.
 6. Trả HTTP 204 No Content. |
    | Luồng thay thế / Ngoại lệ | A1 – ID không tồn tại (hoặc đã `is_deleted`): HTTP 404.
    A2 – Không phải owner: HTTP 403. |
@@ -897,7 +898,7 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 | Nhóm chức năng           | Module Tìm kiếm và Phân trang (FR-SRCH)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Tác nhân                 | Tất cả (Guest / Author / Admin)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Mức ưu tiên (MoSCoW)     | M – Must Have                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Mô tả                    | Tìm kiếm mờ (fuzzy), không phân biệt dấu tiếng Việt, trên `title` công thức bằng PostgreSQL `pg_trgm` (trigram) kết hợp `unaccent` — xem ADR-0008 cho lý do chọn trigram thay vì `tsvector`/`ts_rank` (Postgres không có cấu hình text search tiếng Việt dựng sẵn). GIN index trên biểu thức `f_unaccent(lower(title))`. Khớp bằng toán tử `word_similarity` (`%>`), tìm đoạn khớp gần đúng của `q` bên trong `title` dài hơn — hỗ trợ tìm gần đúng với `unaccent` ("pho" tìm được "phở"). Chỉ tìm trên `title` (không bao gồm `description`). Chỉ trả `status == published`. Cũng hỗ trợ lọc (`category_id`, `difficulty`, `max_cook_time`) như FR-RCP-001, cùng phân trang offset-based (`page`, `page_size`, mặc định `page_size=12`, tối đa 50). Cache Redis (TTL 5 phút, ADR-0003) cho kết quả tìm kiếm thuộc phạm vi M6b (Cache layer), chưa triển khai ở M5b. |
+| Mô tả                    | Tìm kiếm mờ (fuzzy), không phân biệt dấu tiếng Việt, trên `title` công thức bằng PostgreSQL `pg_trgm` (trigram) kết hợp `unaccent` — xem ADR-0008 cho lý do chọn trigram thay vì `tsvector`/`ts_rank` (Postgres không có cấu hình text search tiếng Việt dựng sẵn). GIN index trên biểu thức `f_unaccent(lower(title))`. Khớp bằng toán tử `word_similarity` (`%>`), tìm đoạn khớp gần đúng của `q` bên trong `title` dài hơn — hỗ trợ tìm gần đúng với `unaccent` ("pho" tìm được "phở"). Chỉ tìm trên `title` (không bao gồm `description`). Chỉ trả `status == published`. Cũng hỗ trợ lọc (`category_id`, `difficulty`, `max_cook_time`) như FR-RCP-001, cùng phân trang offset-based (`page`, `page_size`, mặc định `page_size=12`, tối đa 50). Kết quả tìm kiếm cache trong Cache Redis (key `search:v{generation}:{query_hash}`, TTL 5 phút, ADR-0003/ADR-0010) và bị vô hiệu hóa cùng danh sách recipe khi có thay đổi. |
 | Điều kiện tiên quyết     | 1. Extension `unaccent`, `pg_trgm` đã cài. 2. GIN index trên biểu thức `f_unaccent(lower(title))`. 3. `q` không rỗng, tối thiểu 2 ký tự.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | Luồng chính (Happy Path) | 1. Client gửi `GET /api/v1/recipes/search?q=pho+bo&page=1&page_size=10`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
@@ -978,7 +979,7 @@ Response Time API | • p50 ≤ 150ms — GET endpoints với dữ liệu cache.
 | NFR-PERF-002
 Throughput | Hệ thống xử lý đồng thời ≥ 100 concurrent users không degradation, trên 2 vCPU/4GB RAM (single instance). Horizontal scaling tuyến tính. Đo bằng: k6 smoke → load → stress test. |
 | NFR-PERF-003
-Cache Effectiveness | Cache Redis hit rate ≥ 80% steady-state. TTL theo tầng dữ liệu: • Category list: **1 giờ** (ít thay đổi). • Recipe (list & detail): **30 phút** (thay đổi thường xuyên hơn, TTL cao dễ khiến người dùng thấy dữ liệu cũ). • Search results: **5 phút** (query đa dạng, tránh cache miss tràn ngập database trong thời gian ngắn). Eviction: LFU, `maxmemory` 2GB (xem ADR-0003). Invalidation: event-driven — xóa key liên quan khi Create/Update/Delete. |
+Cache Effectiveness | Cache Redis hit rate ≥ 80% steady-state. TTL theo tầng dữ liệu: • Category list: **1 giờ** (ít thay đổi). • Recipe (list & detail): **30 phút** (thay đổi thường xuyên hơn, TTL cao dễ khiến người dùng thấy dữ liệu cũ). • Search results: **5 phút** (query đa dạng, tránh cache miss tràn ngập database trong thời gian ngắn). Eviction: LFU, `maxmemory` 2GB (xem ADR-0003). Invalidation: event-driven — xóa key liên quan khi Create/Update/Publish/Unpublish/Delete; các key theo query (danh sách, tìm kiếm, trang danh mục) được vô hiệu hóa hàng loạt bằng bộ đếm `generation` thay vì quét key (ADR-0010). Cache Redis lỗi → đọc thẳng database. |
 | NFR-PERF-004
 Database Query | • Không N+1 query — dùng eager loading (`selectinload`/`joinedload`) và projection. • Index B-tree chỉ được thêm khi `EXPLAIN ANALYZE` cho thấy cần thiết, không index mặc định mọi cột `WHERE`/`ORDER BY` (ở quy mô ≤ 10.000 công thức mọi truy vấn danh sách/tìm kiếm < 10 ms, xem `loadtest/README.md`). • Slow query log: cảnh báo khi query > 100ms. • `EXPLAIN ANALYZE` phải pass review trước khi merge. |
 | NFR-PERF-005

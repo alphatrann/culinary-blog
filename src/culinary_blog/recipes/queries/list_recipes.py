@@ -3,6 +3,8 @@ import uuid
 from dataclasses import dataclass
 
 from culinary_blog.auth.principal import Principal
+from culinary_blog.cache import keys
+from culinary_blog.cache.service import Cache
 from culinary_blog.categories.schemas import RecipeSummaryOut
 from culinary_blog.cqrs import Query, QueryHandler
 from culinary_blog.recipes.enums import RecipeDifficulty
@@ -25,13 +27,34 @@ class ListRecipesHandler(QueryHandler[ListRecipesQuery, RecipeListOut]):
     """FR-RCP-001: paginated, filtered, sorted recipe list.
 
     Guests see published recipes; a logged-in author also sees their own draft/archived; Admin sees everything.
-    An unknown `category_id` simply yields an empty page.
+    An unknown `category_id` simply yields an empty page. Only the guest view is cached (keyed by the full query);
+    signed-in viewers see a different, per-user set and always read the database.
     """
 
-    def __init__(self, repository: RecipeRepository) -> None:
+    def __init__(self, repository: RecipeRepository, cache: Cache, ttl_seconds: int = keys.RECIPE_TTL_SECONDS) -> None:
         self._repository = repository
+        self._cache = cache
+        self._ttl_seconds = ttl_seconds
 
     async def handle(self, query: ListRecipesQuery) -> RecipeListOut:
+        if query.viewer is not None:
+            return await self._load(query)
+        return await self._cache.get_or_load_versioned(
+            keys.NS_RECIPE_LIST,
+            keys.query_hash(
+                page=query.page,
+                page_size=query.page_size,
+                sort=query.sort,
+                category_id=query.category_id,
+                difficulty=query.difficulty,
+                max_cook_time=query.max_cook_time,
+            ),
+            self._ttl_seconds,
+            RecipeListOut,
+            lambda: self._load(query),
+        )
+
+    async def _load(self, query: ListRecipesQuery) -> RecipeListOut:
         viewer = query.viewer
         recipes, total = await self._repository.list_visible(
             viewer_id=viewer.user_id if viewer else None,

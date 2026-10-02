@@ -1,0 +1,88 @@
+
+
+  █ THRESHOLDS 
+
+    http_req_duration{scenario:s100}
+    ✓ 'p(95)<1e9' p(95)=22.27ms
+
+    http_req_duration{scenario:s150}
+    ✓ 'p(95)<1e9' p(95)=194.93ms
+
+    http_req_duration{scenario:s200}
+    ✓ 'p(95)<1e9' p(95)=595.56ms
+
+    http_req_duration{scenario:s300}
+    ✓ 'p(95)<1e9' p(95)=1.79s
+
+    http_req_duration{scenario:s400}
+    ✓ 'p(95)<1e9' p(95)=335.02ms
+
+    http_req_failed{scenario:s100}
+    ✓ 'rate<=1' rate=0.00%
+
+    http_req_failed{scenario:s150}
+    ✓ 'rate<=1' rate=0.23%
+
+    http_req_failed{scenario:s200}
+    ✓ 'rate<=1' rate=0.23%
+
+    http_req_failed{scenario:s300}
+    ✓ 'rate<=1' rate=0.31%
+
+    http_req_failed{scenario:s400}
+    ✓ 'rate<=1' rate=0.16%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 112271 238.176828/s
+    checks_succeeded...: 99.79% 112045 out of 112271
+    checks_failed......: 0.20%  226 out of 112271
+
+    ✗ recipe_detail 2xx
+      ↳  99% — ✓ 27802 / ✗ 4
+    ✗ login 200
+      ↳  95% — ✓ 671 / ✗ 29
+    ✗ list_recipes_auth 2xx
+      ↳  99% — ✓ 11161 / ✗ 4
+    ✗ list_recipes 2xx
+      ↳  99% — ✓ 28123 / ✗ 7
+    ✗ category_detail 2xx
+      ↳  99% — ✓ 11144 / ✗ 3
+    ✗ categories 2xx
+      ↳  99% — ✓ 11187 / ✗ 2
+    ✗ search 2xx
+      ↳  99% — ✓ 16666 / ✗ 2
+    ✗ me 2xx
+      ↳  96% — ✓ 5291 / ✗ 175
+
+    HTTP
+    http_req_duration..............: med=19.75ms  p(95)=408.71ms p(99)=2.14s    max=16.02s  
+      { expected_response:true }...: med=19.72ms  p(95)=405.2ms  p(99)=2.03s    max=16.02s  
+      { scenario:s100 }............: med=4.52ms   p(95)=22.27ms  p(99)=184.11ms max=1.13s   
+      { scenario:s150 }............: med=5.55ms   p(95)=194.93ms p(99)=938.46ms max=4.01s   
+      { scenario:s200 }............: med=6.93ms   p(95)=595.56ms p(99)=1.43s    max=3.67s   
+      { scenario:s300 }............: med=23.22ms  p(95)=1.79s    p(99)=11.28s   max=16.02s  
+      { scenario:s400 }............: med=197.49ms p(95)=335.02ms p(99)=402.18ms max=607.94ms
+    http_req_failed................: 0.20%  226 out of 112276
+      { scenario:s100 }............: 0.00%  0 out of 12104
+      { scenario:s150 }............: 0.23%  40 out of 17098
+      { scenario:s200 }............: 0.23%  52 out of 22041
+      { scenario:s300 }............: 0.31%  73 out of 23050
+      { scenario:s400 }............: 0.16%  61 out of 37978
+    http_reqs......................: 112276 238.187436/s
+
+    EXECUTION
+    iteration_duration.............: med=809.71ms p(95)=1.37s    p(99)=2.98s    max=22.16s  
+    iterations.....................: 111571 236.691816/s
+    vus............................: 43     min=0             max=400
+    vus_max........................: 700    min=700           max=700
+
+    NETWORK
+    data_received..................: 748 MB 1.6 MB/s
+    data_sent......................: 37 MB  79 kB/s
+
+
+
+exit=0 wall=472s
+worker deaths: 5

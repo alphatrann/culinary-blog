@@ -5,12 +5,12 @@ import pytest
 from culinary_blog.categories.commands.update_category import UpdateCategoryCommand, UpdateCategoryHandler
 from culinary_blog.errors import ConflictError, ForbiddenError, NotFoundError
 from culinary_blog.recipes.enums import RecipeStatus
-from tests.categories.fakes import ADMIN, AUTHOR, FakeCategoryRepository, make_category
+from tests.categories.fakes import ADMIN, AUTHOR, FakeCategoryRepository, invalidator, make_category
 
 
 def setup():
     repo = FakeCategoryRepository()
-    return repo, make_category(repo, "Main", "main"), UpdateCategoryHandler(repo)
+    return repo, make_category(repo, "Main", "main"), UpdateCategoryHandler(repo, invalidator())
 
 
 @pytest.mark.anyio

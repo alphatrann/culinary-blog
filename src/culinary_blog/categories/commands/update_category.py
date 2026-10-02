@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from culinary_blog.auth.principal import Principal
+from culinary_blog.categories.cache import CategoryCacheInvalidator
 from culinary_blog.categories.repository import CategoryRepository
 from culinary_blog.categories.schemas import CategoryOut
 from culinary_blog.cqrs import Command, CommandHandler
@@ -25,8 +26,9 @@ class UpdateCategoryCommand(Command):
 class UpdateCategoryHandler(CommandHandler[UpdateCategoryCommand, CategoryOut]):
     """FR-CAT-004: Admin edits a category. The slug never changes on rename, so existing links keep working."""
 
-    def __init__(self, repository: CategoryRepository) -> None:
+    def __init__(self, repository: CategoryRepository, cache: CategoryCacheInvalidator) -> None:
         self._repository = repository
+        self._cache = cache
 
     async def handle(self, command: UpdateCategoryCommand) -> CategoryOut:
         if not command.actor.is_admin:
@@ -42,6 +44,7 @@ class UpdateCategoryHandler(CommandHandler[UpdateCategoryCommand, CategoryOut]):
         category.image_url = command.image_url
         category.order_index = command.order_index
         await self._repository.save(category)
+        await self._cache.updated()
         logger.info(
             "category updated",
             extra={

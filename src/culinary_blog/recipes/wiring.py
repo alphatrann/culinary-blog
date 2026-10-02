@@ -1,10 +1,12 @@
 from fastapi import APIRouter
 
 from culinary_blog.auth.wiring import get_authenticator
-from culinary_blog.cache.redis import get_queue_redis
+from culinary_blog.cache.redis import get_cache_redis, get_queue_redis
+from culinary_blog.cache.service import RedisCache
 from culinary_blog.config import get_settings
 from culinary_blog.database.session import async_session_factory, read_session_factory
 from culinary_blog.jobs.queue import RedisJobQueue
+from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.commands.add_ingredient import AddIngredientHandler
 from culinary_blog.recipes.commands.add_step import AddStepHandler
 from culinary_blog.recipes.commands.create_recipe import CreateRecipeHandler
@@ -32,23 +34,26 @@ def build_recipes_router() -> APIRouter:
     repository = RecipeRepository(async_session_factory, read_session_factory)
     storage = MinioFileStorage(get_settings())
     queue = RedisJobQueue(get_queue_redis())
+    settings = get_settings()
+    cache = RedisCache(get_cache_redis())
+    invalidator = RecipeCacheInvalidator(cache)
     return RecipeRouter(
         authenticator=get_authenticator(),
-        create_recipe=CreateRecipeHandler(repository),
-        update_recipe=UpdateRecipeHandler(repository),
-        list_recipes=ListRecipesHandler(repository),
-        search_recipes=SearchRecipesHandler(repository),
-        get_recipe=GetRecipeHandler(repository),
-        publish_recipe=PublishRecipeHandler(repository),
-        unpublish_recipe=UnpublishRecipeHandler(repository),
-        delete_recipe=DeleteRecipeHandler(repository),
-        add_ingredient=AddIngredientHandler(repository),
-        update_ingredient=UpdateIngredientHandler(repository),
-        delete_ingredient=DeleteIngredientHandler(repository),
-        add_step=AddStepHandler(repository),
-        update_step=UpdateStepHandler(repository),
-        delete_step=DeleteStepHandler(repository),
-        upload_image=UploadImageHandler(repository, storage, queue),
-        set_primary_image=SetPrimaryImageHandler(repository),
-        delete_image=DeleteImageHandler(repository, queue),
+        create_recipe=CreateRecipeHandler(repository, invalidator),
+        update_recipe=UpdateRecipeHandler(repository, invalidator),
+        list_recipes=ListRecipesHandler(repository, cache, settings.cache_ttl_recipes_seconds),
+        search_recipes=SearchRecipesHandler(repository, cache, settings.cache_ttl_search_seconds),
+        get_recipe=GetRecipeHandler(repository, cache, settings.cache_ttl_recipes_seconds),
+        publish_recipe=PublishRecipeHandler(repository, invalidator),
+        unpublish_recipe=UnpublishRecipeHandler(repository, invalidator),
+        delete_recipe=DeleteRecipeHandler(repository, invalidator),
+        add_ingredient=AddIngredientHandler(repository, invalidator),
+        update_ingredient=UpdateIngredientHandler(repository, invalidator),
+        delete_ingredient=DeleteIngredientHandler(repository, invalidator),
+        add_step=AddStepHandler(repository, invalidator),
+        update_step=UpdateStepHandler(repository, invalidator),
+        delete_step=DeleteStepHandler(repository, invalidator),
+        upload_image=UploadImageHandler(repository, storage, queue, invalidator),
+        set_primary_image=SetPrimaryImageHandler(repository, invalidator),
+        delete_image=DeleteImageHandler(repository, queue, invalidator),
     ).router

@@ -8,7 +8,7 @@ from culinary_blog.recipes.commands.delete_step import DeleteStepCommand, Delete
 from culinary_blog.recipes.commands.update_step import UpdateStepCommand, UpdateStepHandler
 from culinary_blog.recipes.enums import RecipeStatus
 from culinary_blog.recipes.schemas import StepIn
-from tests.recipes.fakes import ADMIN, AUTHOR, OTHER_AUTHOR, READER, FakeRecipeRepository
+from tests.recipes.fakes import ADMIN, AUTHOR, OTHER_AUTHOR, READER, FakeRecipeRepository, invalidator
 
 
 def setup():
@@ -18,7 +18,7 @@ def setup():
 
 async def add(repo, recipe, actor=AUTHOR, title="Ninh xương", **fields):
     data = StepIn(**({"title": title, "description": "Ninh 3 tiếng"} | fields))
-    return await AddStepHandler(repo).handle(AddStepCommand(actor, recipe.id, data))
+    return await AddStepHandler(repo, invalidator()).handle(AddStepCommand(actor, recipe.id, data))
 
 
 @pytest.mark.anyio
@@ -51,7 +51,9 @@ async def test_add_forbidden_for_non_owner(actor):
 async def test_add_to_missing_recipe_is_not_found():
     repo, _ = setup()
     with pytest.raises(NotFoundError):
-        await AddStepHandler(repo).handle(AddStepCommand(AUTHOR, uuid.uuid4(), StepIn(title="a", description="b")))
+        await AddStepHandler(repo, invalidator()).handle(
+            AddStepCommand(AUTHOR, uuid.uuid4(), StepIn(title="a", description="b"))
+        )
 
 
 @pytest.mark.parametrize("fields", [{"title": ""}, {"title": "   "}, {"description": ""}, {"description": "x" * 2001}])
@@ -65,7 +67,7 @@ async def test_update_replaces_content_but_never_the_number():
     repo, recipe = setup()
     await add(repo, recipe)
     second = await add(repo, recipe, title="Nêm nếm")
-    out = await UpdateStepHandler(repo).handle(
+    out = await UpdateStepHandler(repo, invalidator()).handle(
         UpdateStepCommand(
             AUTHOR, recipe.id, second.id, StepIn(title="Nêm gia vị", description="Nêm vừa", duration_minutes=5)
         )
@@ -78,7 +80,7 @@ async def test_update_replaces_content_but_never_the_number():
 async def test_update_forbidden_and_not_found():
     repo, recipe = setup()
     step = await add(repo, recipe)
-    handler = UpdateStepHandler(repo)
+    handler = UpdateStepHandler(repo, invalidator())
     data = StepIn(title="t", description="d")
     with pytest.raises(ForbiddenError):
         await handler.handle(UpdateStepCommand(OTHER_AUTHOR, recipe.id, step.id, data))
@@ -93,7 +95,7 @@ async def test_delete_renumbers_remaining_steps_contiguously():
     await add(repo, recipe, title="B")
     await add(repo, recipe, title="C")
 
-    await DeleteStepHandler(repo).handle(DeleteStepCommand(AUTHOR, recipe.id, first.id))
+    await DeleteStepHandler(repo, invalidator()).handle(DeleteStepCommand(AUTHOR, recipe.id, first.id))
 
     steps, _ = await repo.get_children(recipe.id)
     assert [(s.title, s.step_number) for s in steps] == [("B", 1), ("C", 2)]
@@ -104,7 +106,7 @@ async def test_new_step_after_delete_continues_from_the_renumbered_tail():
     repo, recipe = setup()
     first = await add(repo, recipe, title="A")
     await add(repo, recipe, title="B")
-    await DeleteStepHandler(repo).handle(DeleteStepCommand(AUTHOR, recipe.id, first.id))
+    await DeleteStepHandler(repo, invalidator()).handle(DeleteStepCommand(AUTHOR, recipe.id, first.id))
 
     assert (await add(repo, recipe, title="C")).step_number == 2
 
@@ -113,7 +115,7 @@ async def test_new_step_after_delete_continues_from_the_renumbered_tail():
 async def test_delete_forbidden_and_not_found():
     repo, recipe = setup()
     step = await add(repo, recipe)
-    handler = DeleteStepHandler(repo)
+    handler = DeleteStepHandler(repo, invalidator())
     with pytest.raises(ForbiddenError):
         await handler.handle(DeleteStepCommand(OTHER_AUTHOR, recipe.id, step.id))
     await handler.handle(DeleteStepCommand(AUTHOR, recipe.id, step.id))

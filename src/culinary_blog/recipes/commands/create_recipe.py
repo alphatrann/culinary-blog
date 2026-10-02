@@ -7,6 +7,7 @@ from culinary_blog.auth.principal import Principal
 from culinary_blog.categories.slug import slugify
 from culinary_blog.cqrs import Command, CommandHandler
 from culinary_blog.errors import ForbiddenError
+from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 from culinary_blog.recipes.mapping import to_recipe_out
 from culinary_blog.recipes.models import Recipe, RecipeIngredient, RecipeStep
@@ -38,8 +39,9 @@ class CreateRecipeHandler(CommandHandler[CreateRecipeCommand, RecipeOut]):
 
     An unknown `category_id` is rejected by the database foreign key (surfaced by the repository as 422)."""
 
-    def __init__(self, repository: RecipeRepository) -> None:
+    def __init__(self, repository: RecipeRepository, cache: RecipeCacheInvalidator) -> None:
         self._repository = repository
+        self._cache = cache
 
     async def handle(self, command: CreateRecipeCommand) -> RecipeOut:
         if not command.actor.can_write_recipes:
@@ -76,6 +78,7 @@ class CreateRecipeHandler(CommandHandler[CreateRecipeCommand, RecipeOut]):
             for position, ingredient in enumerate(command.ingredients)
         ]
         await self._repository.add(recipe, steps, ingredients)
+        await self._cache.created()
         logger.info(
             "recipe created",
             extra={

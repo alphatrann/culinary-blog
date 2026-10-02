@@ -2,12 +2,12 @@ import pytest
 
 from culinary_blog.categories.commands.create_category import CreateCategoryCommand, CreateCategoryHandler
 from culinary_blog.errors import ConflictError, ForbiddenError
-from tests.categories.fakes import ADMIN, AUTHOR, FakeCategoryRepository
+from tests.categories.fakes import ADMIN, AUTHOR, FakeCategoryRepository, invalidator
 
 
 def make_handler():
     repo = FakeCategoryRepository()
-    return repo, CreateCategoryHandler(repo)
+    return repo, CreateCategoryHandler(repo, invalidator())
 
 
 @pytest.mark.anyio

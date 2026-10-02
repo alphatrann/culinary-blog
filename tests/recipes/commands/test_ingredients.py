@@ -9,7 +9,7 @@ from culinary_blog.recipes.commands.delete_ingredient import DeleteIngredientCom
 from culinary_blog.recipes.commands.update_ingredient import UpdateIngredientCommand, UpdateIngredientHandler
 from culinary_blog.recipes.enums import RecipeStatus
 from culinary_blog.recipes.schemas import IngredientIn
-from tests.recipes.fakes import ADMIN, AUTHOR, NO_ROLES, OTHER_AUTHOR, READER, FakeRecipeRepository
+from tests.recipes.fakes import ADMIN, AUTHOR, NO_ROLES, OTHER_AUTHOR, READER, FakeRecipeRepository, invalidator
 
 
 def setup():
@@ -20,7 +20,7 @@ def setup():
 
 async def add(repo, recipe, actor=AUTHOR, **fields):
     data = IngredientIn(**({"name": "Muối"} | fields))
-    return await AddIngredientHandler(repo).handle(AddIngredientCommand(actor, recipe.id, data))
+    return await AddIngredientHandler(repo, invalidator()).handle(AddIngredientCommand(actor, recipe.id, data))
 
 
 @pytest.mark.anyio
@@ -58,7 +58,7 @@ async def test_add_forbidden_for_non_owner(actor):
 @pytest.mark.anyio
 async def test_add_to_missing_or_deleted_recipe_is_not_found():
     repo, recipe = setup()
-    handler = AddIngredientHandler(repo)
+    handler = AddIngredientHandler(repo, invalidator())
     data = IngredientIn(name="Muối")
     with pytest.raises(NotFoundError):
         await handler.handle(AddIngredientCommand(AUTHOR, uuid.uuid4(), data))
@@ -71,7 +71,7 @@ async def test_add_to_missing_or_deleted_recipe_is_not_found():
 async def test_update_replaces_fields_and_keeps_order_when_omitted():
     repo, recipe = setup()
     created = await add(repo, recipe, name="Hành", order_index=3)
-    out = await UpdateIngredientHandler(repo).handle(
+    out = await UpdateIngredientHandler(repo, invalidator()).handle(
         UpdateIngredientCommand(
             AUTHOR, recipe.id, created.id, IngredientIn(name="Hành lá", quantity=Decimal("2.5"), unit="củ")
         )
@@ -84,7 +84,7 @@ async def test_update_replaces_fields_and_keeps_order_when_omitted():
 async def test_update_can_clear_quantity_and_unit_together():
     repo, recipe = setup()
     created = await add(repo, recipe, name="Hành", quantity=Decimal("1"), unit="củ")
-    out = await UpdateIngredientHandler(repo).handle(
+    out = await UpdateIngredientHandler(repo, invalidator()).handle(
         UpdateIngredientCommand(AUTHOR, recipe.id, created.id, IngredientIn(name="Hành"))
     )
     assert out.quantity is None and out.unit is None
@@ -94,7 +94,7 @@ async def test_update_can_clear_quantity_and_unit_together():
 async def test_update_forbidden_and_not_found():
     repo, recipe = setup()
     created = await add(repo, recipe)
-    handler = UpdateIngredientHandler(repo)
+    handler = UpdateIngredientHandler(repo, invalidator())
     data = IngredientIn(name="X")
     with pytest.raises(ForbiddenError):
         await handler.handle(UpdateIngredientCommand(OTHER_AUTHOR, recipe.id, created.id, data))
@@ -108,7 +108,7 @@ async def test_ingredient_of_another_recipe_is_not_found():
     other = repo.seed_recipe(AUTHOR, RecipeStatus.DRAFT, title="Bun Cha")
     created = await add(repo, other)
     with pytest.raises(NotFoundError):
-        await UpdateIngredientHandler(repo).handle(
+        await UpdateIngredientHandler(repo, invalidator()).handle(
             UpdateIngredientCommand(AUTHOR, recipe.id, created.id, IngredientIn(name="X"))
         )
 
@@ -117,7 +117,7 @@ async def test_ingredient_of_another_recipe_is_not_found():
 async def test_delete_soft_deletes_and_second_delete_is_not_found():
     repo, recipe = setup()
     created = await add(repo, recipe)
-    handler = DeleteIngredientHandler(repo)
+    handler = DeleteIngredientHandler(repo, invalidator())
     await handler.handle(DeleteIngredientCommand(AUTHOR, recipe.id, created.id))
 
     assert repo.ingredients[0].is_deleted is True
@@ -130,7 +130,9 @@ async def test_delete_forbidden_for_non_owner():
     repo, recipe = setup()
     created = await add(repo, recipe)
     with pytest.raises(ForbiddenError):
-        await DeleteIngredientHandler(repo).handle(DeleteIngredientCommand(OTHER_AUTHOR, recipe.id, created.id))
+        await DeleteIngredientHandler(repo, invalidator()).handle(
+            DeleteIngredientCommand(OTHER_AUTHOR, recipe.id, created.id)
+        )
     assert repo.ingredients[0].is_deleted is False
 
 

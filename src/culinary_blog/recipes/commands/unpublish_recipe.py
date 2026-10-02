@@ -7,6 +7,7 @@ from culinary_blog.auth.principal import Principal
 from culinary_blog.cqrs import Command, CommandHandler
 from culinary_blog.errors import NotFoundError
 from culinary_blog.recipes.access import ensure_can_edit
+from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.enums import RecipeStatus
 from culinary_blog.recipes.mapping import to_recipe_out
 from culinary_blog.recipes.repository import RecipeRepository
@@ -24,8 +25,9 @@ class UnpublishRecipeCommand(Command):
 class UnpublishRecipeHandler(CommandHandler[UnpublishRecipeCommand, RecipeOut]):
     """FR-RCP-005: move a published recipe back to draft (`published_at` is kept); idempotent if already a draft."""
 
-    def __init__(self, repository: RecipeRepository) -> None:
+    def __init__(self, repository: RecipeRepository, cache: RecipeCacheInvalidator) -> None:
         self._repository = repository
+        self._cache = cache
 
     async def handle(self, command: UnpublishRecipeCommand) -> RecipeOut:
         recipe = await self._repository.get_by_id(command.recipe_id)
@@ -38,6 +40,7 @@ class UnpublishRecipeHandler(CommandHandler[UnpublishRecipeCommand, RecipeOut]):
             if updated is None:
                 raise NotFoundError("Không tìm thấy công thức nấu ăn.")
             recipe = updated
+            await self._cache.visibility_changed(recipe.slug)
             logger.info(
                 "recipe unpublished",
                 extra={
