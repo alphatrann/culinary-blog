@@ -1,16 +1,34 @@
 apiVersion: 1
 
+# Existing volumes hold these datasources with auto-generated uids; recreate them with the fixed uids
+# the dashboards reference.
+deleteDatasources:
+  - name: Prometheus
+    orgId: 1
+  - name: Tempo
+    orgId: 1
+  - name: Loki
+    orgId: 1
+
 datasources:
   - name: Prometheus
+    uid: prometheus
     type: prometheus
     access: proxy
     url: http://prometheus:9090
     isDefault: true
   - name: Tempo
+    uid: tempo
     type: tempo
     access: proxy
     url: http://tempo:3200
+    jsonData:
+      tracesToMetrics:
+        datasourceUid: prometheus
+      nodeGraph:
+        enabled: true
   - name: Loki
+    uid: loki
     type: loki
     access: proxy
     url: http://loki:3100

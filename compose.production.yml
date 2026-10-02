@@ -127,6 +127,9 @@ services:
       context: .
       dockerfile: docker/tempo.Dockerfile
     restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      GOMEMLIMIT: 400MiB  # make the Go GC back off before the cgroup OOM-killer fires
     volumes:
       - tempodata:/var/tempo
 
@@ -177,6 +180,14 @@ services:
     restart: unless-stopped
     env_file:
       - .env.production
+    # The exporter reads DATA_SOURCE_*, which .env.production doesn't define; derive them from POSTGRES_*.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        export DATA_SOURCE_USER="$$POSTGRES_USER" DATA_SOURCE_PASS="$$POSTGRES_PASSWORD"
+        DATA_SOURCE_URI="postgres:5432/$$POSTGRES_DB?sslmode=disable";
+        exec /bin/postgres_exporter
     depends_on:
       postgres:
         condition: service_healthy

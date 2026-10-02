@@ -8,6 +8,17 @@ distributor:
         grpc:
         http:
 
+# Bounded for a small Docker VM (the defaults are sized for a real cluster and got Tempo OOM-killed
+# on a 2 GB VM when Grafana searched `{}` while the compactor ran).
+query_frontend:
+  max_outstanding_per_tenant: 200
+  search:
+    concurrent_jobs: 10
+    target_bytes_per_job: 50_000_000
+
+querier:
+  max_concurrent_queries: 4
+
 storage:
   trace:
     backend: local
@@ -15,7 +26,12 @@ storage:
       path: /var/tempo/traces
     wal:
       path: /var/tempo/wal
+    pool:
+      max_workers: 20
+      queue_depth: 200
 
 compactor:
   compaction:
     block_retention: 24h
+    compaction_window: 1h
+    max_compaction_objects: 1_000_000
