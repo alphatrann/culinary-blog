@@ -35,7 +35,7 @@ Raw outputs of the run below are in [`results/`](results/): `smoke.txt`, `load.t
 - **Scripts:** `smoke` (2 VUs), `load` (ramp to 100 VUs, hold 5 min, 0.5–2.5 s think time), `stress` (fixed 90 s steps
   of 100 / 150 / 200 / 300 / 400 VUs, 0.2–1.2 s think time, so a stress VU sends ~2.2× the requests of a load VU).
 - **Stress caveat:** the 2 GB Docker VM cannot also hold Tempo's span ingestion at these rates (Tempo was OOM-killed
-  and API workers restarted), so stress ran with Tempo and the OTel collector stopped. Smoke and load ran with tracing on.
+  and API workers restarted), so stress ran with Tempo and the OTel collector stopped (the API then logs OTLP export retries, a small extra cost that makes stress numbers slightly pessimistic). Smoke and load ran with tracing on.
 - **Reading traces:** slow requests were inspected in Grafana → Tempo (span per SQL statement) to see where time goes.
 
 ## How to read `EXPLAIN (ANALYZE, BUFFERS)`
@@ -89,6 +89,13 @@ All endpoints pass NFR-PERF-001/002 by more than an order of magnitude. Smoke (2
 | 200 | 216 | 1675 | 3275 | 0% |
 | 300 | 827 | 2711 | 3835 | 0.2% |
 | 400 | 1628 | 3489 | 42585 | 1.9% |
+
+> **Read the 400-VU row with care.** Its p99 (~43 s) and 1.9% errors are not steady-state latency: about 200 requests
+> failed within one second of the step starting (`dial tcp 127.0.0.1:80: connection reset by peer`, see
+> `results/stress.txt`) because 400 VUs opened connections at the same instant and Docker Desktop's port forward
+> reset them; the ~40 s tail is most likely TCP connect retries after those resets. The typical request at that step
+> is the p50/p95 shown. The server logged no crash, restart or nginx error at that moment. Steps start without a ramp,
+> so treat 300+ VUs as "clearly saturated", not as exact numbers.
 
 **Knee: ~100–150 stress VUs (≈ 220–330 load-test users, ~150–190 req/s).** Above it latency climbs with load
 (queueing) and connections start dropping. Every endpoint degrades together, including `/auth/me` (no DB call), so the
