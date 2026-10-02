@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from culinary_blog.auth.wiring import get_authenticator
 from culinary_blog.cache.redis import get_queue_redis
 from culinary_blog.config import get_settings
-from culinary_blog.database.session import async_session_factory
+from culinary_blog.database.session import async_session_factory, read_session_factory
 from culinary_blog.jobs.queue import RedisJobQueue
 from culinary_blog.recipes.commands.add_ingredient import AddIngredientHandler
 from culinary_blog.recipes.commands.add_step import AddStepHandler
@@ -29,7 +29,7 @@ from culinary_blog.storage.minio_storage import MinioFileStorage
 
 def build_recipes_router() -> APIRouter:
     """Composition root for the recipes module: the only place that binds concrete dependencies."""
-    repository = RecipeRepository(async_session_factory)
+    repository = RecipeRepository(async_session_factory, read_session_factory)
     storage = MinioFileStorage(get_settings())
     queue = RedisJobQueue(get_queue_redis())
     return RecipeRouter(

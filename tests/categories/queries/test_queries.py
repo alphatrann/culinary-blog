@@ -85,3 +85,22 @@ async def test_page_past_the_end_is_empty_not_an_error():
 async def test_unknown_slug_is_not_found():
     with pytest.raises(NotFoundError):
         await GetCategoryHandler(FakeCategoryRepository()).handle(GetCategoryQuery("nope", 1, 12))
+
+
+@pytest.mark.anyio
+async def test_guest_recipe_count_reuses_page_total_without_a_second_count_query():
+    handler, published, *_ = detail_setup()
+    handler._repository.count_published_recipes = None  # type: ignore[method-assign]  # would raise if called
+
+    out = await handler.handle(GetCategoryQuery("main", 1, 12))
+
+    assert out.category.recipe_count == out.recipes.total_count == 1
+
+
+@pytest.mark.anyio
+async def test_author_recipe_count_stays_published_only_even_though_page_includes_drafts():
+    handler, published, own_draft, _ = detail_setup()
+    out = await handler.handle(GetCategoryQuery("main", 1, 12, AUTHOR))
+
+    assert out.recipes.total_count == 2  # published + own draft
+    assert out.category.recipe_count == 1  # published only

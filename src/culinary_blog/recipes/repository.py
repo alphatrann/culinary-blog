@@ -85,17 +85,22 @@ class RecipeAggregate:
 class RecipeRepository:
     """The only place that runs recipe queries."""
 
-    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
+    def __init__(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        read_session_factory: async_sessionmaker[AsyncSession] | None = None,
+    ) -> None:
         self._session_factory = session_factory
+        self._read_session_factory = read_session_factory or session_factory  # AUTOCOMMIT reads when provided
 
     # The uniqueness check includes soft-deleted rows: the unique constraint does too.
     async def slug_taken(self, slug: str) -> bool:
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             result = await session.execute(select(func.count()).select_from(Recipe).where(Recipe.slug == slug))
             return result.scalar_one() > 0
 
     async def get_by_id(self, recipe_id: uuid.UUID) -> Recipe | None:
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             result = await session.execute(
                 select(Recipe)
                 .where(Recipe.id == recipe_id, col(Recipe.is_deleted).is_(False))
@@ -105,12 +110,12 @@ class RecipeRepository:
 
     async def get_children(self, recipe_id: uuid.UUID) -> tuple[list[RecipeStep], list[RecipeIngredient]]:
         """A recipe's live steps (by step_number) and ingredients (by order_index)."""
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             return await self._load_children(session, recipe_id)
 
     async def get_aggregate_by_slug(self, slug: str) -> RecipeAggregate | None:
         """A live recipe by slug with its category, author, steps, ingredients and images."""
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             head = (
                 await session.execute(
                     select(Recipe, Category, User)
@@ -165,7 +170,7 @@ class RecipeRepository:
 
         sort_column = _SORT_COLUMNS[sort.removeprefix("-")]
         ordering = sort_column.desc() if sort.startswith("-") else sort_column.asc()
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             total = (await session.execute(select(func.count()).select_from(Recipe).where(*conditions))).scalar_one()
             result = await session.execute(
                 select(Recipe)
@@ -208,7 +213,7 @@ class RecipeRepository:
         if max_cook_time is not None:
             conditions.append(col(Recipe.cook_time_minutes) <= max_cook_time)
 
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             total = (await session.execute(select(func.count()).select_from(Recipe).where(*conditions))).scalar_one()
             result = await session.execute(
                 select(Recipe, score)
@@ -302,7 +307,7 @@ class RecipeRepository:
             return deleted_id
 
     async def get_ingredient(self, recipe_id: uuid.UUID, ingredient_id: uuid.UUID) -> RecipeIngredient | None:
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             result = await session.execute(
                 select(RecipeIngredient)
                 .where(
@@ -363,7 +368,7 @@ class RecipeRepository:
             await session.commit()
 
     async def get_step(self, recipe_id: uuid.UUID, step_id: uuid.UUID) -> RecipeStep | None:
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             result = await session.execute(
                 select(RecipeStep)
                 .where(
@@ -467,7 +472,7 @@ class RecipeRepository:
             await session.commit()
 
     async def get_image(self, recipe_id: uuid.UUID, image_id: uuid.UUID) -> RecipeImage | None:
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             result = await session.execute(
                 select(RecipeImage)
                 .where(

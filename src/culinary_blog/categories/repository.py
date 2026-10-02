@@ -18,12 +18,17 @@ UNIQUE_VIOLATION = "23505"  # PostgreSQL SQLSTATE
 class CategoryRepository:
     """The only place that runs category queries."""
 
-    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
+    def __init__(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        read_session_factory: async_sessionmaker[AsyncSession] | None = None,
+    ) -> None:
         self._session_factory = session_factory
+        self._read_session_factory = read_session_factory or session_factory  # AUTOCOMMIT reads when provided
 
     async def list_with_recipe_counts(self) -> list[tuple[Category, int]]:
         """Every live category with its published-recipe count, ordered by name."""
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             published = (
                 select(col(Recipe.category_id), func.count().label("n"))
                 .where(col(Recipe.is_deleted).is_(False), Recipe.status == RecipeStatus.PUBLISHED)
@@ -40,7 +45,7 @@ class CategoryRepository:
             return [(category, int(count)) for category, count in result.all()]
 
     async def get_by_slug(self, slug: str) -> Category | None:
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             result = await session.execute(
                 select(Category)
                 .where(Category.slug == slug, col(Category.is_deleted).is_(False))
@@ -49,14 +54,14 @@ class CategoryRepository:
             return result.scalars().first()
 
     async def get_by_id(self, category_id: uuid.UUID) -> Category | None:
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             result = await session.execute(
                 select(Category).where(Category.id == category_id, col(Category.is_deleted).is_(False))
             )
             return result.scalars().first()
 
     async def count_published_recipes(self, category_id: uuid.UUID) -> int:
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             result = await session.execute(
                 select(func.count())
                 .select_from(Recipe)
@@ -70,14 +75,14 @@ class CategoryRepository:
 
     # Uniqueness checks deliberately include soft-deleted rows: the unique constraints do too.
     async def name_taken(self, name: str, *, excluding: uuid.UUID | None = None) -> bool:
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             query = select(func.count()).select_from(Category).where(Category.name == name)
             if excluding is not None:
                 query = query.where(Category.id != excluding)
             return (await session.execute(query)).scalar_one() > 0
 
     async def slug_taken(self, slug: str) -> bool:
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             result = await session.execute(select(func.count()).select_from(Category).where(Category.slug == slug))
             return result.scalar_one() > 0
 
@@ -103,7 +108,7 @@ class CategoryRepository:
             if viewer_id is not None:
                 visible.append(Recipe.author_id == viewer_id)
             conditions.append(or_(*visible))
-        async with self._session_factory() as session:
+        async with self._read_session_factory() as session:
             total = (await session.execute(select(func.count()).select_from(Recipe).where(*conditions))).scalar_one()
             result = await session.execute(
                 select(Recipe)

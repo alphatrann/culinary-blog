@@ -7,12 +7,12 @@ from culinary_blog.categories.queries.get_category import GetCategoryHandler
 from culinary_blog.categories.queries.list_categories import ListCategoriesHandler
 from culinary_blog.categories.repository import CategoryRepository
 from culinary_blog.categories.router import CategoryRouter
-from culinary_blog.database.session import async_session_factory
+from culinary_blog.database.session import async_session_factory, read_session_factory
 
 
 def build_categories_router() -> APIRouter:
     """Composition root for the categories module: the only place that binds concrete dependencies."""
-    repository = CategoryRepository(async_session_factory)
+    repository = CategoryRepository(async_session_factory, read_session_factory)
     return CategoryRouter(
         authenticator=get_authenticator(),
         create_category=CreateCategoryHandler(repository),
