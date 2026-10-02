@@ -16,6 +16,9 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
+    cpus: 2.0
+    mem_limit: 4g
+    command: ["uvicorn", "culinary_blog.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
     env_file:
       - .env.production
     depends_on:
@@ -45,6 +48,7 @@ services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
+    command: ["postgres", "-c", "log_min_duration_statement=100"]
     env_file:
       - .env.production
     volumes:
@@ -147,6 +151,8 @@ services:
       context: .
       dockerfile: docker/grafana.Dockerfile
     restart: unless-stopped
+    ports:
+      - "3000:3000"
     env_file:
       - .env.production
     volumes:
@@ -155,6 +161,49 @@ services:
       - tempo
       - loki
       - prometheus
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  cache-redis-exporter:
+    image: oliver006/redis_exporter:v1.62.0
+    restart: unless-stopped
+    command: ["--redis.addr=redis://cache-redis:6379"]
+    depends_on:
+      cache-redis:
+        condition: service_healthy
+
+  queue-redis-exporter:
+    image: oliver006/redis_exporter:v1.62.0
+    restart: unless-stopped
+    command: ["--redis.addr=redis://queue-redis:6379"]
+    depends_on:
+      queue-redis:
+        condition: service_healthy
+
+  ratelimit-redis-exporter:
+    image: oliver006/redis_exporter:v1.62.0
+    restart: unless-stopped
+    command: ["--redis.addr=redis://ratelimit-redis:6379"]
+    depends_on:
+      ratelimit-redis:
+        condition: service_healthy
 
 volumes:
   pgdata:

@@ -5,10 +5,15 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 import jwt
+from opentelemetry import trace
 from passlib.context import CryptContext
 
 from culinary_blog.auth.principal import Principal
 from culinary_blog.errors import UnauthorizedError
+
+# Argon2id verification showed up as a multi-hundred-ms gap between DB spans in Tempo traces
+# with nothing accounting for it (M6a/ADR-0009 finding) - these spans make that visible.
+_tracer = trace.get_tracer(__name__)
 
 
 class PasswordHasher:
@@ -20,10 +25,12 @@ class PasswordHasher:
         self._dummy_hash = self._context.hash(secrets.token_urlsafe(16))
 
     async def hash(self, password: str) -> str:
-        return await asyncio.to_thread(self._context.hash, password)
+        with _tracer.start_as_current_span("password_hasher.hash"):
+            return await asyncio.to_thread(self._context.hash, password)
 
     async def verify(self, password: str, password_hash: str | None) -> bool:
-        matches = await asyncio.to_thread(self._context.verify, password, password_hash or self._dummy_hash)
+        with _tracer.start_as_current_span("password_hasher.verify"):
+            matches = await asyncio.to_thread(self._context.verify, password, password_hash or self._dummy_hash)
         return matches and password_hash is not None
 
 
