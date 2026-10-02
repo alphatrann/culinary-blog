@@ -63,6 +63,14 @@ API docs: `/docs` (Swagger) · `/redoc`
 - Auth via `HttpOnly` cookies
 - Errors as RFC 7807 problem details
 
+## Observability
+
+`docker compose -f compose.production.yml up -d --build`, then open Grafana on http://localhost:3000. Provisioned
+(`observability/grafana/provisioning/`): Prometheus/Tempo/Loki datasources and two dashboards, **RED** (rate, errors,
+duration, slow/errored traces) and **USE** (event loop, DB pool, Docker VM, Postgres, Redis). Container-level USE panels
+need cAdvisor per-container labels, which Docker Desktop doesn't expose (VM-level panels still work).
+After editing `observability/*` rebuild the image (`up -d --build <service>`): configs are baked in, not mounted.
+
 ## Layout
 
 ```
