@@ -1,170 +1,21 @@
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories/danh-muc-29\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-6185\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-1665\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=32&sort=title&category_id=5d722254-6cdf-4f98-b625-37c9258e00ed\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=1&sort=-cook_time_minutes&category_id=f792da59-a4fc-4005-848b-e512faa79f9c\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=1&sort=created_at&category_id=ebef96eb-c05d-48db-8041-c6f20047b4ab&max_cook_time=35\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-2765\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-2163\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-9465\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-6787\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-133\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=3&sort=-created_at&category_id=f1f0fb91-a28b-4548-8146-86e6dd041823\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=goi%20cuon\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=1&sort=title&category_id=3ea19870-10bd-4981-bf55-2475427cbb3a\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-1665\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-1390\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=1&sort=cook_time_minutes&category_id=7887113c-62e5-4ac0-b585-4a7265d4abfa\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories/danh-muc-36\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-3161\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=che&category_id=065bf474-5b95-43c1-bdeb-b9f4dc95d5d2\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories/danh-muc-46\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories/danh-muc-42\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=2&sort=-created_at&category_id=bf8a84e2-c120-4c91-8b4c-5f336670642a\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=pho\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=1&sort=-cook_time_minutes&category_id=5654ceb9-711c-4514-b782-811b3f5c067a\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=96&sort=-created_at&category_id=3bd5dc5b-eb7d-40a3-a33a-0ea65e0ab975&difficulty=easy\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=3&sort=-cook_time_minutes&difficulty=expert\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=3&sort=created_at\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=1&sort=title&category_id=023867e0-2f6a-4312-8203-f16d0e2d67b5&max_cook_time=32\": read tcp 127.0.0.1:59511->127.0.0.1:80: read: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=72&sort=-cook_time_minutes&category_id=aac2b795-7aca-4810-a2fc-88de9625d035&difficulty=medium\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-2731\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=50&sort=-title&difficulty=easy&max_cook_time=69\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-4759\": read tcp 127.0.0.1:59509->127.0.0.1:80: read: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=24&sort=-cook_time_minutes&category_id=8349e426-7b94-4a5d-9375-4409684f1e7a&max_cook_time=29\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-3611\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-1242\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=1&sort=-title\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=2&sort=-created_at&category_id=25928a26-e4f7-4221-8da0-6a0b238fdc07\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=3&sort=-cook_time_minutes\": read tcp 127.0.0.1:59510->127.0.0.1:80: read: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=18&sort=created_at&category_id=22473a41-b120-4fca-a4a4-ca5e7d88b77d\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=goi%20cuon\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-8891\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-843\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/auth/me\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-8827\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=91&sort=cook_time_minutes&category_id=f792da59-a4fc-4005-848b-e512faa79f9c&difficulty=easy\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=1&sort=-created_at&category_id=59548987-cc1b-4d00-9e03-fab462bbcbd3\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories/danh-muc-24\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=ga\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=43&sort=-title&difficulty=easy\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/auth/me\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=2&sort=title&category_id=bf8a84e2-c120-4c91-8b4c-5f336670642a&difficulty=easy\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-7119\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-791\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=39&sort=-title&max_cook_time=67\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/auth/me\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-2122\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories/danh-muc-30\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=pho\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=3&sort=title\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=2&sort=created_at&category_id=f792da59-a4fc-4005-848b-e512faa79f9c\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=canh%20chua&category_id=023867e0-2f6a-4312-8203-f16d0e2d67b5\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories/danh-muc-30\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-7507\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=9&sort=-created_at&difficulty=easy\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=pho\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=xoi&category_id=382f14ec-c1c2-48ae-bce7-e8cfb3c3c772\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=1&sort=title&category_id=382f14ec-c1c2-48ae-bce7-e8cfb3c3c772\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=xoi\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=1&sort=created_at\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories/danh-muc-23\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=2&sort=created_at&category_id=4fac3eb9-5b09-475d-b95e-1f1226ccb93e\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=3&sort=cook_time_minutes&category_id=f792da59-a4fc-4005-848b-e512faa79f9c\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories/danh-muc-31\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=ga\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=3&sort=-title&max_cook_time=21\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=20&sort=title&difficulty=easy\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-8687\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=13&sort=title&category_id=25928a26-e4f7-4221-8da0-6a0b238fdc07\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=1&sort=created_at\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=goi%20cuon\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=xoi\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-4601\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=3&sort=-title&max_cook_time=47\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-5988\": read tcp 127.0.0.1:59508->127.0.0.1:80: read: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=1&sort=-created_at&category_id=25928a26-e4f7-4221-8da0-6a0b238fdc07\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories/danh-muc-33\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=1&sort=-cook_time_minutes&category_id=0ce9da30-8c20-4c80-a5db-4226bdf81b60\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=bun\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=2&sort=-title&difficulty=medium\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=57&sort=created_at\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-6008\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=ga&category_id=bf8a84e2-c120-4c91-8b4c-5f336670642a\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-1665\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=1&sort=-cook_time_minutes\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-6578\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-1242\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-3900\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-5829\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=2&sort=-title\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/auth/me\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-5779\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=pho&category_id=3ea19870-10bd-4981-bf55-2475427cbb3a\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/auth/me\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories/danh-muc-3\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-8316\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=ga\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-2604\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories/danh-muc-17\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-6185\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=3&sort=-created_at&category_id=3bd5dc5b-eb7d-40a3-a33a-0ea65e0ab975\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=2&sort=created_at\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-7376\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-3676\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=banh%20mi\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories/danh-muc-45\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=3&sort=title&category_id=7887113c-62e5-4ac0-b585-4a7265d4abfa\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=bun\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=che&category_id=cb1822e1-b0c0-497d-9b35-fb7d7e72a147\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=58&sort=created_at&category_id=8c6eabb4-90b0-4a56-b16a-1e825a7f1c92\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=thit%20kho\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-6787\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/search?q=pho\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=2&sort=title&category_id=382f14ec-c1c2-48ae-bce7-e8cfb3c3c772&difficulty=expert\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=2&sort=-created_at&category_id=e90b27a5-17af-415f-80a1-b6284927e3ad\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories/danh-muc-27\": read tcp 127.0.0.1:59512->127.0.0.1:80: read: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=8&sort=created_at&category_id=ac8107c7-6082-4e70-8748-15f84e24cdb2\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=3&sort=title&category_id=2d5b19e4-6f1c-4ae2-8884-30c281bb9b37\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-4289\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-4759\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/auth/me\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/categories/danh-muc-15\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes/recipe-5232\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
-time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \"http://localhost/api/v1/recipes?page=1&sort=-created_at&category_id=0cda1f60-f570-4163-abb8-c055e80036af\": dial tcp 127.0.0.1:80: connect: connection reset by peer"
 
 
   █ THRESHOLDS 
 
     http_req_duration{scenario:s100}
-    ✓ 'p(95)<1e9' p(95)=249.98ms
+    ✓ 'p(95)<1e9' p(95)=84.39ms
 
     http_req_duration{scenario:s150}
-    ✓ 'p(95)<1e9' p(95)=732.34ms
+    ✓ 'p(95)<1e9' p(95)=536.81ms
 
     http_req_duration{scenario:s200}
-    ✓ 'p(95)<1e9' p(95)=1.67s
+    ✓ 'p(95)<1e9' p(95)=1.19s
 
     http_req_duration{scenario:s300}
-    ✓ 'p(95)<1e9' p(95)=2.71s
+    ✓ 'p(95)<1e9' p(95)=2.39s
 
     http_req_duration{scenario:s400}
-    ✓ 'p(95)<1e9' p(95)=3.48s
+    ✓ 'p(95)<1e9' p(95)=2.55s
 
     http_req_failed{scenario:s100}
     ✓ 'rate<=1' rate=0.00%
@@ -176,60 +27,53 @@ time="2026-09-30T13:18:50+07:00" level=warning msg="Request Failed" error="Get \
     ✓ 'rate<=1' rate=0.00%
 
     http_req_failed{scenario:s300}
-    ✓ 'rate<=1' rate=0.21%
+    ✓ 'rate<=1' rate=0.00%
 
     http_req_failed{scenario:s400}
-    ✓ 'rate<=1' rate=1.85%
+    ✓ 'rate<=1' rate=0.01%
 
 
   █ TOTAL RESULTS 
 
-    checks_total.......: 72740  147.271472/s
-    checks_succeeded...: 99.65% 72487 out of 72740
-    checks_failed......: 0.34%  253 out of 72740
+    checks_total.......: 74925  158.62725/s
+    checks_succeeded...: 99.99% 74923 out of 74925
+    checks_failed......: 0.00%  2 out of 74925
 
+    ✓ search 2xx
     ✗ list_recipes 2xx
-      ↳  99% — ✓ 17749 / ✗ 53
-    ✗ category_detail 2xx
-      ↳  99% — ✓ 7122 / ✗ 26
-    ✗ categories 2xx
-      ↳  99% — ✓ 7128 / ✗ 22
-    ✗ recipe_detail 2xx
-      ↳  99% — ✓ 18325 / ✗ 55
-    ✗ search 2xx
-      ↳  99% — ✓ 10714 / ✗ 35
-    ✗ login 200
-      ↳  98% — ✓ 690 / ✗ 9
-    ✗ list_recipes_auth 2xx
-      ↳  99% — ✓ 7190 / ✗ 22
-    ✗ me 2xx
-      ↳  99% — ✓ 3569 / ✗ 31
+      ↳  99% — ✓ 18722 / ✗ 2
+    ✓ category_detail 2xx
+    ✓ recipe_detail 2xx
+    ✓ categories 2xx
+    ✓ login 200
+    ✓ list_recipes_auth 2xx
+    ✓ me 2xx
 
     HTTP
-    http_req_duration..............: med=272.26ms p(95)=2.23s    p(99)=3.91s  max=44.48s
-      { expected_response:true }...: med=273.65ms p(95)=2.22s    p(99)=3.82s  max=44.48s
-      { scenario:s100 }............: med=9.32ms   p(95)=249.98ms p(99)=1.11s  max=3.79s 
-      { scenario:s150 }............: med=16.43ms  p(95)=732.34ms p(99)=1.42s  max=2.89s 
-      { scenario:s200 }............: med=215.55ms p(95)=1.67s    p(99)=3.27s  max=6.09s 
-      { scenario:s300 }............: med=827.38ms p(95)=2.71s    p(99)=3.83s  max=7.39s 
-      { scenario:s400 }............: med=1.62s    p(95)=3.48s    p(99)=42.58s max=44.48s
-    http_req_failed................: 0.34%  253 out of 72745
-      { scenario:s100 }............: 0.00%  0 out of 12052
-      { scenario:s150 }............: 0.00%  0 out of 16725
-      { scenario:s200 }............: 0.00%  0 out of 16595
-      { scenario:s300 }............: 0.21%  34 out of 15558
-      { scenario:s400 }............: 1.85%  219 out of 11810
-    http_reqs......................: 72745  147.281595/s
+    http_req_duration..............: med=272.91ms p(95)=2.02s    p(99)=3.05s    max=9.77s
+      { expected_response:true }...: med=272.9ms  p(95)=2.02s    p(99)=3.05s    max=9.77s
+      { scenario:s100 }............: med=7.97ms   p(95)=84.39ms  p(99)=386.47ms max=2.53s
+      { scenario:s150 }............: med=14.83ms  p(95)=536.81ms p(99)=1.28s    max=2.41s
+      { scenario:s200 }............: med=212.94ms p(95)=1.19s    p(99)=2.39s    max=4.82s
+      { scenario:s300 }............: med=929.88ms p(95)=2.39s    p(99)=3.87s    max=5.28s
+      { scenario:s400 }............: med=1.44s    p(95)=2.55s    p(99)=4.08s    max=9.77s
+    http_req_failed................: 0.00%  2 out of 74930
+      { scenario:s100 }............: 0.00%  0 out of 11810
+      { scenario:s150 }............: 0.00%  0 out of 16378
+      { scenario:s200 }............: 0.00%  0 out of 16500
+      { scenario:s300 }............: 0.00%  0 out of 14439
+      { scenario:s400 }............: 0.01%  2 out of 15798
+    http_reqs......................: 74930  158.637835/s
 
     EXECUTION
-    iteration_duration.............: med=1.11s    p(95)=3.03s    p(99)=5.23s  max=45.5s 
-    iterations.....................: 72041  145.856257/s
-    vus............................: 91     min=0            max=400
-    vus_max........................: 700    min=700          max=700
+    iteration_duration.............: med=1.11s    p(95)=2.81s    p(99)=4.04s    max=10.9s
+    iterations.....................: 74225  157.145247/s
+    vus............................: 22     min=0          max=400
+    vus_max........................: 700    min=700        max=700
 
     NETWORK
-    data_received..................: 480 MB 972 kB/s
-    data_sent......................: 24 MB  49 kB/s
+    data_received..................: 498 MB 1.1 MB/s
+    data_sent......................: 25 MB  53 kB/s
 
 
 
