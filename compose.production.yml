@@ -93,7 +93,9 @@ services:
       retries: 10
 
   minio:
-    image: quay.io/minio/minio:latest
+    build:
+      context: .
+      dockerfile: docker/minio.Dockerfile
     restart: unless-stopped
     command: server /data --console-address ":9001"
     env_file:
