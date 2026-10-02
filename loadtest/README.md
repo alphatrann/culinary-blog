@@ -32,8 +32,8 @@ Raw outputs of the run below are in [`results/`](results/): `smoke.txt`, `load.t
   and pages (mostly 1–3, some up to 100). Each VU logs in once (login is measured, but not a throughput path: the SRS
   caps auth at 10 req/min/IP).
 - **Pass criteria** (NFR-PERF-001, per endpoint): p50 < 150 ms, p95 < 500 ms, p99 < 1000 ms, errors < 1%.
-- **Scripts:** `smoke` (2 VUs), `load` (ramp to 100 VUs, hold 5 min, 0.5–2.5 s think time), `stress` (fixed 90 s steps
-  of 100 / 150 / 200 / 300 / 400 VUs, 0.2–1.2 s think time, so a stress VU sends ~2.2× the requests of a load VU).
+- **Scripts:** `smoke` (2 VUs), `load` (ramp to 100 VUs, hold 5 min, 0.5–2.5 s think time), `stress` (90 s steps, each a 10 s ramp plus
+  an 80 s hold, of 100 / 150 / 200 / 300 / 400 VUs, 0.2–1.2 s think time, so a stress VU sends ~2.2× the requests of a load VU).
 - **Stress caveat:** the 2 GB Docker VM cannot also hold Tempo's span ingestion at these rates (Tempo was OOM-killed
   and API workers restarted), so stress ran with Tempo and the OTel collector stopped (the API then logs OTLP export retries, a small extra cost that makes stress numbers slightly pessimistic). Smoke and load ran with tracing on.
 - **Reading traces:** slow requests were inspected in Grafana → Tempo (span per SQL statement) to see where time goes.
@@ -80,25 +80,20 @@ Raw outputs of the run below are in [`results/`](results/): `smoke.txt`, `load.t
 
 All endpoints pass NFR-PERF-001/002 by more than an order of magnitude. Smoke (2 VUs): 0% errors, same shape.
 
-### Stress: all endpoints together, fixed steps
+### Stress: all endpoints together, stepped (each step: 10 s ramp + 80 s hold)
 
-| VUs | p50 (ms) | p95 (ms) | p99 (ms) | errors |
-|---|---|---|---|---|
-| 100 | 9 | 250 | 1113 | 0% |
-| 150 | 16 | 732 | 1428 | 0% |
-| 200 | 216 | 1675 | 3275 | 0% |
-| 300 | 827 | 2711 | 3835 | 0.2% |
-| 400 | 1628 | 3489 | 42585 | 1.9% |
+| VUs | p50 (ms) | p95 (ms) | p99 (ms) | max (ms) | errors |
+|---|---|---|---|---|---|
+| 100 | 8 | 84 | 386 | 2539 | 0% |
+| 150 | 15 | 537 | 1282 | 2419 | 0% |
+| 200 | 213 | 1199 | 2397 | 4828 | 0% |
+| 300 | 930 | 2393 | 3870 | 5280 | 0% |
+| 400 | 1450 | 2554 | 4086 | 9779 | 0.01% |
 
-> **Read the 400-VU row with care.** Its p99 (~43 s) and 1.9% errors are not steady-state latency: about 200 requests
-> failed within one second of the step starting (`dial tcp 127.0.0.1:80: connection reset by peer`, see
-> `results/stress.txt`) because 400 VUs opened connections at the same instant and Docker Desktop's port forward
-> reset them; the ~40 s tail is most likely TCP connect retries after those resets. The typical request at that step
-> is the p50/p95 shown. The server logged no crash, restart or nginx error at that moment. Steps start without a ramp,
-> so treat 300+ VUs as "clearly saturated", not as exact numbers.
+74,930 requests, ~160 req/s average, 0.004% errors overall.
 
-**Knee: ~100–150 stress VUs (≈ 220–330 load-test users, ~150–190 req/s).** Above it latency climbs with load
-(queueing) and connections start dropping. Every endpoint degrades together, including `/auth/me` (no DB call), so the
+**Knee: ~150 stress VUs (≈ 330 load-test users, ~150–190 req/s): p95 is 84 ms at 100 VUs and crosses the 500 ms target at 150.** Above it latency climbs with load
+(queueing), but requests are still served (almost no errors up to 400 VUs). Every endpoint degrades together, including `/auth/me` (no DB call), so the
 limit is API CPU on the 2-vCPU box, not the database.
 
 ## Judgment
