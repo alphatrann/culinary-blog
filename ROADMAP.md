@@ -58,7 +58,7 @@ Next.js app in `web/`, built from the design mockups in `mockups/`. Deferred to 
 
 #### M7a — Foundation
 - [x] #31 Scaffold `web/` (Next.js App Router, TS, Tailwind, Docker, nginx)
-- [ ] #32 Design tokens, fonts and UI primitives
+- [x] #32 Design tokens, fonts and UI primitives
 - [ ] #33 API client, RFC 7807 errors and silent refresh
 
 #### M7b — Shared layout
