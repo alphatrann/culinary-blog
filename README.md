@@ -2,7 +2,7 @@
 
 Recipe-sharing platform. Authors publish recipes with images, ingredients, steps and nutrition info; readers browse, filter and search them (Vietnamese full-text).
 
-**Status:** M0–M6b done (infra, auth, categories, recipes, ingredients/steps, publishing, images, soft delete, full-text search, load-test baseline, cache layer). Next: frontend MVP (M7).
+**Status:** M0–M6b done (infra, auth, categories, recipes, ingredients/steps, publishing, images, soft delete, full-text search, load-test baseline, cache layer). Frontend MVP (M7) in progress: `web/` scaffolded (M7a).
 
 ## Stack
 
@@ -29,6 +29,16 @@ Browser → Nginx → Next.js
 Backend is lightweight CQRS, one direction only, enforced by import-linter:
 
 `router → command/query handlers → repository → models`
+
+## Frontend
+
+```
+cd web && cp .env.example .env.local && npm ci
+npm run dev          # http://localhost:3000 (API on :8000)
+npm run lint && npm run typecheck && npm run format:check && npm run build
+```
+
+Tailwind CSS v4 + shadcn/ui; add components with `npx shadcn@latest add <name>`.
 
 ## Features
 
