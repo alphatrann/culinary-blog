@@ -69,4 +69,5 @@ Next.js 15 App Router, TypeScript strict, Tailwind v4, shadcn/ui (add components
 
 - ADR for every significant architectural decision (`docs/adr/NNNN-title.md`); keep CHANGELOG.md per release (Keep a Changelog + SemVer).
 - Conventional commits (`feat(api): ...`, `chore(ci): ...`, `docs: ...`); branch off `main`, PR into `main`, at least one reviewer.
+- PR descriptions follow `.github/pull_request_template.md` (Summary, Changes, Related issue, Test plan); tick only the checks you actually ran and note what wasn't verified.
 - Don't edit `migrations/versions/` by hand except to fix autogenerate output.
