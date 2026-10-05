@@ -10,6 +10,15 @@ services:
       - "80:80"
     depends_on:
       - api
+      - web
+
+  web:
+    build:
+      context: web
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      API_BASE_URL: http://api:8000
 
   api:
     build:

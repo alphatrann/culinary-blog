@@ -57,7 +57,7 @@
 Next.js app in `web/`, built from the design mockups in `mockups/`. Deferred to Should-Have: Google button (S1), profile info editing (S2), archived tab (S3). Search has no sort dropdown (API is relevance-only); "featured" on home is the newest recipe.
 
 #### M7a — Foundation
-- [ ] #31 Scaffold `web/` (Next.js App Router, TS, Tailwind, Docker, nginx)
+- [x] #31 Scaffold `web/` (Next.js App Router, TS, Tailwind, Docker, nginx)
 - [ ] #32 Design tokens, fonts and UI primitives
 - [ ] #33 API client, RFC 7807 errors and silent refresh
 

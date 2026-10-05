@@ -30,6 +30,16 @@ Backend is lightweight CQRS, one direction only, enforced by import-linter:
 
 `router → command/query handlers → repository → models`
 
+## Frontend
+
+```
+cd web && cp .env.example .env.local && npm ci
+npm run dev          # http://localhost:3000 (API on :8000)
+npm run lint && npm run typecheck && npm run format:check && npm run build
+```
+
+Tailwind CSS v4 + shadcn/ui; add components with `npx shadcn@latest add <name>`.
+
 ## Features
 
 - Recipe CRUD with draft / published / archived lifecycle

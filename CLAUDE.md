@@ -12,6 +12,7 @@ uv run pytest
 uv run alembic revision --autogenerate -m "msg" && uv run alembic upgrade head
 uv run culinary-blog                          # run API (deps via compose.development.yml)
 uv run culinary-blog-image-worker             # thumbnails + file cleanup jobs (run alongside the API)
+cd web && npm ci && npm run dev               # frontend (Next.js, :3000); also: lint, typecheck, format:check, build
 k6 run -e BASE_URL=http://localhost loadtest/load.js   # load test (see loadtest/README.md)
 ```
 
@@ -52,6 +53,10 @@ src/culinary_blog/
 - Uploads: max 5 MB; jpeg/png/webp/avif; verify magic bytes, not just Content-Type (CONS-007). Storage goes through the `FileStorageService` abstraction; file names `{folder}/{uuid4()}{ext}`.
 - Logging: structured JSON, every entry carries `correlation_id`, `request_path`, and `user_id` when authenticated (CONS-010).
 - Config comes from env via `culinary_blog/config.py`; the app must import with no live services (see `tests/test_smoke.py`).
+
+## Frontend (`web/`)
+
+Next.js 15 App Router, TypeScript strict, Tailwind v4, shadcn/ui (add components with `npx shadcn@latest add <name>` from `web/`). Server components call the API via `API_BASE_URL`; the browser uses same-origin `/api/v1` (nginx routes `/api/` to FastAPI, everything else to Next.js). The app must build with no live API. Run `npm run lint && npm run typecheck && npm run format:check` before committing.
 
 ## Testing (NFR-MAINT-002)
 
