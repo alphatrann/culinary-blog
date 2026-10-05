@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Tìm kiếm công thức</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Fraunces:opsz,wght@9..144,600;9..144,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Be Vietnam Pro',system-ui,sans-serif}
+:root{--background:#FAFAF6;--foreground:#1F2A22;--card:#FFFFFF;--muted:#F0F1E8;--muted-foreground:#55615A;--border:#DFE3D8;--input:#8A9486;--primary:#B82A17;--primary-foreground:#FFFFFF;--secondary:#E6F0E4;--secondary-foreground:#2F6B3F;--accent:#EEF1E6;--destructive:#B42318;--ring:#2F6B3F;--herb:#2F6B3F;--radius:8px}
+.se{width:100%;box-sizing:border-box;background:var(--background);color:var(--foreground);font-family:'Be Vietnam Pro',system-ui,sans-serif;container-type:inline-size}
+.se a:focus-visible,.se button:focus-visible,.se select:focus-visible,.se input:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.se-wrap{max-width:1200px;margin:0 auto;padding:0 32px;box-sizing:border-box}
+.se-head{padding:40px 0 32px}
+.se-h1{margin:0 0 6px;font-family:'Fraunces',Georgia,serif;font-size:44px;line-height:1.1;font-weight:700;letter-spacing:-0.01em}
+.se-sub{margin:0 0 24px;font-size:15px;color:var(--muted-foreground)}
+.se-search{display:flex;gap:8px;max-width:560px}
+.se-search-in{position:relative;flex:1;min-width:0;color:var(--muted-foreground)}
+.se-search-in svg{position:absolute;left:12px;top:14px;pointer-events:none}
+.se-search-in input{width:100%;height:44px;padding:0 12px 0 38px;box-sizing:border-box;background:var(--background);border:1px solid var(--input);border-radius:var(--radius);color:var(--foreground);font:400 15px 'Be Vietnam Pro',system-ui,sans-serif}
+.se-layout{display:grid;grid-template-columns:minmax(0,280px) minmax(0,1fr);gap:32px;align-items:start;border-top:1px solid var(--border);padding-top:32px}
+.sp{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.05);overflow:hidden}
+.sp-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:60px;padding:0 20px;box-sizing:border-box;border:0;background:transparent;color:var(--foreground);font:600 16px 'Be Vietnam Pro',system-ui,sans-serif;letter-spacing:-0.01em;cursor:pointer;text-align:left}
+.sp-t{display:inline-flex;align-items:center;gap:10px}
+.sp-badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;background:var(--herb);border-radius:999px;color:#fff;font-size:12px;font-weight:600}
+.sp-chev{transition:transform .15s}
+.sp.is-open .sp-chev{transform:rotate(180deg)}
+.sp-body{display:none;padding:0 20px 20px;border-top:1px solid var(--border)}
+.sp.is-open .sp-body{display:block}
+.sp-fields{display:flex;flex-direction:column;gap:8px}
+.sp-set{margin:0;padding:0;border:0;min-width:0}
+.sp-set legend{padding:16px 0 4px;font-size:13px;font-weight:600;color:var(--herb);letter-spacing:.04em;text-transform:uppercase}
+.sp-opt{display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px;cursor:pointer}
+.sp-opt input{appearance:none;-webkit-appearance:none;display:grid;place-content:center;flex:none;width:16px;height:16px;margin:0;background:var(--background);border:1px solid var(--herb);border-radius:999px;cursor:pointer}
+.sp-opt input::before{content:"";width:8px;height:8px;border-radius:999px;background:var(--herb);transform:scale(0)}
+.sp-opt input:checked::before{transform:scale(1)}
+.sp-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.sp-acts .btn{flex:1}
+.se-top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between}
+.se-count{margin:0;font-size:14px;font-weight:500}
+.se-sort{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted-foreground)}
+.se-sel{position:relative;color:var(--muted-foreground)}
+.se-sel svg{position:absolute;right:12px;top:14px;pointer-events:none}
+.se-sel select{appearance:none;-webkit-appearance:none;width:100%;height:44px;min-width:176px;padding:0 36px 0 12px;box-sizing:border-box;background:var(--background);border:1px solid var(--input);border-radius:var(--radius);color:var(--foreground);font:400 14px 'Be Vietnam Pro',system-ui,sans-serif}
+.se-chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 24px;padding:0;list-style:none}
+.se-chip{display:inline-flex;align-items:center;gap:2px;min-height:36px;padding:0 4px 0 12px;box-sizing:border-box;background:var(--secondary);border-radius:999px;color:var(--secondary-foreground);font-size:13px;font-weight:600}
+.se-chip button{display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-4px 0;border:0;border-radius:999px;background:transparent;color:var(--muted-foreground);cursor:pointer}
+.se-chip button:hover{color:var(--foreground)}
+.se-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:24px}
+.se-pager{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:48px 0 0;padding-bottom:64px}
+.se-pg{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:44px;height:44px;padding:0 12px;box-sizing:border-box;background:transparent;border:1px solid transparent;border-radius:var(--radius);color:var(--foreground);font-size:14px;font-weight:500;text-decoration:none}
+.se-pg:hover{background:var(--accent)}
+.se-pg.is-on{background:var(--herb);border-color:var(--herb);color:#fff}
+.se-pg.is-off{color:var(--muted-foreground);opacity:.6;pointer-events:none}
+@container (min-width: 1000px) {
+  .sp-body{display:block !important}
+  .sp-toggle{pointer-events:none;cursor:default}
+  .sp-chev{display:none}
+}
+@container (max-width: 999px) {
+  .se-h1{font-size:32px}
+  .se-layout{grid-template-columns:minmax(0,1fr);gap:24px}
+  .sp-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 20px}
+}
+@container (max-width: 767px) {
+  .se-wrap{padding:0 16px}
+  .se-head{padding:24px 0 20px}
+  .se-h1{font-size:28px}
+  .se-search{flex-direction:column}
+  .se-layout{padding-top:20px}
+  .sp-fields{grid-template-columns:minmax(0,1fr)}
+  .se-sort{width:100%}
+  .se-sel{flex:1}
+  .se-pager{margin-top:32px;padding-bottom:40px}
+}
+</style>
+</helmet>
+<div class="se">
+  <dc-import name="Header" hint-size="100%,65px"></dc-import>
+  <main class="se-wrap">
+    <header class="se-head">
+      <h1 class="se-h1">Kết quả cho “pho”</h1>
+      <p class="se-sub">Tìm không phân biệt dấu: “pho” khớp với “phở”.</p>
+      <form class="se-search" role="search" action="#">
+        <div class="se-search-in">
+          <label class="sr" for="se-q">Tìm công thức</label>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+          <input id="se-q" type="search" value="pho">
+        </div>
+        <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+      </form>
+    </header>
+    <div class="se-layout">
+      <div class="sp {{panelCls}}">
+        <button class="sp-toggle" type="button" onClick="{{toggle}}" aria-expanded="{{isOpen}}" aria-controls="sp-body">
+          <span class="sp-t">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10"></path><path d="M18 7h2"></path><circle cx="16" cy="7" r="2"></circle><path d="M4 17h2"></path><path d="M10 17h10"></path><circle cx="8" cy="17" r="2"></circle></svg>
+            Bộ lọc
+            <span class="sp-badge">2</span>
+          </span>
+          <svg class="sp-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+        </button>
+        <form class="sp-body" id="sp-body" action="#">
+          <div class="sp-fields">
+            <fieldset class="sp-set">
+              <legend>Danh mục</legend>
+              <label class="sp-opt"><input type="radio" name="cat" checked="">Tất cả</label>
+              <label class="sp-opt"><input type="radio" name="cat">Món nước</label>
+              <label class="sp-opt"><input type="radio" name="cat">Món cuốn</label>
+              <label class="sp-opt"><input type="radio" name="cat">Món xào</label>
+              <label class="sp-opt"><input type="radio" name="cat">Món chiên</label>
+              <label class="sp-opt"><input type="radio" name="cat">Món kho</label>
+              <label class="sp-opt"><input type="radio" name="cat">Canh</label>
+              <label class="sp-opt"><input type="radio" name="cat">Tráng miệng</label>
+            </fieldset>
+            <fieldset class="sp-set">
+              <legend>Độ khó</legend>
+              <label class="sp-opt"><input type="radio" name="lvl">Tất cả</label>
+              <label class="sp-opt"><input type="radio" name="lvl" checked="">Dễ</label>
+              <label class="sp-opt"><input type="radio" name="lvl">Trung bình</label>
+              <label class="sp-opt"><input type="radio" name="lvl">Khó</label>
+            </fieldset>
+            <fieldset class="sp-set">
+              <legend>Thời gian nấu</legend>
+              <label class="sp-opt"><input type="radio" name="time">Bất kỳ</label>
+              <label class="sp-opt"><input type="radio" name="time">Tối đa 30 phút</label>
+              <label class="sp-opt"><input type="radio" name="time" checked="">Tối đa 60 phút</label>
+              <label class="sp-opt"><input type="radio" name="time">Tối đa 120 phút</label>
+            </fieldset>
+          </div>
+          <div class="sp-acts">
+            <button class="btn btn-primary" type="submit">Áp dụng</button>
+            <button class="btn btn-outline" type="reset">Xóa bộ lọc</button>
+          </div>
+        </form>
+      </div>
+      <section aria-label="Kết quả tìm kiếm">
+        <div class="se-top">
+          <p class="se-count">Tìm thấy {{shown}} công thức</p>
+          <label class="se-sort">Sắp xếp
+            <span class="se-sel">
+              <select>
+                <option>Phù hợp nhất</option>
+                <option>Mới nhất</option>
+                <option>Nấu nhanh nhất</option>
+                <option>Tên A–Z</option>
+              </select>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+            </span>
+          </label>
+        </div>
+        <ul class="se-chips" aria-label="Bộ lọc đang áp dụng">
+          <li class="se-chip">Độ khó: Dễ
+            <button type="button" aria-label="Bỏ lọc Độ khó: Dễ"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+          </li>
+          <li class="se-chip">Tối đa 60 phút
+            <button type="button" aria-label="Bỏ lọc Tối đa 60 phút"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+          </li>
+        </ul>
+        <div class="se-grid">
+          <sc-for list="{{cards}}" as="c" hint-placeholder-count="3">
+            <dc-import name="RecipeCard" item="{{c}}" hint-size="100%,340px"></dc-import>
+          </sc-for>
+        </div>
+        <nav class="se-pager" aria-label="Phân trang">
+          <a class="se-pg is-off" href="#" aria-disabled="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>Trước</a>
+          <a class="se-pg is-on" href="#" aria-current="page">1</a>
+          <a class="se-pg" href="#">2</a>
+          <a class="se-pg" href="#">Sau<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></a>
+        </nav>
+      </section>
+    </div>
+  </main>
+  <dc-import name="Footer" hint-size="100%,340px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"count":{"editor":"int","default":6,"min":1,"max":6},"open":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":1600}}'>
+class Component extends DCLogic {
+  state = { open: null };
+  renderVals() {
+    const all = [
+      { title: 'Phở cuốn Hà Nội', category: 'Món cuốn', time: '40 phút', difficulty: 'Dễ', author: 'Minh Anh' },
+      { title: 'Phở xào bò', category: 'Món xào', time: '25 phút', difficulty: 'Dễ', author: 'Quốc Bảo' },
+      { title: 'Phở gà nấu nhanh', category: 'Món nước', time: '60 phút', difficulty: 'Dễ', author: 'Thu Hà' },
+      { title: 'Phở chiên phồng', category: 'Món chiên', time: '35 phút', difficulty: 'Dễ', author: 'Bà Lan' },
+      { title: 'Phở trộn', category: 'Món trộn', time: '20 phút', difficulty: 'Dễ', author: 'Minh Anh' },
+      { title: 'Phở sốt vang', category: 'Món nước', time: '55 phút', difficulty: 'Dễ', author: 'Quốc Bảo' }
+    ].map((c, i) => ({ ...c, href: 'Recipe.dc.html', tint: ['#D8DCC0', '#E8C5C0', '#E9D8B8', '#F0DDA8', '#CFE0C4', '#F2C9A8'][i % 6] }));
+    const n = Math.max(1, Math.min(all.length, Number(this.props.count ?? 6)));
+    const initial = this.props.open === true || this.props.open === 'true';
+    const isOpen = this.state.open === null ? initial : this.state.open;
+    return {
+      cards: all.slice(0, n),
+      shown: n,
+      isOpen,
+      panelCls: isOpen ? 'is-open' : '',
+      toggle: () => this.setState({ open: !isOpen })
+    };
+  }
+}
+</script>
+</body>
+</html>

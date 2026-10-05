@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Viết công thức</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Fraunces:opsz,wght@9..144,600;9..144,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Be Vietnam Pro',system-ui,sans-serif}
+:root{--background:#FAFAF6;--foreground:#1F2A22;--card:#FFFFFF;--muted:#F0F1E8;--muted-foreground:#55615A;--border:#DFE3D8;--input:#8A9486;--primary:#B82A17;--primary-foreground:#FFFFFF;--secondary:#E6F0E4;--secondary-foreground:#2F6B3F;--accent:#EEF1E6;--destructive:#B42318;--ring:#2F6B3F;--herb:#2F6B3F;--radius:8px}
+.ed{width:100%;box-sizing:border-box;background:var(--background);color:var(--foreground);font-family:'Be Vietnam Pro',system-ui,sans-serif;container-type:inline-size}
+.ed a:focus-visible,.ed button:focus-visible,.ed input:focus-visible,.ed textarea:focus-visible,.ed select:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.ed-wrap{max-width:1200px;margin:0 auto;padding:0 32px;box-sizing:border-box}
+.ed-head{padding:24px 0 28px}
+.ed-back{display:inline-flex;align-items:center;gap:6px;min-height:44px;color:var(--muted-foreground);font-size:14px;text-decoration:none}
+.ed-back:hover{color:var(--foreground)}
+.ed-title-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px}
+.ed-h1{margin:0;font-family:'Fraunces',Georgia,serif;font-size:44px;line-height:1.1;font-weight:700;letter-spacing:-0.01em}
+.ed-badge{display:inline-flex;align-items:center;height:24px;padding:0 10px;background:var(--card);border:1px solid var(--input);border-radius:999px;color:var(--foreground);font-size:12px;font-weight:600;white-space:nowrap}
+.ed-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:32px;align-items:start;padding-bottom:72px}
+.ed-col{display:flex;flex-direction:column;gap:24px;min-width:0}
+.ed-card{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.ed-card-h{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;padding:24px 24px 0}
+.ed-card-t{margin:0;font-family:'Fraunces',Georgia,serif;font-size:24px;line-height:1.2;font-weight:700}
+.ed-card-d{margin:4px 0 0;font-size:14px;color:var(--muted-foreground)}
+.ed-card-b{padding:20px 24px 24px}
+.ed-fields{display:flex;flex-direction:column;gap:16px}
+.ed-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.ed-three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.ed-field{display:flex;flex-direction:column;gap:8px;font-size:14px;font-weight:500}
+.ed-input{width:100%;min-height:44px;padding:0 12px;box-sizing:border-box;background:var(--card);border:1px solid var(--input);border-radius:var(--radius);color:var(--foreground);font:400 14px 'Be Vietnam Pro',system-ui,sans-serif}
+.ed-input::placeholder{color:var(--muted-foreground)}
+textarea.ed-input{padding:10px 12px;line-height:1.5;resize:vertical;min-height:96px}
+.ed-hint{font-size:13px;font-weight:400;color:var(--muted-foreground)}
+.ed-sel{position:relative;color:var(--muted-foreground)}
+.ed-sel svg{position:absolute;right:12px;top:14px;pointer-events:none}
+.ed-sel select{appearance:none;-webkit-appearance:none;width:100%;min-height:44px;padding:0 36px 0 12px;box-sizing:border-box;background:var(--card);border:1px solid var(--input);border-radius:var(--radius);color:var(--foreground);font:400 14px 'Be Vietnam Pro',system-ui,sans-serif}
+.ed-rows{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px}
+.ed-ing{display:grid;grid-template-columns:minmax(0,1fr) 150px 44px;gap:8px;align-items:center}
+.ed-step{display:grid;grid-template-columns:32px minmax(0,1fr) 44px;gap:12px;align-items:start}
+.ed-num{display:flex;align-items:center;justify-content:center;width:32px;height:32px;margin-top:6px;border-radius:999px;background:var(--herb);color:#fff;font-size:14px;font-weight:600}
+.ed-icon{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:0;border-radius:var(--radius);background:transparent;color:var(--muted-foreground);cursor:pointer}
+.ed-icon:hover{background:var(--accent);color:var(--destructive)}
+.ed-add{margin-top:16px}
+.ed-drop{display:flex;flex-direction:column;align-items:center;gap:8px;padding:24px 16px;text-align:center;border:1px dashed var(--input);border-radius:var(--radius);background:var(--background);color:var(--muted-foreground);font-size:14px}
+.ed-drop strong{color:var(--foreground);font-weight:600}
+.ed-file:focus-visible + label{outline:2px solid var(--ring);outline-offset:2px}
+.ed-imgs{margin:16px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px}
+.ed-img{display:flex;align-items:center;gap:12px}
+.ed-thumb{flex:none;width:56px;height:42px;border-radius:6px}
+.ed-img-m{flex:1;min-width:0;font-size:14px}
+.ed-img-n{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ed-img-s{display:block;color:var(--muted-foreground);font-size:13px}
+.ed-img-s.is-err{color:var(--destructive)}
+.ed-star{display:inline-flex;align-items:center;height:22px;padding:0 8px;margin-left:6px;background:var(--secondary);border-radius:999px;color:var(--secondary-foreground);font-size:11px;font-weight:600;vertical-align:middle}
+.ed-link{padding:0;border:0;background:transparent;color:var(--herb);font:500 13px 'Be Vietnam Pro',system-ui,sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer;min-height:24px}
+.ed-prog{height:6px;margin-top:6px;border-radius:999px;background:var(--muted);overflow:hidden}
+.ed-prog span{display:block;height:100%;background:var(--herb)}
+.ed-checks{margin:0 0 16px;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.ed-checks li{display:flex;align-items:center;gap:8px}
+.ed-ok{color:var(--herb)}
+.ed-no{color:var(--muted-foreground)}
+.ed-warn{margin:0 0 16px;padding:10px 12px;background:#FBE9E5;border:1px solid var(--destructive);border-radius:var(--radius);color:var(--destructive);font-size:14px;line-height:1.5}
+.ed-acts{display:flex;flex-direction:column;gap:8px}
+.ed-acts .btn{width:100%}
+.ed-acts .btn[disabled]{opacity:.5;cursor:not-allowed}
+@container (min-width: 1000px) {
+  .ed-pub{order:-1}
+}
+@container (max-width: 999px) {
+  .ed-h1{font-size:38px}
+  .ed-grid{grid-template-columns:minmax(0,1fr)}
+}
+@container (max-width: 767px) {
+  .ed-wrap{padding:0 16px}
+  .ed-head{padding:12px 0 20px}
+  .ed-h1{font-size:30px}
+  .ed-card-h{padding:20px 16px 0}
+  .ed-card-b{padding:16px 16px 20px}
+  .ed-two{grid-template-columns:minmax(0,1fr)}
+  .ed-three{grid-template-columns:minmax(0,1fr)}
+  .ed-ing{grid-template-columns:minmax(0,1fr) 44px}
+  .ed-ing .ed-qty{grid-column:1}
+  .ed-ing .ed-icon{grid-row:1 / span 2;grid-column:2;align-self:start}
+  .ed-grid{padding-bottom:40px}
+}
+</style>
+</helmet>
+<div class="ed">
+  <dc-import name="Header" user="true" hint-size="100%,65px"></dc-import>
+  <main class="ed-wrap">
+    <header class="ed-head">
+      <a class="ed-back" href="Profile.dc.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+        Công thức của tôi
+      </a>
+      <div class="ed-title-row">
+        <h1 class="ed-h1">Viết công thức mới</h1>
+        <span class="ed-badge">Bản nháp</span>
+      </div>
+    </header>
+    <form class="ed-grid" action="#">
+      <div class="ed-col">
+        <section class="ed-card" aria-labelledby="ed-basic-h">
+          <div class="ed-card-h">
+            <div>
+              <h2 class="ed-card-t" id="ed-basic-h">Thông tin cơ bản</h2>
+              <p class="ed-card-d">Tiêu đề và mô tả hiển thị trên trang công thức.</p>
+            </div>
+          </div>
+          <div class="ed-card-b">
+            <div class="ed-fields">
+              <label class="ed-field">Tiêu đề
+                <input class="ed-input" type="text" name="title" minlength="5" maxlength="200" placeholder="Ví dụ: Phở bò Hà Nội">
+                <span class="ed-hint">Từ 5 đến 200 ký tự.</span>
+              </label>
+              <label class="ed-field">Mô tả ngắn
+                <textarea class="ed-input" name="description" rows="3" placeholder="Một hai câu giới thiệu món ăn."></textarea>
+              </label>
+              <div class="ed-two">
+                <label class="ed-field">Danh mục
+                  <span class="ed-sel">
+                    <select name="category_id">
+                      <option>Món nước</option>
+                      <option>Món cuốn</option>
+                      <option>Món xào</option>
+                      <option>Món chiên</option>
+                      <option>Món kho</option>
+                      <option>Canh</option>
+                      <option>Tráng miệng</option>
+                    </select>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+                  </span>
+                </label>
+                <label class="ed-field">Độ khó
+                  <span class="ed-sel">
+                    <select name="difficulty">
+                      <option>Dễ</option>
+                      <option>Trung bình</option>
+                      <option>Khó</option>
+                    </select>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+                  </span>
+                </label>
+              </div>
+              <div class="ed-three">
+                <label class="ed-field">Chuẩn bị (phút)
+                  <input class="ed-input" type="number" name="prep_time_minutes" min="1" placeholder="30">
+                </label>
+                <label class="ed-field">Nấu (phút)
+                  <input class="ed-input" type="number" name="cook_time_minutes" min="1" placeholder="180">
+                </label>
+                <label class="ed-field">Khẩu phần (người)
+                  <input class="ed-input" type="number" name="servings" min="1" placeholder="4">
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="ed-card" aria-labelledby="ed-ing-h">
+          <div class="ed-card-h">
+            <div>
+              <h2 class="ed-card-t" id="ed-ing-h">Nguyên liệu</h2>
+              <p class="ed-card-d">Cần ít nhất 1 nguyên liệu để xuất bản.</p>
+            </div>
+          </div>
+          <div class="ed-card-b">
+            <ul class="ed-rows">
+              <sc-for list="{{ings}}" as="r" hint-placeholder-count="3">
+                <li class="ed-ing">
+                  <input class="ed-input" type="text" aria-label="Tên nguyên liệu {{r.n}}" placeholder="Tên nguyên liệu" value="{{r.name}}" onChange="{{r.onName}}">
+                  <input class="ed-input ed-qty" type="text" aria-label="Số lượng nguyên liệu {{r.n}}" placeholder="Số lượng" value="{{r.qty}}" onChange="{{r.onQty}}">
+                  <button class="ed-icon" type="button" aria-label="Xóa nguyên liệu {{r.n}}" onClick="{{r.remove}}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"></path><path d="M9 7V4h6v3"></path></svg>
+                  </button>
+                </li>
+              </sc-for>
+            </ul>
+            <button class="btn btn-outline ed-add" type="button" onClick="{{addIng}}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              Thêm nguyên liệu
+            </button>
+          </div>
+        </section>
+        <section class="ed-card" aria-labelledby="ed-step-h">
+          <div class="ed-card-h">
+            <div>
+              <h2 class="ed-card-t" id="ed-step-h">Các bước thực hiện</h2>
+              <p class="ed-card-d">Cần ít nhất 1 bước để xuất bản.</p>
+            </div>
+          </div>
+          <div class="ed-card-b">
+            <ol class="ed-rows">
+              <sc-for list="{{steps}}" as="s" hint-placeholder-count="2">
+                <li class="ed-step">
+                  <span class="ed-num" aria-hidden="true">{{s.n}}</span>
+                  <textarea class="ed-input" rows="2" aria-label="Nội dung bước {{s.n}}" placeholder="Mô tả bước này" value="{{s.text}}" onChange="{{s.onText}}"></textarea>
+                  <button class="ed-icon" type="button" aria-label="Xóa bước {{s.n}}" onClick="{{s.remove}}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"></path><path d="M9 7V4h6v3"></path></svg>
+                  </button>
+                </li>
+              </sc-for>
+            </ol>
+            <button class="btn btn-outline ed-add" type="button" onClick="{{addStep}}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              Thêm bước
+            </button>
+          </div>
+        </section>
+      </div>
+      <div class="ed-col">
+        <section class="ed-card ed-pub" aria-labelledby="ed-pub-h">
+          <div class="ed-card-h">
+            <h2 class="ed-card-t" id="ed-pub-h">Xuất bản</h2>
+          </div>
+          <div class="ed-card-b">
+            <ul class="ed-checks" aria-label="Điều kiện xuất bản">
+              <li>
+                <sc-if value="{{ingOk}}" hint-placeholder-val="{{ true }}"><svg class="ed-ok" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg></sc-if>
+                <sc-if value="{{ingBad}}" hint-placeholder-val="{{ false }}"><svg class="ed-no" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle></svg></sc-if>
+                Có ít nhất 1 nguyên liệu
+              </li>
+              <li>
+                <sc-if value="{{stepOk}}" hint-placeholder-val="{{ true }}"><svg class="ed-ok" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg></sc-if>
+                <sc-if value="{{stepBad}}" hint-placeholder-val="{{ false }}"><svg class="ed-no" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle></svg></sc-if>
+                Có ít nhất 1 bước thực hiện
+              </li>
+            </ul>
+            <sc-if value="{{notReady}}" hint-placeholder-val="{{ false }}">
+              <p class="ed-warn" role="alert">Công thức phải có ít nhất 1 nguyên liệu và 1 bước thực hiện.</p>
+            </sc-if>
+            <div class="ed-acts">
+              <button class="btn btn-primary" type="submit" disabled="{{notReady}}">Xuất bản</button>
+              <button class="btn btn-outline" type="button">Lưu nháp</button>
+            </div>
+          </div>
+        </section>
+        <section class="ed-card" aria-labelledby="ed-img-h">
+          <div class="ed-card-h">
+            <div>
+              <h2 class="ed-card-t" id="ed-img-h">Ảnh minh họa</h2>
+              <p class="ed-card-d">Ảnh đầu tiên là ảnh chính.</p>
+            </div>
+          </div>
+          <div class="ed-card-b">
+            <div class="ed-drop">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"></path><path d="M7 9l5-5 5 5"></path><path d="M4 20h16"></path></svg>
+              <span><strong>Kéo thả ảnh</strong> vào đây hoặc chọn từ máy</span>
+              <span class="ed-hint">JPEG, PNG, WebP hoặc AVIF, tối đa 5 MB mỗi ảnh.</span>
+              <input class="sr ed-file" id="ed-file" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple="">
+              <label class="btn btn-outline" for="ed-file">Chọn ảnh</label>
+            </div>
+            <ul class="ed-imgs" aria-label="Ảnh đã tải lên">
+              <li class="ed-img">
+                <div class="ed-thumb" style="background:#E9D8B8"></div>
+                <div class="ed-img-m"><span class="ed-img-n">pho-bo.jpg<span class="ed-star">Ảnh chính</span></span><span class="ed-img-s">1,8 MB</span></div>
+                <button class="ed-icon" type="button" aria-label="Xóa ảnh pho-bo.jpg"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+              </li>
+              <li class="ed-img">
+                <div class="ed-thumb" style="background:#F0DDA8"></div>
+                <div class="ed-img-m"><span class="ed-img-n">nuoc-dung.jpg</span><span class="ed-img-s">2,4 MB · <button class="ed-link" type="button">Đặt làm ảnh chính</button></span></div>
+                <button class="ed-icon" type="button" aria-label="Xóa ảnh nuoc-dung.jpg"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+              </li>
+              <li class="ed-img">
+                <div class="ed-thumb" style="background:#E5CFC0"></div>
+                <div class="ed-img-m"><span class="ed-img-n">banh-pho.png</span><span class="ed-img-s">Đang tải lên… 60%</span>
+                  <div class="ed-prog" role="progressbar" aria-label="Tiến độ tải banh-pho.png" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60"><span style="width:60%"></span></div>
+                </div>
+                <button class="ed-icon" type="button" aria-label="Hủy tải banh-pho.png"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+              </li>
+              <li class="ed-img">
+                <div class="ed-thumb" style="background:#F0F1E8;border:1px solid var(--border)"></div>
+                <div class="ed-img-m"><span class="ed-img-n">anh-goc.tiff</span><span class="ed-img-s is-err" role="alert">Định dạng không hợp lệ hoặc vượt quá 5 MB.</span></div>
+                <button class="ed-icon" type="button" aria-label="Bỏ qua anh-goc.tiff"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+              </li>
+            </ul>
+          </div>
+        </section>
+        <section class="ed-card" aria-labelledby="ed-nut-h">
+          <div class="ed-card-h">
+            <div>
+              <h2 class="ed-card-t" id="ed-nut-h">Dinh dưỡng</h2>
+              <p class="ed-card-d">Tùy chọn, tính cho mỗi khẩu phần.</p>
+            </div>
+          </div>
+          <div class="ed-card-b">
+            <div class="ed-two">
+              <label class="ed-field">Năng lượng (kcal)
+                <input class="ed-input" type="number" name="calories" min="0">
+              </label>
+              <label class="ed-field">Chất đạm (g)
+                <input class="ed-input" type="number" name="protein" min="0">
+              </label>
+              <label class="ed-field">Chất béo (g)
+                <input class="ed-input" type="number" name="fat" min="0">
+              </label>
+              <label class="ed-field">Carbohydrate (g)
+                <input class="ed-input" type="number" name="carbs" min="0">
+              </label>
+            </div>
+          </div>
+        </section>
+      </div>
+    </form>
+  </main>
+  <dc-import name="Footer" hint-size="100%,340px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2300}}'>
+class Component extends DCLogic {
+  state = {
+    ings: [
+      { id: 1, name: 'Xương ống bò', qty: '1,5 kg' },
+      { id: 2, name: 'Thịt nạm bò', qty: '500 g' },
+      { id: 3, name: 'Bánh phở tươi', qty: '800 g' }
+    ],
+    steps: [
+      { id: 1, text: 'Chần xương ống với nước sôi 5 phút, rửa sạch bọt bẩn dưới vòi nước.' },
+      { id: 2, text: '' }
+    ],
+    nextId: 10
+  };
+  renderVals() {
+    const { ings, steps, nextId } = this.state;
+    const ingOk = ings.some((r) => r.name.trim() !== '');
+    const stepOk = steps.some((s) => s.text.trim() !== '');
+    return {
+      ings: ings.map((r, i) => ({
+        ...r,
+        n: i + 1,
+        onName: (e) => this.setState({ ings: this.state.ings.map((x) => (x.id === r.id ? { ...x, name: e.target.value } : x)) }),
+        onQty: (e) => this.setState({ ings: this.state.ings.map((x) => (x.id === r.id ? { ...x, qty: e.target.value } : x)) }),
+        remove: () => this.setState({ ings: this.state.ings.filter((x) => x.id !== r.id) })
+      })),
+      steps: steps.map((s, i) => ({
+        ...s,
+        n: i + 1,
+        onText: (e) => this.setState({ steps: this.state.steps.map((x) => (x.id === s.id ? { ...x, text: e.target.value } : x)) }),
+        remove: () => this.setState({ steps: this.state.steps.filter((x) => x.id !== s.id) })
+      })),
+      addIng: () => this.setState({ ings: [...this.state.ings, { id: nextId, name: '', qty: '' }], nextId: nextId + 1 }),
+      addStep: () => this.setState({ steps: [...this.state.steps, { id: nextId, text: '' }], nextId: nextId + 1 }),
+      ingOk,
+      ingBad: !ingOk,
+      stepOk,
+      stepBad: !stepOk,
+      notReady: !(ingOk && stepOk)
+    };
+  }
+}
+</script>
+</body>
+</html>

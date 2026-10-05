@@ -53,10 +53,39 @@
 - Cache Redis down → Postgres fallback
 - Load test re-run (TTLs lowered): 83.6% served from cache, p95 21 → 13 ms overall; stress p95 passes at 150 VUs (195 ms, was 537 ms), still misses at 200 (`loadtest/README.md`)
 
-### M7 — Frontend MVP
-- [ ] Public: list, detail, categories, search
-- [ ] Auth: login, register
-- [ ] Author dashboard: recipe forms, editors, image upload
+### M7 — Frontend MVP (#22)
+Next.js app in `web/`, built from the design mockups in `mockups/`. Deferred to Should-Have: Google button (S1), profile info editing (S2), archived tab (S3). Search has no sort dropdown (API is relevance-only); "featured" on home is the newest recipe.
+
+#### M7a — Foundation
+- [ ] #31 Scaffold `web/` (Next.js App Router, TS, Tailwind, Docker, nginx)
+- [ ] #32 Design tokens, fonts and UI primitives
+- [ ] #33 API client, RFC 7807 errors and silent refresh
+
+#### M7b — Shared layout
+- [ ] #34 Header and Footer
+- [ ] #35 RecipeCard, grid, pagination and filter bar
+
+#### M7c — Public pages
+- [ ] #36 Home (`/`)
+- [ ] #37 Recipe list (`/recipes`)
+- [ ] #38 Recipe detail (`/recipes/[slug]`)
+- [ ] #39 Categories (`/categories`, `/categories/[slug]`)
+- [ ] #40 Search (`/search`)
+
+#### M7d — Auth
+- [ ] #41 Session layer and route guards
+- [ ] #42 Login and register pages
+
+#### M7e — Author area
+- [ ] #43 [backend] Filter recipe list by author and status
+- [ ] #44 Recipe editor: create
+- [ ] #45 Image upload panel
+- [ ] #46 Recipe editor: edit
+- [ ] #47 Author dashboard and my recipes
+
+#### M7f — Quality & delivery
+- [ ] #48 Responsive and accessibility pass, e2e smoke tests
+- [ ] #49 Web CI, Lighthouse budgets and ADR-0011
 
 ## Should-Have
 

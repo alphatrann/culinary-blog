@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Chi tiết công thức</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Fraunces:opsz,wght@9..144,600;9..144,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Be Vietnam Pro',system-ui,sans-serif}
+:root{--background:#FAFAF6;--foreground:#1F2A22;--card:#FFFFFF;--muted:#F0F1E8;--muted-foreground:#55615A;--border:#DFE3D8;--input:#8A9486;--primary:#B82A17;--primary-foreground:#FFFFFF;--secondary:#E6F0E4;--secondary-foreground:#2F6B3F;--accent:#EEF1E6;--destructive:#B42318;--ring:#2F6B3F;--herb:#2F6B3F;--radius:8px}
+.rc{width:100%;box-sizing:border-box;background:var(--background);color:var(--foreground);font-family:'Be Vietnam Pro',system-ui,sans-serif;container-type:inline-size}
+.rc a:focus-visible,.rc button:focus-visible,.rc input:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.rc-wrap{max-width:1200px;margin:0 auto;padding:0 32px;box-sizing:border-box}
+.rc-crumb{padding:16px 0 8px}
+.rc-crumb ol{display:flex;flex-wrap:wrap;align-items:center;gap:0 6px;margin:0;padding:0;list-style:none;font-size:14px;color:var(--muted-foreground)}
+.rc-crumb li{display:inline-flex;align-items:center;min-height:44px;gap:6px;line-height:1}
+.rc-crumb li svg{display:block;flex:none}
+.rc-crumb a{display:inline-flex;align-items:center;min-height:44px;color:var(--muted-foreground);text-decoration:none}
+.rc-crumb a:hover{color:var(--foreground)}
+.rc-crumb li[aria-current]{color:var(--foreground);font-weight:500}
+.rc-cat{display:inline-flex;align-items:center;height:26px;padding:0 10px;background:var(--secondary);border-radius:999px;color:var(--secondary-foreground);font-size:12px;font-weight:600;text-decoration:none}
+.rc-cat:hover{background:var(--border)}
+.rc-h1{margin:16px 0 12px;max-width:860px;font-family:'Fraunces',Georgia,serif;font-size:56px;line-height:1.08;font-weight:700;letter-spacing:-0.01em}
+.rc-lede{margin:0;max-width:680px;font-size:18px;line-height:1.6;color:var(--muted-foreground)}
+.rc-by{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;margin:24px 0 32px}
+.rc-who{display:flex;align-items:center;gap:12px}
+.rc-av{width:40px;height:40px;border-radius:999px;background:var(--herb);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600}
+.rc-who-n{display:block;font-weight:500;font-size:14px}
+.rc-who-d{display:block;font-size:14px;color:var(--muted-foreground)}
+.rc-acts{display:flex;flex-wrap:wrap;gap:8px}
+.rc-hero{aspect-ratio:16 / 9;background:#E9D8B8;border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted-foreground);font-size:14px}
+.rc-thumbs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:12px}
+.rc-thumb{aspect-ratio:4 / 3;background:#F0DDA8;border:1px solid var(--border);border-radius:var(--radius)}
+.rc-thumb:nth-child(2){background:#E5CFC0}
+.rc-thumb:nth-child(3){background:#CFE0C4}
+.rc-thumb:nth-child(4){background:#D8DCC0}
+.rc-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin:32px 0 0;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.rc-meta-i{display:flex;flex-direction:column;gap:4px;padding:20px 24px;background:var(--card)}
+.rc-meta-k{font-size:14px;color:var(--muted-foreground)}
+.rc-meta-v{margin:0;font-family:'Fraunces',Georgia,serif;font-size:22px;font-weight:600}
+.rc-body{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:56px;align-items:start;margin-top:48px}
+.rc-h2{margin:0 0 20px;font-family:'Fraunces',Georgia,serif;font-size:32px;line-height:1.15;font-weight:700}
+.rc-ings{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.05);padding:24px}
+.rc-ings .rc-h2{font-size:26px;margin-bottom:4px}
+.rc-grp{margin:20px 0 4px;font-size:13px;font-weight:600;color:var(--herb);letter-spacing:.04em;text-transform:uppercase}
+.rc-ing{display:flex;align-items:center;gap:12px;min-height:44px;border-bottom:1px solid var(--border);font-size:15px;cursor:pointer}
+.rc-ing:last-child{border-bottom:0}
+.rc-ing input{appearance:none;-webkit-appearance:none;display:grid;place-content:center;flex:none;width:16px;height:16px;margin:0;background:var(--card);border:1px solid var(--herb);border-radius:4px;cursor:pointer}
+.rc-ing input::before{content:"";width:10px;height:10px;background:var(--primary-foreground);clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0%,43% 62%);transform:scale(0)}
+.rc-ing input:checked{background:var(--herb)}
+.rc-ing input:checked::before{transform:scale(1)}
+.rc-ing-n{flex:1;min-width:0}
+.rc-ing-q{color:var(--muted-foreground);font-size:14px;text-align:right}
+.rc-steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:28px}
+.rc-step{display:flex;gap:16px}
+.rc-num{flex:none;width:32px;height:32px;border-radius:999px;background:var(--herb);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600}
+.rc-st{margin:3px 0 6px;font-family:'Fraunces',Georgia,serif;font-size:22px;line-height:1.25;font-weight:600}
+.rc-sp{margin:0;font-size:16px;line-height:1.7;color:#2E3A32}
+.rc-nut-wrap{margin-top:56px}
+.rc-nut{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:0}
+.rc-nut-i{padding:16px 20px;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.rc-nut-i dt{font-size:14px;color:var(--muted-foreground)}
+.rc-nut-i dd{margin:4px 0 0;font-size:24px;font-weight:600;letter-spacing:-0.02em}
+.rc-note{margin:12px 0 0;font-size:13px;color:var(--muted-foreground)}
+.rc-rel{margin-top:64px;padding-bottom:72px}
+.rc-rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:24px}
+@container (max-width: 999px) {
+  .rc-h1{font-size:40px}
+  .rc-body{grid-template-columns:minmax(0,1fr);gap:40px;margin-top:40px}
+  .rc-nut-wrap{margin-top:40px}
+}
+@container (max-width: 767px) {
+  .rc-wrap{padding:0 16px}
+  .rc-h1{font-size:32px}
+  .rc-lede{font-size:16px}
+  .rc-hero{aspect-ratio:4 / 3}
+  .rc-meta{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rc-meta-i{padding:16px}
+  .rc-ings{padding:16px}
+  .rc-h2{font-size:24px}
+  .rc-sp{font-size:15px}
+  .rc-nut{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rc-rel{margin-top:48px;padding-bottom:40px}
+}
+</style>
+</helmet>
+<div class="rc">
+  <dc-import name="Header" hint-size="100%,65px"></dc-import>
+  <main class="rc-wrap">
+    <nav class="rc-crumb" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="Main.dc.html">Trang chủ</a></li>
+        <li aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></li>
+        <li><a href="Main.dc.html">Món nước</a></li>
+        <li aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></li>
+        <li aria-current="page">Phở bò Hà Nội</li>
+      </ol>
+    </nav>
+    <article>
+      <header>
+        <a class="rc-cat" href="Main.dc.html">Món nước</a>
+        <h1 class="rc-h1">Phở bò Hà Nội</h1>
+        <p class="rc-lede">Tô phở nóng với nước dùng trong, ngọt thanh từ xương bò ninh chậm và gia vị nướng thơm.</p>
+        <div class="rc-by">
+          <div class="rc-who">
+            <span class="rc-av" aria-hidden="true">MA</span>
+            <div>
+              <span class="rc-who-n">Minh Anh</span>
+              <span class="rc-who-d">Đăng ngày 12/09/2026</span>
+            </div>
+          </div>
+          <div class="rc-acts">
+            <button class="btn btn-outline" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 9V4h10v5"></path><rect x="4" y="9" width="16" height="8" rx="2"></rect><path d="M7 14h10v6H7z"></path></svg>
+              In công thức
+            </button>
+            <button class="btn btn-outline" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 10.6l6.8-4.2"></path><path d="M8.6 13.4l6.8 4.2"></path></svg>
+              Chia sẻ
+            </button>
+          </div>
+        </div>
+      </header>
+      <figure style="margin:0">
+        <div class="rc-hero">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18a9 9 0 0 1-18 0z"></path><path d="M9 8c0-1.5 1-1.5 1-3"></path><path d="M14 8c0-1.5 1-1.5 1-3"></path></svg>
+          <span>Ảnh chính: Phở bò Hà Nội</span>
+        </div>
+        <div class="rc-thumbs">
+          <sc-for list="{{thumbs}}" as="t" hint-placeholder-count="4">
+            <div class="rc-thumb"></div>
+          </sc-for>
+        </div>
+      </figure>
+      <dl class="rc-meta">
+        <div class="rc-meta-i"><dt class="rc-meta-k">Chuẩn bị</dt><dd class="rc-meta-v">30 phút</dd></div>
+        <div class="rc-meta-i"><dt class="rc-meta-k">Nấu</dt><dd class="rc-meta-v">3 giờ</dd></div>
+        <div class="rc-meta-i"><dt class="rc-meta-k">Khẩu phần</dt><dd class="rc-meta-v">4 người</dd></div>
+        <div class="rc-meta-i"><dt class="rc-meta-k">Độ khó</dt><dd class="rc-meta-v">Trung bình</dd></div>
+      </dl>
+      <div class="rc-body">
+        <section class="rc-ings" aria-labelledby="rc-ing-h">
+          <h2 class="rc-h2" id="rc-ing-h">Nguyên liệu</h2>
+          <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+            <h3 class="rc-grp">{{g.name}}</h3>
+            <sc-for list="{{g.items}}" as="i" hint-placeholder-count="4">
+              <label class="rc-ing">
+                <input type="checkbox">
+                <span class="rc-ing-n">{{i.name}}</span>
+                <span class="rc-ing-q">{{i.qty}}</span>
+              </label>
+            </sc-for>
+          </sc-for>
+        </section>
+        <section aria-labelledby="rc-step-h">
+          <h2 class="rc-h2" id="rc-step-h">Cách làm</h2>
+          <ol class="rc-steps">
+            <sc-for list="{{steps}}" as="s" hint-placeholder-count="5">
+              <li class="rc-step">
+                <span class="rc-num" aria-hidden="true">{{s.n}}</span>
+                <div>
+                  <h3 class="rc-st">{{s.title}}</h3>
+                  <p class="rc-sp">{{s.text}}</p>
+                </div>
+              </li>
+            </sc-for>
+          </ol>
+        </section>
+      </div>
+      <section class="rc-nut-wrap" aria-labelledby="rc-nut-h">
+        <h2 class="rc-h2" id="rc-nut-h">Giá trị dinh dưỡng mỗi khẩu phần</h2>
+        <dl class="rc-nut">
+          <div class="rc-nut-i"><dt>Năng lượng</dt><dd>520 kcal</dd></div>
+          <div class="rc-nut-i"><dt>Chất đạm</dt><dd>32 g</dd></div>
+          <div class="rc-nut-i"><dt>Chất béo</dt><dd>14 g</dd></div>
+          <div class="rc-nut-i"><dt>Carbohydrate</dt><dd>62 g</dd></div>
+        </dl>
+        <p class="rc-note">Số liệu minh họa, thay bằng dữ liệu thật của công thức.</p>
+      </section>
+    </article>
+    <section class="rc-rel" aria-labelledby="rc-rel-h">
+      <h2 class="rc-h2" id="rc-rel-h">Công thức cùng danh mục</h2>
+      <div class="rc-rel-grid">
+        <sc-for list="{{related}}" as="c" hint-placeholder-count="3">
+          <dc-import name="RecipeCard" item="{{c}}" hint-size="100%,340px"></dc-import>
+        </sc-for>
+      </div>
+    </section>
+  </main>
+  <dc-import name="Footer" hint-size="100%,340px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"related":{"editor":"int","default":3,"min":1,"max":3},"$preview":{"width":1440,"height":3400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const relAll = [
+      { title: 'Bún bò Huế', category: 'Món nước', time: '2 giờ', difficulty: 'Khó', author: 'Thu Hà' },
+      { title: 'Hủ tiếu Nam Vang', category: 'Món nước', time: '90 phút', difficulty: 'Trung bình', author: 'Quốc Bảo' },
+      { title: 'Bún riêu cua', category: 'Món nước', time: '75 phút', difficulty: 'Trung bình', author: 'Bà Lan' }
+    ].map((c, i) => ({ ...c, href: 'Recipe.dc.html', tint: ['#F2C9A8', '#E8C5C0', '#F0DDA8'][i % 3] }));
+    const n = Math.max(1, Math.min(relAll.length, Number(this.props.related ?? 3)));
+    return {
+      thumbs: [{}, {}, {}, {}],
+      groups: [
+        {
+          name: 'Nước dùng',
+          items: [
+            { name: 'Xương ống bò', qty: '1,5 kg' },
+            { name: 'Thịt nạm bò', qty: '500 g' },
+            { name: 'Hành tây nướng', qty: '2 củ' },
+            { name: 'Gừng nướng', qty: '1 nhánh lớn' },
+            { name: 'Hoa hồi', qty: '3 cái' },
+            { name: 'Quế', qty: '1 thanh' },
+            { name: 'Thảo quả', qty: '2 quả' },
+            { name: 'Muối, nước mắm', qty: 'vừa ăn' }
+          ]
+        },
+        {
+          name: 'Bánh phở và ăn kèm',
+          items: [
+            { name: 'Bánh phở tươi', qty: '800 g' },
+            { name: 'Thịt bò tái (thăn hoặc phi lê)', qty: '300 g' },
+            { name: 'Hành lá, ngò gai, giá đỗ', qty: 'vừa đủ' },
+            { name: 'Chanh, ớt', qty: 'vừa đủ' }
+          ]
+        }
+      ],
+      steps: [
+        { n: 1, title: 'Làm sạch xương', text: 'Chần xương ống với nước sôi 5 phút, rửa sạch bọt bẩn dưới vòi nước.' },
+        { n: 2, title: 'Nướng gia vị', text: 'Nướng hành tây và gừng đến khi xém vỏ, rang thơm hoa hồi, quế và thảo quả.' },
+        { n: 3, title: 'Ninh nước dùng', text: 'Cho xương, nạm và gia vị vào nồi nước, ninh lửa nhỏ khoảng 3 giờ, thường xuyên vớt bọt. Nêm muối và nước mắm cho vừa ăn.' },
+        { n: 4, title: 'Chuẩn bị bánh phở và thịt', text: 'Trụng bánh phở qua nước sôi, thái mỏng thịt bò tái, thái hành lá và rau thơm.' },
+        { n: 5, title: 'Hoàn thiện', text: 'Xếp bánh phở và thịt bò vào tô, chan nước dùng thật nóng, dùng kèm chanh, ớt và giá đỗ.' }
+      ],
+      related: relAll.slice(0, n)
+    };
+  }
+}
+</script>
+</body>
+</html>
