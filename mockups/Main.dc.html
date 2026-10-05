@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Trang chủ</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Fraunces:opsz,wght@9..144,600;9..144,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Be Vietnam Pro',system-ui,sans-serif}
+:root{--background:#FAFAF6;--foreground:#1F2A22;--card:#FFFFFF;--muted:#F0F1E8;--muted-foreground:#55615A;--border:#DFE3D8;--input:#8A9486;--primary:#B82A17;--primary-foreground:#FFFFFF;--secondary:#E6F0E4;--secondary-foreground:#2F6B3F;--accent:#EEF1E6;--destructive:#B42318;--ring:#2F6B3F;--herb:#2F6B3F;--radius:8px}
+.hm{width:100%;box-sizing:border-box;background:var(--background);color:var(--foreground);font-family:'Be Vietnam Pro',system-ui,sans-serif;container-type:inline-size}
+.hm a:focus-visible,.hm button:focus-visible,.hm select:focus-visible,.hm input:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.hm-wrap{max-width:1200px;margin:0 auto;padding:0 32px;box-sizing:border-box}
+.hm-hero{padding:64px 0 56px}
+.hm-hero-in{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,0.9fr);gap:56px;align-items:center}
+.hm-pill{display:inline-flex;align-items:center;height:26px;padding:0 10px;margin-bottom:16px;background:var(--secondary);color:var(--secondary-foreground);border-radius:999px;font-size:12px;font-weight:600}
+.hm-h1{margin:0 0 16px;font-family:'Fraunces',Georgia,serif;font-size:56px;line-height:1.08;font-weight:700;letter-spacing:-0.01em}
+.hm-lede{margin:0 0 28px;max-width:520px;font-size:18px;line-height:1.6;color:var(--muted-foreground)}
+.hm-search{display:flex;gap:8px;max-width:520px}
+.hm-search-in{position:relative;flex:1;min-width:0;color:var(--muted-foreground)}
+.hm-search-in svg{position:absolute;left:12px;top:14px;pointer-events:none}
+.hm-search-in input{width:100%;height:44px;padding:0 12px 0 38px;box-sizing:border-box;background:var(--background);border:1px solid var(--input);border-radius:var(--radius);color:var(--foreground);font:400 15px 'Be Vietnam Pro',system-ui,sans-serif}
+.hm-search-in input::placeholder{color:var(--muted-foreground)}
+.hm-feature{display:block;overflow:hidden;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.05);color:var(--foreground);text-decoration:none}
+.hm-feat-img{aspect-ratio:16 / 10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#E9D8B8;color:#3A463E;font-size:14px}
+.hm-feat-body{padding:20px;border-top:1px solid var(--border)}
+.hm-feat-k{display:inline-flex;align-items:center;height:24px;padding:0 10px;background:var(--secondary);color:var(--secondary-foreground);border-radius:999px;font-size:12px;font-weight:600}
+.hm-feat-t{display:block;margin:10px 0 4px;font-family:'Fraunces',Georgia,serif;font-size:24px;font-weight:600}
+.hm-feat-d{display:block;font-size:14px;line-height:1.5;color:var(--muted-foreground)}
+.hm-list{border-top:1px solid var(--border);padding-top:40px}
+.hm-chips{display:flex;flex-wrap:wrap;gap:8px}
+.hm-chip{display:inline-flex;align-items:center;height:44px;padding:0 16px;box-sizing:border-box;background:var(--background);border:1px solid var(--input);border-radius:var(--radius);color:var(--foreground);font-size:14px;font-weight:500;text-decoration:none;white-space:nowrap}
+.hm-chip:hover{background:var(--accent)}
+.hm-chip.is-on{background:var(--herb);border-color:var(--herb);color:#fff}
+.hm-bar{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;justify-content:space-between;margin:40px 0 24px}
+.hm-h2{margin:0 0 4px;font-family:'Fraunces',Georgia,serif;font-size:34px;line-height:1.15;font-weight:700}
+.hm-count{margin:0;font-size:14px;color:var(--muted-foreground)}
+.hm-filters{display:flex;flex-wrap:wrap;gap:12px;margin:0}
+.hm-field{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:500}
+.hm-sel{position:relative;color:var(--muted-foreground)}
+.hm-sel svg{position:absolute;right:12px;top:14px;pointer-events:none}
+.hm-sel select{appearance:none;-webkit-appearance:none;width:100%;height:44px;min-width:168px;padding:0 36px 0 12px;box-sizing:border-box;background:var(--background);border:1px solid var(--input);border-radius:var(--radius);color:var(--foreground);font:400 14px 'Be Vietnam Pro',system-ui,sans-serif}
+.hm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:24px}
+.hm-pager{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:48px 0 0;padding-bottom:64px}
+.hm-pg{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:44px;height:44px;padding:0 12px;box-sizing:border-box;background:transparent;border:1px solid transparent;border-radius:var(--radius);color:var(--foreground);font-size:14px;font-weight:500;text-decoration:none}
+.hm-pg:hover{background:var(--accent)}
+.hm-pg.is-on{background:var(--herb);border-color:var(--herb);color:#fff}
+.hm-pg.is-off{color:var(--muted-foreground);opacity:.6;pointer-events:none}
+@container (max-width: 999px) {
+  .hm-hero{padding:48px 0 40px}
+  .hm-hero-in{grid-template-columns:minmax(0,1fr)}
+  .hm-feature{display:none}
+  .hm-h1{font-size:42px}
+}
+@container (max-width: 767px) {
+  .hm-wrap{padding:0 16px}
+  .hm-hero{padding:32px 0 32px}
+  .hm-h1{font-size:34px}
+  .hm-lede{font-size:16px;margin-bottom:20px}
+  .hm-search{flex-direction:column}
+  .hm-list{padding-top:24px}
+  .hm-chips{flex-wrap:nowrap;overflow-x:auto;margin:0 -16px;padding:0 16px 8px}
+  .hm-chip{flex:none}
+  .hm-bar{margin:28px 0 20px}
+  .hm-h2{font-size:24px}
+  .hm-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+  .hm-sel select{min-width:0}
+  .hm-field:last-child{grid-column:1 / -1}
+  .hm-pager{margin-top:32px;padding-bottom:40px}
+}
+</style>
+</helmet>
+<div class="hm">
+  <dc-import name="Header" hint-size="100%,65px"></dc-import>
+  <main>
+    <section class="hm-hero">
+      <div class="hm-wrap">
+        <div class="hm-hero-in">
+          <div>
+            <span class="hm-pill">Công thức nấu ăn Việt</span>
+            <h1 class="hm-h1">Món ngon cho bữa cơm nhà</h1>
+            <p class="hm-lede">Công thức từng bước, nguyên liệu rõ ràng. Tìm món bạn muốn nấu hôm nay.</p>
+            <form class="hm-search" role="search" action="Search.dc.html">
+              <div class="hm-search-in">
+                <label class="sr" for="hm-q">Tìm công thức</label>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+                <input id="hm-q" type="search" placeholder="Thử gõ “pho” để tìm “phở”">
+              </div>
+              <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+            </form>
+          </div>
+          <a class="hm-feature" href="Recipe.dc.html" aria-label="Món nổi bật: Phở bò Hà Nội">
+            <div class="hm-feat-img">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18a9 9 0 0 1-18 0z"></path><path d="M9 8c0-1.5 1-1.5 1-3"></path><path d="M14 8c0-1.5 1-1.5 1-3"></path></svg>
+              <span>Ảnh món ăn</span>
+            </div>
+            <div class="hm-feat-body">
+              <span class="hm-feat-k">Món nổi bật</span>
+              <span class="hm-feat-t">Phở bò Hà Nội</span>
+              <span class="hm-feat-d">Nước dùng trong, ngọt thanh từ xương bò ninh chậm.</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+    <section class="hm-list">
+      <div class="hm-wrap">
+        <nav aria-label="Danh mục">
+          <div class="hm-chips">
+            <sc-for list="{{chips}}" as="chip" hint-placeholder-count="7">
+              <a class="hm-chip {{chip.cls}}" href="#">{{chip.label}}</a>
+            </sc-for>
+          </div>
+        </nav>
+        <div class="hm-bar">
+          <div>
+            <h2 class="hm-h2">Công thức mới nhất</h2>
+            <p class="hm-count">Hiển thị {{shown}} công thức</p>
+          </div>
+          <form class="hm-filters" action="#">
+            <label class="hm-field">Độ khó
+              <span class="hm-sel">
+                <select>
+                  <option>Tất cả</option>
+                  <option>Dễ</option>
+                  <option>Trung bình</option>
+                  <option>Khó</option>
+                </select>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+              </span>
+            </label>
+            <label class="hm-field">Thời gian nấu
+              <span class="hm-sel">
+                <select>
+                  <option>Bất kỳ</option>
+                  <option>Tối đa 30 phút</option>
+                  <option>Tối đa 60 phút</option>
+                  <option>Tối đa 120 phút</option>
+                </select>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+              </span>
+            </label>
+            <label class="hm-field">Sắp xếp
+              <span class="hm-sel">
+                <select>
+                  <option>Mới nhất</option>
+                  <option>Tên A–Z</option>
+                  <option>Nấu nhanh nhất</option>
+                </select>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+              </span>
+            </label>
+          </form>
+        </div>
+        <div class="hm-grid">
+          <sc-for list="{{cards}}" as="c" hint-placeholder-count="4">
+            <dc-import name="RecipeCard" item="{{c}}" hint-size="100%,340px"></dc-import>
+          </sc-for>
+        </div>
+        <nav class="hm-pager" aria-label="Phân trang">
+          <a class="hm-pg is-off" href="#" aria-disabled="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>Trước</a>
+          <a class="hm-pg is-on" href="#" aria-current="page">1</a>
+          <a class="hm-pg" href="#">2</a>
+          <a class="hm-pg" href="#">3</a>
+          <a class="hm-pg" href="#">Sau<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></a>
+        </nav>
+      </div>
+    </section>
+  </main>
+  <dc-import name="Footer" hint-size="100%,340px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"count":{"editor":"int","default":8,"min":2,"max":8},"$preview":{"width":1440,"height":1950}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const all = [
+      { title: 'Phở bò Hà Nội', category: 'Món nước', time: '3 giờ', difficulty: 'Trung bình', author: 'Minh Anh' },
+      { title: 'Bánh xèo miền Tây', category: 'Món chiên', time: '45 phút', difficulty: 'Trung bình', author: 'Thu Hà' },
+      { title: 'Bún chả Hà Nội', category: 'Món nướng', time: '60 phút', difficulty: 'Dễ', author: 'Quốc Bảo' },
+      { title: 'Cá kho tộ', category: 'Món kho', time: '90 phút', difficulty: 'Dễ', author: 'Bà Lan' },
+      { title: 'Canh chua cá lóc', category: 'Canh', time: '40 phút', difficulty: 'Dễ', author: 'Thu Hà' },
+      { title: 'Gỏi cuốn tôm thịt', category: 'Món cuốn', time: '30 phút', difficulty: 'Dễ', author: 'Minh Anh' },
+      { title: 'Bò lúc lắc', category: 'Món xào', time: '25 phút', difficulty: 'Dễ', author: 'Quốc Bảo' },
+      { title: 'Chè đậu xanh', category: 'Tráng miệng', time: '50 phút', difficulty: 'Dễ', author: 'Bà Lan' }
+    ].map((c, i) => ({ ...c, href: 'Recipe.dc.html', tint: ['#E9D8B8', '#F0DDA8', '#F2C9A8', '#E5CFC0', '#CFE0C4', '#D8DCC0', '#E8C5C0', '#C9DCD5'][i % 8] }));
+    const n = Math.max(1, Math.min(all.length, Number(this.props.count ?? 8)));
+    const chips = ['Tất cả', 'Món nước', 'Món cuốn', 'Món chiên', 'Món kho', 'Canh', 'Tráng miệng'].map((label, i) => ({
+      label,
+      cls: i === 0 ? 'is-on' : ''
+    }));
+    return { cards: all.slice(0, n), shown: n, chips };
+  }
+}
+</script>
+</body>
+</html>

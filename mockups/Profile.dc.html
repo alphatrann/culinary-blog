@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Hồ sơ cá nhân</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Fraunces:opsz,wght@9..144,600;9..144,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Be Vietnam Pro',system-ui,sans-serif}
+:root{--background:#FAFAF6;--foreground:#1F2A22;--card:#FFFFFF;--muted:#F0F1E8;--muted-foreground:#55615A;--border:#DFE3D8;--input:#8A9486;--primary:#B82A17;--primary-foreground:#FFFFFF;--secondary:#E6F0E4;--secondary-foreground:#2F6B3F;--accent:#EEF1E6;--destructive:#B42318;--ring:#2F6B3F;--herb:#2F6B3F;--radius:8px}
+.pf{width:100%;box-sizing:border-box;background:var(--background);color:var(--foreground);font-family:'Be Vietnam Pro',system-ui,sans-serif;container-type:inline-size}
+.pf a:focus-visible,.pf button:focus-visible,.pf input:focus-visible,.pf textarea:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.pf-wrap{max-width:1200px;margin:0 auto;padding:0 32px;box-sizing:border-box}
+.pf-head{padding:40px 0 28px}
+.pf-h1{margin:0 0 6px;font-family:'Fraunces',Georgia,serif;font-size:44px;line-height:1.1;font-weight:700;letter-spacing:-0.01em}
+.pf-sub{margin:0;font-size:16px;color:var(--muted-foreground)}
+.pf-grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:32px;align-items:start;padding-bottom:72px}
+.pf-card{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.pf-card-h{padding:24px 24px 0}
+.pf-card-t{margin:0;font-family:'Fraunces',Georgia,serif;font-size:24px;line-height:1.2;font-weight:700}
+.pf-card-d{margin:4px 0 0;font-size:14px;color:var(--muted-foreground)}
+.pf-card-b{padding:24px}
+.pf-who{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.pf-av{display:flex;align-items:center;justify-content:center;flex:none;width:72px;height:72px;border-radius:999px;background:var(--herb);color:#fff;font-size:24px;font-weight:600}
+.pf-who-n{display:block;font-size:18px;font-weight:600}
+.pf-who-e{display:block;margin:2px 0 8px;font-size:14px;color:var(--muted-foreground);overflow-wrap:anywhere}
+.pf-badge{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--secondary);color:var(--secondary-foreground);white-space:nowrap}
+.pf-badge.is-draft{background:var(--card);border:1px solid var(--input);color:var(--foreground)}
+.pf-badge.is-archived{background:var(--muted);color:var(--muted-foreground)}
+.pf-photo{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:20px}
+.pf-hint{font-size:13px;color:var(--muted-foreground)}
+.pf-form{display:flex;flex-direction:column;gap:16px}
+.pf-field{display:flex;flex-direction:column;gap:8px;font-size:14px;font-weight:500}
+.pf-input{width:100%;min-height:44px;padding:0 12px;box-sizing:border-box;background:var(--card);border:1px solid var(--input);border-radius:var(--radius);color:var(--foreground);font:400 14px 'Be Vietnam Pro',system-ui,sans-serif}
+.pf-input:disabled{background:var(--muted);border-color:var(--border);color:var(--muted-foreground);cursor:not-allowed}
+textarea.pf-input{padding:10px 12px;line-height:1.5;resize:vertical;min-height:96px}
+.pf-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.pf-sep{height:1px;margin:24px 0;background:var(--border);border:0}
+.pf-out{width:100%}
+.pf-top{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;justify-content:space-between}
+.pf-tabs{display:inline-flex;flex-wrap:wrap;gap:2px;margin:20px 0 0;padding:4px;background:var(--muted);border-radius:10px}
+.pf-tab{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:0;border-radius:var(--radius);background:transparent;color:var(--muted-foreground);font:500 14px 'Be Vietnam Pro',system-ui,sans-serif;cursor:pointer}
+.pf-tab:hover{color:var(--foreground)}
+.pf-tab.is-on{background:var(--card);color:var(--foreground);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.pf-tab-n{font-size:12px;font-weight:600;color:var(--muted-foreground)}
+.pf-list{margin:16px 0 0;padding:0;list-style:none}
+.pf-row{display:flex;align-items:center;gap:16px;padding:16px 0;border-top:1px solid var(--border)}
+.pf-row:first-child{border-top:0}
+.pf-thumb{flex:none;width:72px;height:54px;border-radius:var(--radius)}
+.pf-row-m{flex:1;min-width:0}
+.pf-row-t{display:block;font-size:16px;font-weight:600;color:var(--foreground);text-decoration:none}
+.pf-row-t:hover{text-decoration:underline;text-underline-offset:3px}
+.pf-row-d{display:block;margin-top:2px;font-size:14px;color:var(--muted-foreground)}
+.pf-row-s{display:flex;align-items:center;gap:12px;flex:none}
+@container (max-width: 999px) {
+  .pf-h1{font-size:38px}
+  .pf-grid{grid-template-columns:minmax(0,1fr);gap:24px}
+}
+@container (max-width: 767px) {
+  .pf-wrap{padding:0 16px}
+  .pf-head{padding:24px 0 20px}
+  .pf-h1{font-size:30px}
+  .pf-card-h{padding:20px 16px 0}
+  .pf-card-b{padding:20px 16px}
+  .pf-top .btn{width:100%}
+  .pf-tabs{display:flex;width:100%;box-sizing:border-box}
+  .pf-tab{flex:1;justify-content:center;padding:0 8px}
+  .pf-tab-n{display:none}
+  .pf-row{flex-wrap:wrap;gap:12px}
+  .pf-row-m{flex-basis:calc(100% - 100px)}
+  .pf-row-s{width:100%;justify-content:space-between}
+  .pf-grid{padding-bottom:40px}
+}
+</style>
+</helmet>
+<div class="pf">
+  <dc-import name="Header" user="true" hint-size="100%,65px"></dc-import>
+  <main class="pf-wrap">
+    <header class="pf-head">
+      <h1 class="pf-h1">Hồ sơ của tôi</h1>
+      <p class="pf-sub">Quản lý thông tin cá nhân và các công thức bạn đã đăng.</p>
+    </header>
+    <div class="pf-grid">
+      <section class="pf-card" aria-labelledby="pf-info-h">
+        <div class="pf-card-h">
+          <h2 class="pf-card-t" id="pf-info-h">Thông tin cá nhân</h2>
+          <p class="pf-card-d">Thông tin này hiển thị trên các công thức của bạn.</p>
+        </div>
+        <div class="pf-card-b">
+          <div class="pf-who">
+            <span class="pf-av" aria-hidden="true">MA</span>
+            <div>
+              <span class="pf-who-n">Minh Anh</span>
+              <span class="pf-who-e">minhanh@example.com</span>
+              <span class="pf-badge">Tác giả</span>
+            </div>
+          </div>
+          <div class="pf-photo">
+            <button class="btn btn-outline" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"></path><path d="M7 9l5-5 5 5"></path><path d="M4 20h16"></path></svg>
+              Đổi ảnh đại diện
+            </button>
+            <span class="pf-hint">JPEG, PNG, WebP hoặc AVIF, tối đa 5 MB.</span>
+          </div>
+          <form class="pf-form" action="#">
+            <label class="pf-field">Tên hiển thị
+              <input class="pf-input" type="text" name="display_name" value="Minh Anh" minlength="2" maxlength="100">
+            </label>
+            <label class="pf-field">Email
+              <input class="pf-input" type="email" name="email" value="minhanh@example.com" disabled="">
+              <span class="pf-hint">Email không thể thay đổi.</span>
+            </label>
+            <label class="pf-field">Giới thiệu
+              <textarea class="pf-input" name="bio" rows="4">Nấu ăn cho gia đình mỗi ngày và thích chia sẻ các món truyền thống miền Bắc.</textarea>
+            </label>
+            <div class="pf-acts">
+              <button class="btn btn-primary" type="submit">Lưu thay đổi</button>
+              <button class="btn btn-outline" type="reset">Hủy</button>
+            </div>
+          </form>
+          <hr class="pf-sep">
+          <button class="btn btn-outline pf-out" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"></path><path d="M16 8l4 4-4 4"></path><path d="M20 12H9"></path></svg>
+            Đăng xuất
+          </button>
+        </div>
+      </section>
+      <section class="pf-card" aria-labelledby="pf-rcp-h">
+        <div class="pf-card-h">
+          <div class="pf-top">
+            <div>
+              <h2 class="pf-card-t" id="pf-rcp-h">Công thức của tôi</h2>
+              <p class="pf-card-d">Bạn thấy cả bản nháp và công thức đã lưu trữ.</p>
+            </div>
+            <a class="btn btn-primary" href="Editor.dc.html">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              Viết công thức mới
+            </a>
+          </div>
+          <div class="pf-tabs" role="tablist" aria-label="Lọc theo trạng thái">
+            <sc-for list="{{tabs}}" as="t" hint-placeholder-count="4">
+              <button class="pf-tab {{t.cls}}" type="button" role="tab" aria-selected="{{t.selected}}" onClick="{{t.pick}}">{{t.label}} <span class="pf-tab-n">{{t.count}}</span></button>
+            </sc-for>
+          </div>
+        </div>
+        <div class="pf-card-b" role="tabpanel">
+          <ul class="pf-list" style="margin-top:0">
+            <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+              <li class="pf-row">
+                <div class="pf-thumb" style="background: {{r.tint}}"></div>
+                <div class="pf-row-m">
+                  <a class="pf-row-t" href="Recipe.dc.html">{{r.title}}</a>
+                  <span class="pf-row-d">{{r.category}} · Cập nhật {{r.date}}</span>
+                </div>
+                <div class="pf-row-s">
+                  <span class="pf-badge {{r.badgeCls}}">{{r.statusLabel}}</span>
+                  <a class="btn btn-outline" href="Editor.dc.html">Sửa</a>
+                </div>
+              </li>
+            </sc-for>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </main>
+  <dc-import name="Footer" hint-size="100%,340px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  state = { tab: 'all' };
+  renderVals() {
+    const all = [
+      { title: 'Phở bò Hà Nội', category: 'Món nước', date: '12/09/2026', status: 'published', tint: '#E9D8B8' },
+      { title: 'Bún riêu cua', category: 'Món nước', date: '03/10/2026', status: 'draft', tint: '#F0DDA8' },
+      { title: 'Gỏi cuốn tôm thịt', category: 'Món cuốn', date: '28/08/2026', status: 'published', tint: '#D8DCC0' },
+      { title: 'Cá kho tộ', category: 'Món kho', date: '02/08/2026', status: 'published', tint: '#E5CFC0' },
+      { title: 'Chè đậu xanh', category: 'Tráng miệng', date: '14/06/2026', status: 'archived', tint: '#C9DCD5' }
+    ];
+    const labels = { published: 'Đã xuất bản', draft: 'Bản nháp', archived: 'Lưu trữ' };
+    const tabDefs = [
+      { key: 'all', label: 'Tất cả' },
+      { key: 'published', label: 'Đã xuất bản' },
+      { key: 'draft', label: 'Bản nháp' },
+      { key: 'archived', label: 'Lưu trữ' }
+    ];
+    const current = this.state.tab;
+    const tabs = tabDefs.map((t) => ({
+      label: t.label,
+      count: t.key === 'all' ? all.length : all.filter((r) => r.status === t.key).length,
+      selected: t.key === current,
+      cls: t.key === current ? 'is-on' : '',
+      pick: () => this.setState({ tab: t.key })
+    }));
+    const rows = all
+      .filter((r) => current === 'all' || r.status === current)
+      .map((r) => ({
+        ...r,
+        statusLabel: labels[r.status],
+        badgeCls: r.status === 'draft' ? 'is-draft' : r.status === 'archived' ? 'is-archived' : ''
+      }));
+    return { tabs, rows };
+  }
+}
+</script>
+</body>
+</html>
