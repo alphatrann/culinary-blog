@@ -8,7 +8,7 @@ import { SearchForm } from "./search-form";
 /** Server component: renders the guest state; auth-dependent parts hydrate client-side. */
 export function SiteHeader() {
   return (
-    <header className="relative border-b border-border bg-background">
+    <header className="relative border-b border-border bg-background print:hidden">
       <div className="mx-auto flex h-16 max-w-[1200px] items-center gap-1 pr-3 pl-4 md:gap-4 md:px-8">
         <Brand />
         <nav aria-label="Điều hướng chính" className="ml-4 hidden gap-1 lg:flex">
