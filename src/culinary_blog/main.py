@@ -125,7 +125,7 @@ app.add_middleware(
     allow_origins=settings.cors_origin_list,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "X-Correlation-ID"],
+    allow_headers=["Content-Type", "If-Match", "X-Correlation-ID"],
 )
 
 app.include_router(build_health_router())
