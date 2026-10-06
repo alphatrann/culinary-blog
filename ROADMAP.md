@@ -67,7 +67,7 @@ Next.js app in `web/`, built from the design mockups in `mockups/`. Deferred to 
 
 #### M7c — Public pages
 - [ ] #36 Home (`/`)
-- [ ] #37 Recipe list (`/recipes`)
+- [x] #37 Recipe list (`/recipes`)
 - [ ] #38 Recipe detail (`/recipes/[slug]`)
 - [ ] #39 Categories (`/categories`, `/categories/[slug]`)
 - [ ] #40 Search (`/search`)
