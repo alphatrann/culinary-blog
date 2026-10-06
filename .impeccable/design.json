@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-06T03:07:29.562658+00:00",
+  "generatedAt": "2026-10-06T03:47:09.959273+00:00",
   "title": "Design System: Culinary Blog",
   "extensions": {
     "colorMeta": {
@@ -92,6 +92,261 @@
           "#f1f7f0",
           "#f8faf7",
           "#fcfdfc"
+        ]
+      },
+      "tomato-red-deep": {
+        "role": "primary",
+        "displayName": "Tomato Red Deep",
+        "canonical": "#9a2212",
+        "tonalRamp": [
+          "#440f08",
+          "#72190d",
+          "#a02313",
+          "#cd2d18",
+          "#ea5b48",
+          "#f2998d",
+          "#f9cec8",
+          "#fcebe8"
+        ]
+      },
+      "herb-green-deep": {
+        "role": "secondary",
+        "displayName": "Herb Green Deep",
+        "canonical": "#255735",
+        "tonalRamp": [
+          "#173621",
+          "#265936",
+          "#357d4c",
+          "#44a162",
+          "#70c28a",
+          "#a6d9b6",
+          "#d4eddc",
+          "#edf7f0"
+        ]
+      },
+      "card-white": {
+        "role": "neutral",
+        "displayName": "Card White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#262626",
+          "#404040",
+          "#595959",
+          "#737373",
+          "#999999",
+          "#bfbfbf",
+          "#e0e0e0",
+          "#f2f2f2"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Ink Muted",
+        "canonical": "#55615a",
+        "tonalRamp": [
+          "#242926",
+          "#3c443f",
+          "#535f58",
+          "#6b7a71",
+          "#92a098",
+          "#bbc3bf",
+          "#dee2e0",
+          "#f1f3f2"
+        ]
+      },
+      "oat": {
+        "role": "neutral",
+        "displayName": "Oat",
+        "canonical": "#f0f1e8",
+        "tonalRamp": [
+          "#2d301d",
+          "#4c4f30",
+          "#6a6f44",
+          "#888f57",
+          "#acb280",
+          "#cbcfb0",
+          "#e6e8d9",
+          "#f5f5ef"
+        ]
+      },
+      "linen": {
+        "role": "neutral",
+        "displayName": "Linen",
+        "canonical": "#eef1e6",
+        "tonalRamp": [
+          "#2b311b",
+          "#48522e",
+          "#657240",
+          "#819352",
+          "#a6b67c",
+          "#c7d1ad",
+          "#e4e9d8",
+          "#f4f6ef"
+        ]
+      },
+      "control-edge": {
+        "role": "neutral",
+        "displayName": "Control Edge",
+        "canonical": "#8a9486",
+        "tonalRamp": [
+          "#252924",
+          "#3e443c",
+          "#575f54",
+          "#707a6c",
+          "#969f93",
+          "#bec3bb",
+          "#e0e2df",
+          "#f2f3f1"
+        ]
+      },
+      "error-red": {
+        "role": "error",
+        "displayName": "Error Red",
+        "canonical": "#b42318",
+        "tonalRamp": [
+          "#440d09",
+          "#70160f",
+          "#9d1f15",
+          "#ca271b",
+          "#e7564b",
+          "#f0958f",
+          "#f8ccc9",
+          "#fceae8"
+        ]
+      },
+      "error-tint": {
+        "role": "error",
+        "displayName": "Error Tint",
+        "canonical": "#fbe9e5",
+        "tonalRamp": [
+          "#42140a",
+          "#6e2211",
+          "#9b3018",
+          "#c73d1f",
+          "#e4694e",
+          "#eea190",
+          "#f7d2ca",
+          "#fcece9"
+        ]
+      },
+      "tint-1": {
+        "role": "tint",
+        "displayName": "Placeholder Tint 1",
+        "canonical": "#e9d8b8",
+        "tonalRamp": [
+          "#3a2c12",
+          "#614a1e",
+          "#88682a",
+          "#af8536",
+          "#cfa963",
+          "#e1ca9e",
+          "#f1e5d0",
+          "#f9f4ec"
+        ]
+      },
+      "tint-2": {
+        "role": "tint",
+        "displayName": "Placeholder Tint 2",
+        "canonical": "#f0dda8",
+        "tonalRamp": [
+          "#41330b",
+          "#6d5513",
+          "#98771a",
+          "#c49922",
+          "#e1bb51",
+          "#ecd592",
+          "#f6ebcb",
+          "#fbf6e9"
+        ]
+      },
+      "tint-3": {
+        "role": "tint",
+        "displayName": "Placeholder Tint 3",
+        "canonical": "#f2c9a8",
+        "tonalRamp": [
+          "#43230a",
+          "#6f3b11",
+          "#9b5217",
+          "#c86a1e",
+          "#e4914e",
+          "#eeba90",
+          "#f7deca",
+          "#fcf1e9"
+        ]
+      },
+      "tint-4": {
+        "role": "tint",
+        "displayName": "Placeholder Tint 4",
+        "canonical": "#e5cfc0",
+        "tonalRamp": [
+          "#362316",
+          "#5a3b25",
+          "#7e5234",
+          "#a26a43",
+          "#c3916f",
+          "#dabaa5",
+          "#edded4",
+          "#f8f1ed"
+        ]
+      },
+      "tint-5": {
+        "role": "tint",
+        "displayName": "Placeholder Tint 5",
+        "canonical": "#cfe0c4",
+        "tonalRamp": [
+          "#24321a",
+          "#3c542c",
+          "#53753d",
+          "#6b964f",
+          "#92b979",
+          "#bbd3ab",
+          "#deead7",
+          "#f1f6ee"
+        ]
+      },
+      "tint-6": {
+        "role": "tint",
+        "displayName": "Placeholder Tint 6",
+        "canonical": "#d8dcc0",
+        "tonalRamp": [
+          "#2e311b",
+          "#4d522e",
+          "#6b7340",
+          "#8a9452",
+          "#aeb67c",
+          "#ccd1ad",
+          "#e7e9d8",
+          "#f5f6ef"
+        ]
+      },
+      "tint-7": {
+        "role": "tint",
+        "displayName": "Placeholder Tint 7",
+        "canonical": "#e8c5c0",
+        "tonalRamp": [
+          "#381914",
+          "#5d2a22",
+          "#833a30",
+          "#a84b3d",
+          "#c8756a",
+          "#dda9a2",
+          "#efd6d2",
+          "#f8eeec"
+        ]
+      },
+      "tint-8": {
+        "role": "tint",
+        "displayName": "Placeholder Tint 8",
+        "canonical": "#c9dcd5",
+        "tonalRamp": [
+          "#1e2e28",
+          "#324d43",
+          "#466c5e",
+          "#5a8b79",
+          "#83af9f",
+          "#b2cdc3",
+          "#dae7e2",
+          "#f0f5f3"
         ]
       }
     },
@@ -220,6 +475,34 @@
       "description": "Signature recipe tile with tinted placeholder.",
       "html": "<div class=\"ds-card\"><div class=\"ds-card-img\"><span class=\"ds-card-badge\">Món nước</span></div><div class=\"ds-card-body\"><h3>Phở bò</h3><p>2 giờ · Trung bình</p><p>Bởi An</p></div></div>",
       "css": ".ds-card{width:280px;overflow:hidden;border:1px solid #dfe3d8;border-radius:12px;background:#fff;box-shadow:0 1px 2px rgb(0 0 0/.05);transition:box-shadow .15s;font:400 14px 'Be Vietnam Pro',system-ui,sans-serif;color:#55615a}.ds-card:hover{box-shadow:0 4px 12px rgb(0 0 0/.08)}.ds-card-img{position:relative;aspect-ratio:4/3;background:#e9d8b8;border-bottom:1px solid #dfe3d8}.ds-card-badge{position:absolute;top:12px;left:12px;height:24px;padding:0 10px;display:inline-flex;align-items:center;border:1px solid #dfe3d8;border-radius:999px;background:#fafaf6;color:#1f2a22;font-weight:600;font-size:12px}.ds-card-body{padding:16px}.ds-card-body h3{margin:0 0 8px;font:600 20px/1.25 Fraunces,Georgia,serif;color:#1f2a22}.ds-card-body p{margin:4px 0 0}"
+    },
+    {
+      "name": "Ingredient Row",
+      "kind": "custom",
+      "description": "Checkable ingredient line on the recipe detail page; 44px target, quantity right-aligned, checked items struck through.",
+      "html": "<label class=\"ds-ing\"><span class=\"ds-ing-box\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12l5 5 9-10\"/></svg></span><span class=\"ds-ing-n\">Xương ống bò</span><span class=\"ds-ing-q\">1,5 kg</span></label>",
+      "css": ".ds-ing{display:flex;align-items:center;gap:12px;min-height:44px;padding:8px 0;border-bottom:1px solid #dfe3d8;font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:14px;color:#1f2a22;cursor:pointer}.ds-ing-box{display:grid;place-content:center;flex:none;width:16px;height:16px;border:1px solid #2f6b3f;border-radius:4px;background:#2f6b3f}.ds-ing-n{flex:1;min-width:0}.ds-ing-q{color:#55615a;text-align:right}.ds-ing:hover .ds-ing-n{color:#000}.ds-ing:focus-within .ds-ing-box{outline:2px solid #2f6b3f;outline-offset:2px}"
+    },
+    {
+      "name": "Recipe Step",
+      "kind": "custom",
+      "description": "Numbered method step: herb-green number disc, serif step title, comfortable body measure.",
+      "html": "<div class=\"ds-step\"><span class=\"ds-step-n\">1</span><div><h3 class=\"ds-step-t\">Làm sạch xương</h3><p class=\"ds-step-p\">Chần xương ống với nước sôi 5 phút, rửa sạch bọt bẩn.</p></div></div>",
+      "css": ".ds-step{display:flex;gap:16px}.ds-step-n{flex:none;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:999px;background:#2f6b3f;color:#fff;font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:14px;font-weight:600}.ds-step-t{margin:2px 0 6px;font-family:Fraunces,Georgia,serif;font-size:20px;line-height:1.25;font-weight:600;color:#1f2a22}.ds-step-p{margin:0;max-width:70ch;font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:14px;line-height:1.75;color:#1f2a22}"
+    },
+    {
+      "name": "Meta Strip",
+      "kind": "custom",
+      "description": "Hairline-divided stat cells (prep, cook, servings, difficulty) under the recipe gallery.",
+      "html": "<dl class=\"ds-meta\"><div class=\"ds-meta-i\"><dt>Chuẩn bị</dt><dd>30 phút</dd></div><div class=\"ds-meta-i\"><dt>Nấu</dt><dd>3 giờ</dd></div></dl>",
+      "css": ".ds-meta{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;margin:0;overflow:hidden;border:1px solid #dfe3d8;border-radius:12px;background:#dfe3d8;box-shadow:0 1px 2px rgb(0 0 0 / .05)}.ds-meta-i{padding:16px 24px;background:#fff}.ds-meta dt{font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:14px;color:#55615a}.ds-meta dd{margin:4px 0 0;font-family:Fraunces,Georgia,serif;font-size:20px;font-weight:600;color:#1f2a22}"
+    },
+    {
+      "name": "Nutrition Cell",
+      "kind": "card",
+      "description": "One nutrition value per card; only values the recipe actually has are shown.",
+      "html": "<dl class=\"ds-nut\"><dt>Năng lượng</dt><dd>520 kcal</dd></dl>",
+      "css": ".ds-nut{margin:0;padding:16px 20px;border:1px solid #dfe3d8;border-radius:12px;background:#fff;box-shadow:0 1px 2px rgb(0 0 0 / .05);font-family:'Be Vietnam Pro',system-ui,sans-serif}.ds-nut dt{font-size:14px;color:#55615a}.ds-nut dd{margin:4px 0 0;font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;color:#1f2a22}"
     }
   ],
   "narrative": {
