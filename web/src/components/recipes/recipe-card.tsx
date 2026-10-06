@@ -29,7 +29,7 @@ const tints = [
 ];
 
 /** Stable placeholder tint per recipe so the grid doesn't flicker between renders. */
-function tintFor(key: string): string {
+export function tintFor(key: string): string {
   let h = 0;
   for (const c of key) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   return tints[h % tints.length];

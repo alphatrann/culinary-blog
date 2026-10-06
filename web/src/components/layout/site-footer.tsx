@@ -31,7 +31,7 @@ const columns = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-background text-muted-foreground">
+    <footer className="border-t border-border bg-background text-muted-foreground print:hidden">
       <div className="mx-auto grid max-w-[1200px] grid-cols-2 gap-x-6 gap-y-4 px-4 pt-8 pb-4 lg:grid-cols-[2fr_1fr_1fr_1fr] md:grid-cols-3 md:gap-10 md:px-8 md:pt-12 md:pb-8">
         <div className="col-span-full lg:col-span-1">
           <Brand asLink={false} />
