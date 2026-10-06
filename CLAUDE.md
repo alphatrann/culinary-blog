@@ -56,6 +56,8 @@ src/culinary_blog/
 
 ## Frontend (`web/`)
 
+UI work goes through Impeccable (`/impeccable shape|audit|polish <screen>`); it reads `PRODUCT.md` and `DESIGN.md` (theme: tokens in `web/src/app/globals.css`, mockups in `mockups/` are layout reference). Use token classes only, no raw hex or new fonts. For a new screen: write unit + component tests (Vitest + Testing Library, colocated `*.test.ts(x)`), verify in the browser with the Playwright MCP (`.mcp.json`), save screenshots at 1440/820/390 to `docs/screenshots/<screen>/{desktop,tablet,mobile}.png`, and fill the Screenshots section of the PR template (raw GitHub URLs) when opening the PR.
+
 Next.js 15 App Router, TypeScript strict, Tailwind v4, shadcn/ui (add components with `npx shadcn@latest add <name>` from `web/`). Server components call the API via `API_BASE_URL`; the browser uses same-origin `/api/v1` (nginx routes `/api/` to FastAPI, everything else to Next.js). The app must build with no live API. After changing API schemas/routes run `npm run api:sync` in `web/` (regenerates `openapi.json` + `src/lib/api/schema.d.ts`; CI fails on drift). Run `npm run lint && npm run typecheck && npm run format:check && npm test` before committing.
 
 ## Testing (NFR-MAINT-002)

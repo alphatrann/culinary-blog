@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-06T03:07:29.562658+00:00",
+  "title": "Design System: Culinary Blog",
+  "extensions": {
+    "colorMeta": {
+      "tomato-red": {
+        "role": "primary",
+        "displayName": "Tomato Red",
+        "canonical": "#b82a17",
+        "tonalRamp": [
+          "#53130a",
+          "#781b0f",
+          "#9c2414",
+          "#b82a17",
+          "#c65545",
+          "#d88a7f",
+          "#eabfb9",
+          "#f6e5e3"
+        ]
+      },
+      "herb-green": {
+        "role": "secondary",
+        "displayName": "Herb Green",
+        "canonical": "#2f6b3f",
+        "tonalRamp": [
+          "#15301c",
+          "#1f4629",
+          "#285b36",
+          "#2f6b3f",
+          "#598965",
+          "#8dae95",
+          "#c1d3c5",
+          "#e6ede8"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#fafaf6",
+        "tonalRamp": [
+          "#70706f",
+          "#a2a2a0",
+          "#d4d4d1",
+          "#fafaf6",
+          "#fbfbf8",
+          "#fcfcfa",
+          "#fefefc",
+          "#fefefe"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#1f2a22",
+        "tonalRamp": [
+          "#0e130f",
+          "#141b16",
+          "#1a241d",
+          "#1f2a22",
+          "#4c554e",
+          "#848a85",
+          "#bcbfbd",
+          "#e4e5e4"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#dfe3d8",
+        "tonalRamp": [
+          "#646661",
+          "#91948c",
+          "#bec1b8",
+          "#dfe3d8",
+          "#e5e9e0",
+          "#edf0ea",
+          "#f5f7f3",
+          "#fbfcfa"
+        ]
+      },
+      "sage-mist": {
+        "role": "neutral",
+        "displayName": "Sage Mist",
+        "canonical": "#e6f0e4",
+        "tonalRamp": [
+          "#676c67",
+          "#969c94",
+          "#c4ccc2",
+          "#e6f0e4",
+          "#ebf3e9",
+          "#f1f7f0",
+          "#f8faf7",
+          "#fcfdfc"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "hero": {
+        "displayName": "Hero",
+        "purpose": "Home hero only."
+      },
+      "page": {
+        "displayName": "Page",
+        "purpose": "Page titles such as a recipe name."
+      },
+      "section": {
+        "displayName": "Section",
+        "purpose": "Section headings."
+      },
+      "card-title": {
+        "displayName": "Card Title",
+        "purpose": "Recipe card titles."
+      },
+      "lede": {
+        "displayName": "Lede",
+        "purpose": "Introductory paragraphs."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default UI and reading text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons, nav links, form labels."
+      },
+      "meta": {
+        "displayName": "Meta",
+        "purpose": "Badges and counts."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card",
+        "value": "0 1px 2px rgb(0 0 0 / 0.05)",
+        "purpose": "Resting contact shadow on cards."
+      },
+      {
+        "name": "card-hover",
+        "value": "0 4px 12px rgb(0 0 0 / 0.08)",
+        "purpose": "Only lift, on interactive card hover."
+      },
+      {
+        "name": "tab",
+        "value": "0 1px 2px rgb(0 0 0 / 0.08)",
+        "purpose": "Selected tab."
+      }
+    ],
+    "motion": [
+      {
+        "name": "color-transition",
+        "value": "150ms ease",
+        "purpose": "Hover color and shadow changes."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1200px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main call to action; one per view.",
+      "html": "<button class=\"ds-btn-primary\">Lưu công thức</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 18px;border:1px solid transparent;border-radius:8px;background:#b82a17;color:#fff;font:500 14px 'Be Vietnam Pro',system-ui,sans-serif;cursor:pointer;transition:background-color .15s}.ds-btn-primary:hover{background:#9a2212}.ds-btn-primary:focus-visible{outline:2px solid #2f6b3f;outline-offset:2px}"
+    },
+    {
+      "name": "Herb Button",
+      "kind": "button",
+      "refersTo": "button-herb",
+      "description": "Secondary emphasis in brand green.",
+      "html": "<button class=\"ds-btn-herb\">Xem thêm</button>",
+      "css": ".ds-btn-herb{display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 18px;border:1px solid transparent;border-radius:8px;background:#2f6b3f;color:#fff;font:500 14px 'Be Vietnam Pro',system-ui,sans-serif;cursor:pointer;transition:background-color .15s}.ds-btn-herb:hover{background:#255735}.ds-btn-herb:focus-visible{outline:2px solid #2f6b3f;outline-offset:2px}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Neutral action beside a primary.",
+      "html": "<button class=\"ds-btn-outline\">Hủy</button>",
+      "css": ".ds-btn-outline{display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 18px;border:1px solid #8a9486;border-radius:8px;background:#fafaf6;color:#1f2a22;font:500 14px 'Be Vietnam Pro',system-ui,sans-serif;cursor:pointer;transition:background-color .15s}.ds-btn-outline:hover{background:#eef1e6}.ds-btn-outline:focus-visible{outline:2px solid #2f6b3f;outline-offset:2px}"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Standard text field.",
+      "html": "<input class=\"ds-input\" placeholder=\"Tìm công thức...\">",
+      "css": ".ds-input{width:100%;height:44px;padding:0 12px;border:1px solid #8a9486;border-radius:8px;background:#fafaf6;color:#1f2a22;font:400 14px 'Be Vietnam Pro',system-ui,sans-serif}.ds-input::placeholder{color:#55615a}.ds-input:focus-visible{outline:2px solid #2f6b3f;outline-offset:2px}"
+    },
+    {
+      "name": "Category Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Pill label for category or status.",
+      "html": "<span class=\"ds-badge\">Món nước</span>",
+      "css": ".ds-badge{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;background:#e6f0e4;color:#2f6b3f;font:600 12px 'Be Vietnam Pro',system-ui,sans-serif}"
+    },
+    {
+      "name": "Nav Link",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Header navigation item.",
+      "html": "<a class=\"ds-nav-link\" href=\"#\">Công thức</a>",
+      "css": ".ds-nav-link{display:inline-flex;align-items:center;height:44px;padding:0 12px;border-radius:8px;color:#55615a;font:500 14px 'Be Vietnam Pro',system-ui,sans-serif;text-decoration:none}.ds-nav-link:hover{background:#eef1e6;color:#1f2a22}.ds-nav-link:focus-visible{outline:2px solid #2f6b3f;outline-offset:2px}"
+    },
+    {
+      "name": "Recipe Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Signature recipe tile with tinted placeholder.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-img\"><span class=\"ds-card-badge\">Món nước</span></div><div class=\"ds-card-body\"><h3>Phở bò</h3><p>2 giờ · Trung bình</p><p>Bởi An</p></div></div>",
+      "css": ".ds-card{width:280px;overflow:hidden;border:1px solid #dfe3d8;border-radius:12px;background:#fff;box-shadow:0 1px 2px rgb(0 0 0/.05);transition:box-shadow .15s;font:400 14px 'Be Vietnam Pro',system-ui,sans-serif;color:#55615a}.ds-card:hover{box-shadow:0 4px 12px rgb(0 0 0/.08)}.ds-card-img{position:relative;aspect-ratio:4/3;background:#e9d8b8;border-bottom:1px solid #dfe3d8}.ds-card-badge{position:absolute;top:12px;left:12px;height:24px;padding:0 10px;display:inline-flex;align-items:center;border:1px solid #dfe3d8;border-radius:999px;background:#fafaf6;color:#1f2a22;font-weight:600;font-size:12px}.ds-card-body{padding:16px}.ds-card-body h3{margin:0 0 8px;font:600 20px/1.25 Fraunces,Georgia,serif;color:#1f2a22}.ds-card-body p{margin:4px 0 0}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Family Recipe Card",
+    "overview": "A well-loved printed recipe card, translated to screen: warm paper underneath, a serif title that feels written rather than set, calm structure, and a single tomato-red action. The food and its tinted placeholders supply the colour; the interface stays quiet so a cook can scan, choose and start cooking.\n\nThe mood is warm, calm and practical. Surfaces are flat and separated by hairlines, copy is Vietnamese with full diacritics, and nothing competes with the recipe. It rejects glossy food-magazine drama and loud app chrome.",
+    "keyCharacteristics": [
+      "Paper-toned background (#fafaf6) with white cards and 1px sage hairlines.",
+      "Serif headings (Fraunces) over a humanist sans (Be Vietnam Pro) for UI and body text.",
+      "One tomato-red primary action per view; herb green for brand, links, focus and secondary emphasis.",
+      "Light theme only; no dark mode.",
+      "44px minimum touch targets on controls."
+    ],
+    "rules": [
+      {
+        "name": "The One Hot Note Rule",
+        "body": "Tomato red marks the one primary action on a view. Reaching for it as decoration dilutes the action.",
+        "section": "colors"
+      },
+      {
+        "name": "The Food Is The Colour Rule",
+        "body": "Interface chrome stays neutral and green; saturated colour belongs to recipe imagery and placeholder tints.",
+        "section": "colors"
+      },
+      {
+        "name": "The Diacritics Rule",
+        "body": "Every size must be checked with Vietnamese text; line heights are set to clear stacked diacritics, so never tighten them for aesthetics.",
+        "section": "typography"
+      },
+      {
+        "name": "The Hairline First Rule",
+        "body": "Separate with a border before reaching for a shadow; shadows only respond to interaction.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use token classes (bg-primary, text-muted-foreground, border-border), never raw hex.",
+      "Do keep one primary tomato-red button per view.",
+      "Do give every interactive element a visible focus ring and a 44px target.",
+      "Do write all copy in Vietnamese with diacritics, and test long titles.",
+      "Do provide loading (skeleton), empty and error states for each screen.",
+      "Do keep the placeholder tint stable per recipe."
+    ],
+    "donts": [
+      "Don't add gradients, glassmorphism, heavy shadows or a dark theme.",
+      "Don't introduce another accent hue or font family.",
+      "Don't use red for decoration or for non-primary actions.",
+      "Don't imply comments, ratings, bookmarks or other out-of-scope social features.",
+      "Don't invent testimonials, user counts or chef profiles."
+    ]
+  }
+}
