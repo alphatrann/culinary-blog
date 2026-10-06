@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 export default function UiKitchenSink() {
   if (process.env.NODE_ENV === "production") notFound();
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-8 p-8">
+    <main className="mx-auto flex max-w-5xl flex-col gap-8 p-8">
       <h1 className="text-page">Bếp Nhỏ — UI</h1>
       <div className="flex flex-wrap gap-3">
         <Button>Đăng nhập</Button>

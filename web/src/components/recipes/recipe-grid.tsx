@@ -4,7 +4,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "cn";
 
-const gridClass = "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4";
+const gridClass = "grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6";
 
 function RecipeGrid({
   recipes,
