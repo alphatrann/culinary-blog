@@ -1,0 +1,47 @@
+import type { DifficultyName } from "@/lib/labels";
+
+export const sortOptions = [
+  { value: "-created_at", label: "Mới nhất" },
+  { value: "created_at", label: "Cũ nhất" },
+  { value: "title", label: "Tên A–Z" },
+  { value: "-title", label: "Tên Z–A" },
+  { value: "cook_time_minutes", label: "Nấu nhanh nhất" },
+  { value: "-cook_time_minutes", label: "Nấu lâu nhất" },
+] as const;
+
+export const cookTimeOptions = [15, 30, 60, 120] as const;
+
+export type ListSearchParams = Record<string, string | string[] | undefined>;
+
+const difficulties: DifficultyName[] = ["easy", "medium", "hard", "expert"];
+
+function first(v: string | string[] | undefined): string | undefined {
+  return Array.isArray(v) ? v[0] : v;
+}
+
+/** Parse + sanitise URL params so invalid values never reach the API. */
+export function parseListParams(sp: ListSearchParams) {
+  const difficulty = first(sp.difficulty) as DifficultyName | undefined;
+  const maxCook = Number(first(sp.max_cook_time));
+  const sort = first(sp.sort);
+  const page = Number(first(sp.page));
+  return {
+    page: Number.isInteger(page) && page >= 1 ? page : 1,
+    difficulty: difficulty && difficulties.includes(difficulty) ? difficulty : undefined,
+    max_cook_time: Number.isInteger(maxCook) && maxCook > 0 ? maxCook : undefined,
+    sort: sortOptions.some((o) => o.value === sort) ? sort : undefined,
+  };
+}
+
+/** Build `?a=b&page=n` for the current path, dropping empty values. Resets nothing: callers pass the full set. */
+export function buildHref(
+  basePath: string,
+  params: Record<string, string | number | undefined>,
+): string {
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== "" && !(k === "page" && v === 1)) qs.set(k, String(v));
+  }
+  const s = qs.toString();
+  return s ? `${basePath}?${s}` : basePath;
+}
