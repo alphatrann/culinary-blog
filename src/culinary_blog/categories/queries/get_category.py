@@ -5,7 +5,7 @@ from culinary_blog.auth.principal import Principal
 from culinary_blog.cache import keys
 from culinary_blog.cache.service import Cache
 from culinary_blog.categories.repository import CategoryRepository
-from culinary_blog.categories.schemas import CategoryDetailOut, CategoryOut, RecipePage, RecipeSummaryOut
+from culinary_blog.categories.schemas import CategoryDetailOut, CategoryOut, RecipePage
 from culinary_blog.cqrs import Query, QueryHandler
 from culinary_blog.errors import NotFoundError
 
@@ -66,7 +66,7 @@ class GetCategoryHandler(QueryHandler[GetCategoryQuery, CategoryDetailOut]):
                 recipe_count=recipe_count,
             ),
             recipes=RecipePage(
-                items=[RecipeSummaryOut.model_validate(r) for r in recipes],
+                items=recipes,
                 total_count=total,
                 page=query.page,
                 page_size=query.page_size,

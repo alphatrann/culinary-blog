@@ -651,6 +651,7 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
    A2 – `category_id` không tồn tại: HTTP 200 với `items: []` (không throw 404). |
    | HTTP Method & Endpoint | `GET /api/v1/recipes?page={n}&page_size={n}&category_id={id}&difficulty={level}&max_cook_time={min}&sort={s}` |
    | Kết quả mong đợi | `{ items: RecipeSummaryOut[], total_count, page, page_size, total_pages, has_next_page, has_previous_page }` |
+   | Ghi chú | `RecipeSummaryOut` gồm cả trường hiển thị thẻ công thức: `category_name`, `category_slug`, `author_name`, `thumbnail_url` (ảnh chính, ưu tiên thumbnail, fallback ảnh gốc; `null` nếu chưa có ảnh). Dùng chung cho danh sách, danh mục và tìm kiếm. |
    | HTTP Status Code trả về | 200 OK – Thành công (kể cả `items` rỗng). 422 Unprocessable Entity – Tham số không hợp lệ. |
 
 ### FR-RCP-002: Xem Chi tiết Công thức

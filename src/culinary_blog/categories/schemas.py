@@ -62,6 +62,11 @@ class RecipeSummaryOut(BaseModel):
     status: RecipeStatus
     author_id: uuid.UUID
     published_at: datetime | None
+    category_name: str
+    category_slug: str
+    author_name: str
+    # Primary image's thumbnail (300x300); falls back to the original while the resize worker hasn't finished.
+    thumbnail_url: str | None = None
 
 
 class RecipePage(BaseModel):

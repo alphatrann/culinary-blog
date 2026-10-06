@@ -7,10 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import load_only
 from sqlmodel import col, or_, select
 
+from culinary_blog.auth.models import User
 from culinary_blog.categories.models import Category
+from culinary_blog.categories.schemas import RecipeSummaryOut
 from culinary_blog.errors import ConflictError
 from culinary_blog.recipes.enums import RecipeStatus
 from culinary_blog.recipes.models import Recipe
+from culinary_blog.recipes.summary import extra_columns, to_summary
 
 UNIQUE_VIOLATION = "23505"  # PostgreSQL SQLSTATE
 
@@ -100,7 +103,7 @@ class CategoryRepository:
 
     async def list_recipes(
         self, category_id: uuid.UUID, *, viewer_id: uuid.UUID | None, see_all: bool, page: int, page_size: int
-    ) -> tuple[list[Recipe], int]:
+    ) -> tuple[list[RecipeSummaryOut], int]:
         """One page of the category's recipes plus the total. Non-admins see published + their own."""
         conditions = [Recipe.category_id == category_id, col(Recipe.is_deleted).is_(False)]
         if not see_all:
@@ -111,7 +114,9 @@ class CategoryRepository:
         async with self._read_session_factory() as session:
             total = (await session.execute(select(func.count()).select_from(Recipe).where(*conditions))).scalar_one()
             result = await session.execute(
-                select(Recipe)
+                select(Recipe, *extra_columns())
+                .join(Category, col(Category.id) == col(Recipe.category_id))
+                .join(User, col(User.id) == col(Recipe.author_id))
                 .where(*conditions)
                 .order_by(col(Recipe.published_at).desc().nulls_last(), col(Recipe.created_at).desc(), col(Recipe.id))
                 .offset((page - 1) * page_size)
@@ -132,7 +137,7 @@ class CategoryRepository:
                     )
                 )
             )
-            return list(result.scalars().all()), int(total)
+            return [to_summary(*row) for row in result.all()], int(total)
 
     @staticmethod
     async def _commit(session: AsyncSession) -> None:
