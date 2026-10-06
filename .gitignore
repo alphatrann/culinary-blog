@@ -11,3 +11,6 @@ node_modules/
 
 scripts/seed/images/
 !.env.example
+
+# Impeccable launcher binary (platform-specific; downloaded on first run)
+.claude/skills/impeccable/scripts/bin/

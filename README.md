@@ -40,6 +40,24 @@ npm run lint && npm run typecheck && npm run format:check && npm run build
 
 Tailwind CSS v4 + shadcn/ui; add components with `npx shadcn@latest add <name>`.
 
+### Frontend design tooling (optional, for AI agents)
+
+UI work uses [Impeccable](https://impeccable.style/docs/) for design and the Playwright MCP for browser verification.
+
+**Impeccable.** Installed in the repo (`.claude/skills/impeccable/`). To (re)install or update: `npx impeccable install` / `npx impeccable update`, or in Claude Code `/plugin marketplace add pbakaus/impeccable`. Project context is committed: `PRODUCT.md` (users, positioning, constraints) and `DESIGN.md` + `.impeccable/design.json` (visual system, from `web/src/app/globals.css`). Usage in your agent chat:
+
+```
+/impeccable shape <screen>      # design brief before code
+/impeccable <describe screen>   # build
+/impeccable audit <screen>      # a11y/perf/responsive, fix P0/P1
+/impeccable polish <screen>     # final pass
+/impeccable document            # refresh DESIGN.md after the design system changes
+```
+
+**Playwright MCP.** Configured in `.mcp.json`. Approve the `playwright` server on first use (check with `/mcp` in Claude Code); if the browser is missing run `npx playwright install chromium`. Start the app (`cd web && npm run dev`, plus the API for data) and ask the agent to open the route and capture screenshots at 1440, 820 and 390 px into `docs/screenshots/<screen>/`. Reference them in the PR's Screenshots section.
+
+**Tests.** `cd web && npm test` (Vitest + jsdom + Testing Library; setup in `web/vitest.setup.ts`). Before a PR: `npm run lint && npm run typecheck && npm run format:check && npm test && npm run build`.
+
 ## Features
 
 - Recipe CRUD with draft / published / archived lifecycle
