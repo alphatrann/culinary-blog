@@ -71,6 +71,7 @@ _INGREDIENT_ONLY = load_only(
 )
 _IMAGE_ONLY = load_only(
     RecipeImage.id,
+    RecipeImage.recipe_id,  # the resize worker needs it, not just the response schema
     RecipeImage.original_url,
     RecipeImage.medium_url,
     RecipeImage.thumbnail_url,
