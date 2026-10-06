@@ -785,6 +785,12 @@ export interface components {
        * Format: uuid
        */
       author_id: string;
+      /** Author Name */
+      author_name: string;
+      /** Category Name */
+      category_name: string;
+      /** Category Slug */
+      category_slug: string;
       /** Cook Time Minutes */
       cook_time_minutes: number;
       /** Description */
@@ -806,6 +812,8 @@ export interface components {
       /** Slug */
       slug: string;
       status: components["schemas"]["RecipeStatus"];
+      /** Thumbnail Url */
+      thumbnail_url?: string | null;
       /** Title */
       title: string;
     };
@@ -838,6 +846,12 @@ export interface components {
        * Format: uuid
        */
       author_id: string;
+      /** Author Name */
+      author_name: string;
+      /** Category Name */
+      category_name: string;
+      /** Category Slug */
+      category_slug: string;
       /** Cook Time Minutes */
       cook_time_minutes: number;
       /** Description */
@@ -857,6 +871,8 @@ export interface components {
       /** Slug */
       slug: string;
       status: components["schemas"]["RecipeStatus"];
+      /** Thumbnail Url */
+      thumbnail_url?: string | null;
       /** Title */
       title: string;
     };

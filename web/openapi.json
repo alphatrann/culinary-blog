@@ -1037,6 +1037,18 @@
             "title": "Author Id",
             "type": "string"
           },
+          "author_name": {
+            "title": "Author Name",
+            "type": "string"
+          },
+          "category_name": {
+            "title": "Category Name",
+            "type": "string"
+          },
+          "category_slug": {
+            "title": "Category Slug",
+            "type": "string"
+          },
           "cook_time_minutes": {
             "title": "Cook Time Minutes",
             "type": "integer"
@@ -1084,6 +1096,17 @@
           "status": {
             "$ref": "#/components/schemas/RecipeStatus"
           },
+          "thumbnail_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thumbnail Url"
+          },
           "title": {
             "title": "Title",
             "type": "string"
@@ -1101,6 +1124,9 @@
           "status",
           "author_id",
           "published_at",
+          "category_name",
+          "category_slug",
+          "author_name",
           "relevance_score"
         ],
         "title": "RecipeSearchResultOut",
@@ -1164,6 +1190,18 @@
             "title": "Author Id",
             "type": "string"
           },
+          "author_name": {
+            "title": "Author Name",
+            "type": "string"
+          },
+          "category_name": {
+            "title": "Category Name",
+            "type": "string"
+          },
+          "category_slug": {
+            "title": "Category Slug",
+            "type": "string"
+          },
           "cook_time_minutes": {
             "title": "Cook Time Minutes",
             "type": "integer"
@@ -1207,6 +1245,17 @@
           "status": {
             "$ref": "#/components/schemas/RecipeStatus"
           },
+          "thumbnail_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thumbnail Url"
+          },
           "title": {
             "title": "Title",
             "type": "string"
@@ -1223,7 +1272,10 @@
           "difficulty",
           "status",
           "author_id",
-          "published_at"
+          "published_at",
+          "category_name",
+          "category_slug",
+          "author_name"
         ],
         "title": "RecipeSummaryOut",
         "type": "object"

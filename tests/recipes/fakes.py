@@ -6,12 +6,14 @@ from difflib import SequenceMatcher
 from culinary_blog.auth.models import User
 from culinary_blog.auth.principal import Principal
 from culinary_blog.categories.models import Category
+from culinary_blog.categories.schemas import RecipeSummaryOut
 from culinary_blog.errors import ConflictError, ServiceUnavailableError, UnprocessableError
 from culinary_blog.jobs.queue import JobQueue
 from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 from culinary_blog.recipes.models import Recipe, RecipeImage, RecipeIngredient, RecipeStep
 from culinary_blog.recipes.repository import RecipeAggregate, RecipeRepository
+from culinary_blog.recipes.summary import to_summary
 from culinary_blog.storage.service import FileStorageService
 from tests.cache.fakes import FakeCache
 
@@ -82,6 +84,15 @@ class FakeRecipeRepository(RecipeRepository):
         self.recipes[recipe.id] = recipe
         return recipe
 
+    def _summary(self, recipe: Recipe) -> RecipeSummaryOut:
+        category = self.categories[recipe.category_id]
+        images = sorted(
+            (i for i in self.images if i.recipe_id == recipe.id and not i.is_deleted),
+            key=lambda i: (not i.is_primary, i.order_index),
+        )
+        thumbnail = (images[0].thumbnail_url or images[0].original_url) if images else None
+        return to_summary(recipe, category.name, category.slug, self.users[recipe.author_id].display_name, thumbnail)
+
     def _live(self) -> list[Recipe]:
         return [r for r in self.recipes.values() if not r.is_deleted]
 
@@ -128,7 +139,7 @@ class FakeRecipeRepository(RecipeRepository):
         sort: str,
         page: int,
         page_size: int,
-    ) -> tuple[list[Recipe], int]:
+    ) -> tuple[list[RecipeSummaryOut], int]:
         visible = [
             r
             for r in self._live()
@@ -139,7 +150,7 @@ class FakeRecipeRepository(RecipeRepository):
         ]
         visible.sort(key=lambda r: getattr(r, sort.removeprefix("-")), reverse=sort.startswith("-"))
         start = (page - 1) * page_size
-        return visible[start : start + page_size], len(visible)
+        return [self._summary(r) for r in visible[start : start + page_size]], len(visible)
 
     async def search_published(
         self,
@@ -150,9 +161,9 @@ class FakeRecipeRepository(RecipeRepository):
         max_cook_time: int | None,
         page: int,
         page_size: int,
-    ) -> tuple[list[tuple[Recipe, float]], int]:
+    ) -> tuple[list[tuple[RecipeSummaryOut, float]], int]:
         needle = _fold(query)
-        scored: list[tuple[Recipe, float]] = []
+        scored: list[tuple[RecipeSummaryOut, float]] = []
         for recipe in self._live():
             if recipe.status != RecipeStatus.PUBLISHED:
                 continue
@@ -165,7 +176,7 @@ class FakeRecipeRepository(RecipeRepository):
             haystack = _fold(recipe.title)
             if needle not in haystack:
                 continue
-            scored.append((recipe, SequenceMatcher(None, needle, haystack).ratio()))
+            scored.append((self._summary(recipe), SequenceMatcher(None, needle, haystack).ratio()))
         scored.sort(key=lambda pair: pair[1], reverse=True)
         start = (page - 1) * page_size
         return scored[start : start + page_size], len(scored)

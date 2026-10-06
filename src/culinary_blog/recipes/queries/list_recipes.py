@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from culinary_blog.auth.principal import Principal
 from culinary_blog.cache import keys
 from culinary_blog.cache.service import Cache
-from culinary_blog.categories.schemas import RecipeSummaryOut
 from culinary_blog.cqrs import Query, QueryHandler
 from culinary_blog.recipes.enums import RecipeDifficulty
 from culinary_blog.recipes.repository import RecipeRepository
@@ -68,7 +67,7 @@ class ListRecipesHandler(QueryHandler[ListRecipesQuery, RecipeListOut]):
         )
         total_pages = math.ceil(total / query.page_size)
         return RecipeListOut(
-            items=[RecipeSummaryOut.model_validate(recipe) for recipe in recipes],
+            items=recipes,
             total_count=total,
             page=query.page,
             page_size=query.page_size,

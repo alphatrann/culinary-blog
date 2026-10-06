@@ -157,4 +157,7 @@ async def test_summary_items_carry_the_public_summary_fields():
     (item,) = (await handler.handle(query())).items
 
     assert item.id == recipe.id and item.slug == recipe.slug and item.author_id == AUTHOR.user_id
+    assert item.category_name == repo.categories[recipe.category_id].name
+    assert item.category_slug == repo.categories[recipe.category_id].slug
+    assert item.author_name == "Chef" and item.thumbnail_url is None
     assert item.status == RecipeStatus.PUBLISHED and item.published_at is not None

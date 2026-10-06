@@ -11,9 +11,11 @@ from sqlmodel import col, or_, select
 
 from culinary_blog.auth.models import User
 from culinary_blog.categories.models import Category
+from culinary_blog.categories.schemas import RecipeSummaryOut
 from culinary_blog.errors import ConflictError, UnprocessableError
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 from culinary_blog.recipes.models import Recipe, RecipeImage, RecipeIngredient, RecipeStep
+from culinary_blog.recipes.summary import extra_columns, to_summary
 
 UNIQUE_VIOLATION = "23505"  # PostgreSQL SQLSTATE
 FOREIGN_KEY_VIOLATION = "23503"
@@ -26,6 +28,14 @@ _SORT_COLUMNS = {
     "title": col(Recipe.title),
     "cook_time_minutes": col(Recipe.cook_time_minutes),
 }
+
+
+# Joins that supply the category/author names every summary card shows.
+def _with_summary_joins(statement: Any) -> Any:
+    return statement.join(Category, col(Category.id) == col(Recipe.category_id)).join(
+        User, col(User.id) == col(Recipe.author_id)
+    )
+
 
 # Columns RecipeSummaryOut/RecipeSearchResultOut actually surface — list/search views never touch nutrition_*.
 _RECIPE_SUMMARY_ONLY = load_only(
@@ -61,6 +71,7 @@ _INGREDIENT_ONLY = load_only(
 )
 _IMAGE_ONLY = load_only(
     RecipeImage.id,
+    RecipeImage.recipe_id,  # the resize worker needs it, not just the response schema
     RecipeImage.original_url,
     RecipeImage.medium_url,
     RecipeImage.thumbnail_url,
@@ -153,7 +164,7 @@ class RecipeRepository:
         sort: str,
         page: int,
         page_size: int,
-    ) -> tuple[list[Recipe], int]:
+    ) -> tuple[list[RecipeSummaryOut], int]:
         """One page of recipes plus the total. Non-admins see published + their own."""
         conditions: list[ColumnElement[bool]] = [col(Recipe.is_deleted).is_(False)]
         if not see_all:
@@ -173,14 +184,14 @@ class RecipeRepository:
         async with self._read_session_factory() as session:
             total = (await session.execute(select(func.count()).select_from(Recipe).where(*conditions))).scalar_one()
             result = await session.execute(
-                select(Recipe)
+                _with_summary_joins(select(Recipe, *extra_columns()))
                 .where(*conditions)
                 .order_by(ordering, col(Recipe.id))  # id as tie-break keeps pages stable
                 .offset((page - 1) * page_size)
                 .limit(page_size)
                 .options(_RECIPE_SUMMARY_ONLY)
             )
-            return list(result.scalars().all()), int(total)
+            return [to_summary(*row) for row in result.all()], int(total)
 
     async def search_published(
         self,
@@ -191,7 +202,7 @@ class RecipeRepository:
         max_cook_time: int | None,
         page: int,
         page_size: int,
-    ) -> tuple[list[tuple[Recipe, float]], int]:
+    ) -> tuple[list[tuple[RecipeSummaryOut, float]], int]:
         """Published recipes whose title fuzzy-matches `query` (FR-SRCH-001), ranked by trigram word similarity.
 
         Both sides are normalized through `f_unaccent(lower(...))` so the match is diacritic-insensitive
@@ -216,14 +227,14 @@ class RecipeRepository:
         async with self._read_session_factory() as session:
             total = (await session.execute(select(func.count()).select_from(Recipe).where(*conditions))).scalar_one()
             result = await session.execute(
-                select(Recipe, score)
+                _with_summary_joins(select(Recipe, *extra_columns(), score))
                 .where(*conditions)
                 .order_by(score.desc(), col(Recipe.id))  # id as tie-break keeps pages stable
                 .offset((page - 1) * page_size)
                 .limit(page_size)
                 .options(_RECIPE_SUMMARY_ONLY)
             )
-            return [(recipe, float(relevance)) for recipe, relevance in result.all()], int(total)
+            return [(to_summary(*row[:-1]), float(row[-1])) for row in result.all()], int(total)
 
     async def add(self, recipe: Recipe, steps: list[RecipeStep], ingredients: list[RecipeIngredient]) -> None:
         """Persist a recipe with its steps and ingredients in one transaction."""

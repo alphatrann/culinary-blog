@@ -5,9 +5,11 @@ from culinary_blog.auth.principal import Principal
 from culinary_blog.categories.cache import CategoryCacheInvalidator
 from culinary_blog.categories.models import Category
 from culinary_blog.categories.repository import CategoryRepository
+from culinary_blog.categories.schemas import RecipeSummaryOut
 from culinary_blog.errors import ConflictError
 from culinary_blog.recipes.enums import RecipeStatus
 from culinary_blog.recipes.models import Recipe
+from culinary_blog.recipes.summary import to_summary
 from tests.cache.fakes import FakeCache
 
 ADMIN = Principal(uuid.uuid4(), ("admin",))
@@ -80,7 +82,7 @@ class FakeCategoryRepository(CategoryRepository):
 
     async def list_recipes(
         self, category_id: uuid.UUID, *, viewer_id: uuid.UUID | None, see_all: bool, page: int, page_size: int
-    ) -> tuple[list[Recipe], int]:
+    ) -> tuple[list[RecipeSummaryOut], int]:
         visible = [
             r
             for r in self.recipes
@@ -89,7 +91,9 @@ class FakeCategoryRepository(CategoryRepository):
             and (see_all or r.status == RecipeStatus.PUBLISHED or (viewer_id is not None and r.author_id == viewer_id))
         ]
         start = (page - 1) * page_size
-        return visible[start : start + page_size], len(visible)
+        category = self.categories[category_id]
+        page_items = visible[start : start + page_size]
+        return [to_summary(r, category.name, category.slug, "Chef", None) for r in page_items], len(visible)
 
 
 def make_category(repository: FakeCategoryRepository, name: str = "Main", slug: str = "main", **kw: object) -> Category:
