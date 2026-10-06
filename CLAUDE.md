@@ -56,7 +56,7 @@ src/culinary_blog/
 
 ## Frontend (`web/`)
 
-Next.js 15 App Router, TypeScript strict, Tailwind v4, shadcn/ui (add components with `npx shadcn@latest add <name>` from `web/`). Server components call the API via `API_BASE_URL`; the browser uses same-origin `/api/v1` (nginx routes `/api/` to FastAPI, everything else to Next.js). The app must build with no live API. Run `npm run lint && npm run typecheck && npm run format:check` before committing.
+Next.js 15 App Router, TypeScript strict, Tailwind v4, shadcn/ui (add components with `npx shadcn@latest add <name>` from `web/`). Server components call the API via `API_BASE_URL`; the browser uses same-origin `/api/v1` (nginx routes `/api/` to FastAPI, everything else to Next.js). The app must build with no live API. After changing API schemas/routes run `npm run api:sync` in `web/` (regenerates `openapi.json` + `src/lib/api/schema.d.ts`; CI fails on drift). Run `npm run lint && npm run typecheck && npm run format:check && npm test` before committing.
 
 ## Testing (NFR-MAINT-002)
 
