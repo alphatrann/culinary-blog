@@ -3,6 +3,8 @@ import { Select } from "@/components/ui/select";
 import { difficultyLabels, formatMinutes, type DifficultyName } from "@/lib/labels";
 import { buildHref, cookTimeOptions, sortOptions as defaultSortOptions } from "@/lib/list-params";
 
+const selectClass = "w-full min-w-0 min-[768px]:w-auto min-[768px]:min-w-44";
+
 /**
  * GET form → URL params `category_id`, `difficulty`, `max_cook_time`, `sort`; works without JS and with SSR.
  * `hidden` carries params that must survive a filter change (e.g. `q` on search). Page resets to 1.
@@ -34,15 +36,15 @@ function RecipeFilterBar({
       method="get"
       role="search"
       aria-label="Bộ lọc công thức"
-      className="grid grid-cols-2 items-end gap-4 sm:flex sm:flex-wrap"
+      className="grid w-full grid-cols-2 gap-3 min-[768px]:flex min-[768px]:w-auto min-[768px]:flex-wrap min-[768px]:items-end min-[768px]:gap-4"
     >
       {Object.entries(hidden ?? {}).map(([k, v]) => (
         <input key={k} type="hidden" name={k} value={v} />
       ))}
       {categories && categories.length > 0 && (
-        <label className="grid gap-1.5 text-sm font-medium">
+        <label className="col-span-2 grid gap-1.5 text-sm font-medium min-[768px]:col-auto">
           Danh mục
-          <Select name="category_id" defaultValue={categoryId ?? ""}>
+          <Select className={selectClass} name="category_id" defaultValue={categoryId ?? ""}>
             <option value="">Tất cả</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
@@ -54,7 +56,7 @@ function RecipeFilterBar({
       )}
       <label className="grid gap-1.5 text-sm font-medium">
         Độ khó
-        <Select name="difficulty" defaultValue={difficulty ?? ""}>
+        <Select className={selectClass} name="difficulty" defaultValue={difficulty ?? ""}>
           <option value="">Tất cả</option>
           {(Object.keys(difficultyLabels) as DifficultyName[]).map((d) => (
             <option key={d} value={d}>
@@ -65,7 +67,11 @@ function RecipeFilterBar({
       </label>
       <label className="grid gap-1.5 text-sm font-medium">
         Thời gian nấu
-        <Select name="max_cook_time" defaultValue={maxCookTime ? String(maxCookTime) : ""}>
+        <Select
+          className={selectClass}
+          name="max_cook_time"
+          defaultValue={maxCookTime ? String(maxCookTime) : ""}
+        >
           <option value="">Bất kỳ</option>
           {cookTimeOptions.map((m) => (
             <option key={m} value={m}>
@@ -74,9 +80,9 @@ function RecipeFilterBar({
           ))}
         </Select>
       </label>
-      <label className="grid gap-1.5 text-sm font-medium">
+      <label className="col-span-2 grid gap-1.5 text-sm font-medium min-[768px]:col-auto">
         Sắp xếp
-        <Select name="sort" defaultValue={sort ?? "-created_at"}>
+        <Select className={selectClass} name="sort" defaultValue={sort ?? "-created_at"}>
           {sortOptions.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
@@ -84,13 +90,13 @@ function RecipeFilterBar({
           ))}
         </Select>
       </label>
-      <Button type="submit" className="col-span-2 sm:col-span-1">
+      <Button type="submit" className="col-span-2 min-[768px]:col-auto">
         Áp dụng
       </Button>
       {active && (
         <a
           href={buildHref(basePath, hidden ?? {})}
-          className="col-span-2 py-3 text-sm underline sm:col-span-1"
+          className="col-span-2 py-3 text-center text-sm underline min-[768px]:col-auto"
         >
           Xóa bộ lọc
         </a>
