@@ -62,7 +62,7 @@ Next.js app in `web/`, built from the design mockups in `mockups/`. Deferred to 
 - [ ] #33 API client, RFC 7807 errors and silent refresh
 
 #### M7b — Shared layout
-- [ ] #34 Header and Footer
+- [x] #34 Header and Footer
 - [ ] #35 RecipeCard, grid, pagination and filter bar
 
 #### M7c — Public pages
