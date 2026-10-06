@@ -34,3 +34,35 @@ jobs:
           url=$(PORT=6379 scripts/test-redis.sh start)
           echo "TEST_REDIS_URL=$url" >> "$GITHUB_ENV"
       - run: uv run pytest
+
+  web:
+    name: Web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: uv sync --locked
+      - run: npm ci
+        working-directory: web
+      - name: API types are up to date
+        working-directory: web
+        run: |
+          npm run api:sync
+          git diff --exit-code -- openapi.json src/lib/api/schema.d.ts
+      - run: npm run lint
+        working-directory: web
+      - run: npm run typecheck
+        working-directory: web
+      - run: npm run format:check
+        working-directory: web
+      - run: npm test
+        working-directory: web
+      - run: npm run build
+        working-directory: web
