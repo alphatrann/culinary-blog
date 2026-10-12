@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Menu, Search, X } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { useSession } from "@/lib/session";
+import { hasRole, useUser } from "@/lib/session";
 import { mainNav } from "./nav-links";
 import { SearchForm } from "./search-form";
 
@@ -18,7 +18,7 @@ const linkClass =
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const { user, logout } = useSession();
+  const { user, logout } = useUser();
 
   useEffect(() => setOpen(false), [pathname]);
 
@@ -60,19 +60,21 @@ export function MobileMenu() {
                 <Link href="/profile" className={linkClass}>
                   Hồ sơ
                 </Link>
-                <Link href="/my-recipes" className={linkClass}>
-                  Công thức của tôi
-                </Link>
+                {hasRole(user, "author") && (
+                  <Link href="/dashboard/recipes" className={linkClass}>
+                    Công thức của tôi
+                  </Link>
+                )}
                 <button type="button" onClick={logout} className={`${linkClass} text-left`}>
                   Đăng xuất
                 </button>
               </>
             ) : (
               <>
-                <Link href="/login" className={buttonVariants({ variant: "outline" })}>
+                <Link href="/auth/login" className={buttonVariants({ variant: "outline" })}>
                   Đăng nhập
                 </Link>
-                <Link href="/register" className={buttonVariants()}>
+                <Link href="/auth/register" className={buttonVariants()}>
                   Đăng ký
                 </Link>
               </>
