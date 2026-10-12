@@ -74,7 +74,7 @@ Next.js app in `web/`, built from the design mockups in `mockups/`. Deferred to 
 
 #### M7d — Auth
 - [ ] #41 Session layer and route guards
-- [ ] #42 Login and register pages
+- [x] #42 Login and register pages
 
 #### M7e — Author area
 - [ ] #43 [backend] Filter recipe list by author and status
