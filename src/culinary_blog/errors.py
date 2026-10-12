@@ -3,10 +3,12 @@ class DomainError(Exception):
 
     status_code = 500
     title = "Internal Server Error"
+    code: str | None = None  # stable machine-readable code (SRS Appendix B), emitted as the `code` problem member
 
-    def __init__(self, detail: str | None = None) -> None:
+    def __init__(self, detail: str | None = None, headers: dict[str, str] | None = None) -> None:
         super().__init__(detail or self.title)
         self.detail = detail or self.title
+        self.headers = headers or {}
 
 
 class BadRequestError(DomainError):
@@ -51,3 +53,9 @@ class ServiceUnavailableError(DomainError):
 
     status_code = 503
     title = "Service Unavailable"
+
+
+class RateLimitedError(DomainError):
+    status_code = 429
+    title = "Too Many Requests"
+    code = "RATE_LIMIT_EXCEEDED"

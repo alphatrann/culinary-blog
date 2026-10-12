@@ -1,7 +1,8 @@
 import uuid
+from collections.abc import Awaitable, Callable
 from typing import Annotated
 
-from fastapi import APIRouter, File, Form, Header, Query, Request, Response, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Header, Query, Request, Response, UploadFile
 
 from culinary_blog.auth.dependencies import Authenticator
 from culinary_blog.recipes.commands.add_ingredient import AddIngredientCommand, AddIngredientHandler
@@ -68,6 +69,7 @@ class RecipeRouter:
         set_primary_image: SetPrimaryImageHandler,
         delete_image: DeleteImageHandler,
         delete_recipe: DeleteRecipeHandler,
+        upload_rate_limit: Callable[..., Awaitable[None]] | None = None,
     ) -> None:
         self._authenticator = authenticator
         self._create_recipe = create_recipe
@@ -122,7 +124,12 @@ class RecipeRouter:
         )
         self.router.add_api_route("/{recipe_id}/steps/{step_id}", self.delete_step, methods=["DELETE"], status_code=204)
         self.router.add_api_route(
-            "/{recipe_id}/images", self.upload_image, methods=["POST"], response_model=RecipeImageOut, status_code=201
+            "/{recipe_id}/images",
+            self.upload_image,
+            methods=["POST"],
+            response_model=RecipeImageOut,
+            status_code=201,
+            dependencies=[Depends(upload_rate_limit)] if upload_rate_limit else None,
         )
         self.router.add_api_route(
             "/{recipe_id}/images/{image_id}/primary",

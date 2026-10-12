@@ -29,6 +29,19 @@ class Settings(BaseSettings):
     cache_ttl_search_seconds: int = 300
     queue_redis_url: str = "redis://localhost:6381/0"
     ratelimit_redis_url: str = "redis://localhost:6382/0"
+    # Fail-open (SRS 3.x): a dead Rate Limit Redis must cost milliseconds, then let the request through.
+    # HMAC key that pseudonymises client IPs in rate-limit keys. Separate from the JWT secret so rotating one doesn't
+    # affect the other. Generate with `openssl rand -hex 32`.
+    ratelimit_hash_key: str = "dev-only-insecure-ratelimit-key"
+    ratelimit_socket_timeout_seconds: float = 0.25
+    # NFR-SEC-003 / ADR-0006. Window is 60s everywhere; counter keys live 90s so the previous window stays readable.
+    auth_rate_limit_per_minute: int = 10
+    api_rate_limit_per_minute: int = 100
+    upload_rate_limit_per_minute: int = 5
+    rate_limit_window_seconds: int = 60
+    rate_limit_key_ttl_seconds: int = 90
+    # Peers whose X-Forwarded-For we believe (IPs/CIDRs, comma separated): loopback + private ranges, i.e. nginx.
+    trusted_proxies: str = "127.0.0.0/8,::1/128,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,fc00::/7"
 
     minio_endpoint: str = "localhost:9000"
     minio_access_key: str = "minioadmin"
@@ -52,11 +65,17 @@ class Settings(BaseSettings):
     def _require_real_secret_outside_development(self) -> "Settings":
         if self.environment != "development" and self.jwt_secret_key.startswith("dev-only"):
             raise ValueError("JWT_SECRET_KEY must be set outside development")
+        if self.environment != "development" and self.ratelimit_hash_key.startswith("dev-only"):
+            raise ValueError("RATELIMIT_HASH_KEY must be set outside development")
         return self
 
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
+    @property
+    def trusted_proxy_list(self) -> list[str]:
+        return [item.strip() for item in self.trusted_proxies.split(",") if item.strip()]
 
     @property
     def minio_health_url(self) -> str:

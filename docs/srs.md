@@ -1125,7 +1125,7 @@ Backend cung cấp RESTful API theo chuẩn JSON. Toàn bộ endpoint tiền t�
 | MinIO (S3-compatible)               | Lưu trữ file ảnh công thức                | `boto3`/`aioboto3` S3 client, endpoint override cho MinIO.                                            | `MINIO_ENDPOINT`, `MINIO_SECRET_KEY`, `MINIO_BUCKET_NAME`. Dev: `minio:9000`. |
 | Cache Redis                         | Distributed cache                         | `redis-py` (async), instance riêng biệt.                                                              | `CACHE_REDIS_URL`.                                                            |
 | Job Queue Redis                     | Hàng đợi background job                   | `redis-py` (async), instance riêng biệt. Workers `Consume` từ queue tương ứng.                        | `JOB_QUEUE_REDIS_URL`.                                                        |
-| Rate Limit Redis                    | Bộ đếm rate limiting                      | `redis-py` (async), instance riêng biệt.                                                              | `RATE_LIMIT_REDIS_URL`.                                                       |
+| Rate Limit Redis                    | Bộ đếm rate limiting                      | `redis-py` (async), instance riêng biệt.                                                              | `RATELIMIT_REDIS_URL`.                                                       |
 | OpenTelemetry Collector             | Thu thập trace/log/metric                 | OpenTelemetry Python SDK, OTLP exporter (HTTP/gRPC).                                                  | `OTEL_EXPORTER_OTLP_ENDPOINT`.                                                |
 | Grafana / Tempo / Loki / Prometheus | Quan sát hệ thống (traces/logs/metrics)   | OTLP ingest, HTTP query.                                                                              | Dev: docker-compose local stack.                                              |
 | SMTP / Mail Service                 | Gửi welcome email (FR-JOB-001)            | `aiosmtplib`, kết nối SMTPS.                                                                          | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`. Dev: Mailhog.     |
@@ -1486,7 +1486,7 @@ Hệ thống sử dụng Application Error Codes (mã lỗi tùy chỉnh) trong 
 | `FILE_SIZE_EXCEEDED`                | 400         | File upload vượt quá giới hạn 5MB.                                                        | File     |
 | `FILE_MIME_INVALID`                 | 400         | Loại file không được phép. Chỉ chấp nhận JPEG, PNG, WebP, AVIF.                           | File     |
 | `VALIDATION_ERROR`                  | 422         | Một hoặc nhiều field không hợp lệ. Xem `errors` object.                                   | Common   |
-| `RATE_LIMIT_EXCEEDED`               | 429         | Quá giới hạn request. Xem header `Retry-After`.                                           | Common   |
+| `RATE_LIMIT_EXCEEDED`               | 429         | Quá giới hạn request. Xem header `Retry-After`; mã nằm trong trường `code` của problem+json.                                           | Common   |
 
 ## Phụ lục C – Từ điển Thuật ngữ
 

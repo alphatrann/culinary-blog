@@ -12,13 +12,16 @@ logger = logging.getLogger(__name__)
 PROBLEM_JSON = "application/problem+json"
 
 
-def _problem(request: Request, status: int, title: str, detail: str, **extra: object) -> JSONResponse:
+def _problem(
+    request: Request, status: int, title: str, detail: str, headers: dict[str, str] | None = None, **extra: object
+) -> JSONResponse:
     body = {"type": "about:blank", "title": title, "status": status, "detail": detail, "instance": request.url.path}
-    return JSONResponse({**body, **extra}, status_code=status, media_type=PROBLEM_JSON)
+    return JSONResponse({**body, **extra}, status_code=status, media_type=PROBLEM_JSON, headers=headers)
 
 
 async def _domain_error(request: Request, exc: DomainError) -> JSONResponse:
-    return _problem(request, exc.status_code, exc.title, exc.detail)
+    extra = {"code": exc.code} if exc.code else {}
+    return _problem(request, exc.status_code, exc.title, exc.detail, exc.headers, **extra)
 
 
 async def _validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:

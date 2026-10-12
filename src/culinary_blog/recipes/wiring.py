@@ -6,6 +6,7 @@ from culinary_blog.cache.service import RedisCache
 from culinary_blog.config import get_settings
 from culinary_blog.database.session import async_session_factory, read_session_factory
 from culinary_blog.jobs.queue import RedisJobQueue
+from culinary_blog.ratelimit.wiring import upload_rate_limit
 from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.commands.add_ingredient import AddIngredientHandler
 from culinary_blog.recipes.commands.add_step import AddStepHandler
@@ -56,4 +57,5 @@ def build_recipes_router() -> APIRouter:
         upload_image=UploadImageHandler(repository, storage, queue, invalidator),
         set_primary_image=SetPrimaryImageHandler(repository, invalidator),
         delete_image=DeleteImageHandler(repository, queue, invalidator),
+        upload_rate_limit=upload_rate_limit(),
     ).router

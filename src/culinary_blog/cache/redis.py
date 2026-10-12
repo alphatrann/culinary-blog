@@ -19,4 +19,6 @@ def get_queue_redis() -> Redis:
 
 @lru_cache
 def get_ratelimit_redis() -> Redis:
-    return Redis.from_url(get_settings().ratelimit_redis_url)
+    settings = get_settings()
+    timeout = settings.ratelimit_socket_timeout_seconds
+    return Redis.from_url(settings.ratelimit_redis_url, socket_timeout=timeout, socket_connect_timeout=timeout)
