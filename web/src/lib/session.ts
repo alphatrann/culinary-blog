@@ -1,42 +1,59 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { publicApiBaseUrl } from "@/lib/env";
+import { useCallback } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { api, isApiError, type ResponseBody } from "@/lib/api";
 
-export type SessionUser = {
-  id: string;
-  display_name: string;
-  email: string;
-  avatar_url: string | null;
-  roles: string[];
-};
+export type SessionUser = ResponseBody<"/auth/me", "get">;
+
+export type SessionStatus = "loading" | "authenticated" | "guest";
+
+export const sessionQueryKey = ["auth", "me"] as const;
+
+/** Mirrors the backend `Principal`: admins satisfy every role check. */
+export function hasRole(user: SessionUser | null | undefined, ...roles: string[]): boolean {
+  if (!user) return false;
+  return user.roles.includes("admin") || roles.some((role) => user.roles.includes(role));
+}
 
 /**
- * Minimal client-side session used by the header. Pages are SSR/ISR-rendered as guest (no cookies),
- * then the browser resolves `/auth/me`. To be replaced by the shared session layer (#41).
+ * Current user, resolved in the browser via `GET /auth/me` (cookies are never sent on SSR/ISR, so
+ * public pages stay anonymous and cacheable). A 401 — after the client's silent refresh — means guest.
  */
-export function useSession() {
-  const [user, setUser] = useState<SessionUser | null>(null);
+export function useUser() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch(`${publicApiBaseUrl}/auth/me`, { credentials: "include", signal: controller.signal })
-      .then((res) => (res.ok ? (res.json() as Promise<SessionUser>) : null))
-      .then(setUser)
-      .catch(() => {});
-    return () => controller.abort();
-  }, []);
+  const query = useQuery({
+    queryKey: sessionQueryKey,
+    queryFn: async ({ signal }): Promise<SessionUser | null> => {
+      try {
+        return await api.get("/auth/me", { signal });
+      } catch (error) {
+        if (isApiError(error) && error.status === 401) return null;
+        throw error;
+      }
+    },
+  });
 
-  const logout = useCallback(async () => {
-    await fetch(`${publicApiBaseUrl}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    }).catch(() => {});
-    setUser(null);
-    window.location.assign("/");
-  }, []);
+  const logoutMutation = useMutation({
+    mutationFn: () => api.post("/auth/logout"),
+    // Whether or not the server call succeeded, the browser should stop acting as signed in.
+    onSettled: () => {
+      queryClient.setQueryData(sessionQueryKey, null);
+      queryClient.removeQueries({
+        predicate: (q) => q.queryKey[0] === "auth" && q.queryKey[1] !== "me",
+      });
+      router.replace("/");
+    },
+  });
+  const { mutate } = logoutMutation;
+  const logout = useCallback(() => mutate(), [mutate]);
 
-  return { user, logout };
+  const user = query.data ?? null;
+  const status: SessionStatus = query.isPending ? "loading" : user ? "authenticated" : "guest";
+  return { user, status, logout };
 }
 
 export function initials(name: string): string {
