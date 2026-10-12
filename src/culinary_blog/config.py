@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     queue_redis_url: str = "redis://localhost:6381/0"
     ratelimit_redis_url: str = "redis://localhost:6382/0"
     # Fail-open (SRS 3.x): a dead Rate Limit Redis must cost milliseconds, then let the request through.
+    # HMAC key that pseudonymises client IPs in rate-limit keys. Separate from the JWT secret so rotating one doesn't
+    # affect the other. Generate with `openssl rand -hex 32`.
+    ratelimit_hash_key: str = "dev-only-insecure-ratelimit-key"
     ratelimit_socket_timeout_seconds: float = 0.25
     # NFR-SEC-003 / ADR-0006. Window is 60s everywhere; counter keys live 90s so the previous window stays readable.
     auth_rate_limit_per_minute: int = 10
@@ -62,6 +65,8 @@ class Settings(BaseSettings):
     def _require_real_secret_outside_development(self) -> "Settings":
         if self.environment != "development" and self.jwt_secret_key.startswith("dev-only"):
             raise ValueError("JWT_SECRET_KEY must be set outside development")
+        if self.environment != "development" and self.ratelimit_hash_key.startswith("dev-only"):
+            raise ValueError("RATELIMIT_HASH_KEY must be set outside development")
         return self
 
     @property

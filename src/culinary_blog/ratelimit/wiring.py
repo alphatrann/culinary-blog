@@ -1,5 +1,3 @@
-import hashlib
-import hmac
 from collections.abc import Awaitable, Callable
 from functools import lru_cache
 
@@ -13,9 +11,8 @@ from culinary_blog.ratelimit.limiter import SlidingWindowLimiter, TokenBucketLim
 @lru_cache
 def _guard() -> RateLimitGuard:
     settings = get_settings()
-    # Domain-separated from the JWT signing use of the same secret.
-    key = hmac.new(settings.jwt_secret_key.encode(), b"ratelimit-ip-v1", hashlib.sha256).digest()
-    return RateLimitGuard(ClientIpResolver(settings.trusted_proxy_list), IdentifierHasher(key))
+    hasher = IdentifierHasher(settings.ratelimit_hash_key.encode())
+    return RateLimitGuard(ClientIpResolver(settings.trusted_proxy_list), hasher)
 
 
 def auth_rate_limit() -> Callable[..., Awaitable[None]]:
