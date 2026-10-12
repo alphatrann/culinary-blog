@@ -18,10 +18,10 @@ export function HeaderActions() {
   if (!user) {
     return (
       <div className="hidden items-center gap-2 md:flex">
-        <Link href="/login" className={buttonVariants({ variant: "outline" })}>
+        <Link href="/auth/login" className={buttonVariants({ variant: "outline" })}>
           Đăng nhập
         </Link>
-        <Link href="/register" className={buttonVariants()}>
+        <Link href="/auth/register" className={buttonVariants()}>
           Đăng ký
         </Link>
       </div>

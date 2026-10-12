@@ -69,10 +69,10 @@ export function MobileMenu() {
               </>
             ) : (
               <>
-                <Link href="/login" className={buttonVariants({ variant: "outline" })}>
+                <Link href="/auth/login" className={buttonVariants({ variant: "outline" })}>
                   Đăng nhập
                 </Link>
-                <Link href="/register" className={buttonVariants()}>
+                <Link href="/auth/register" className={buttonVariants()}>
                   Đăng ký
                 </Link>
               </>
