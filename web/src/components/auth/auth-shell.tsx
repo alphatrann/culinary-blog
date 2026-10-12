@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Brand } from "@/components/layout/brand";
 
@@ -22,12 +23,15 @@ export function AuthShell({
     <div className="grid min-h-screen min-[1000px]:grid-cols-2 lg:grid-cols-2">
       <aside className="hidden flex-col justify-between bg-tint-1 p-10 min-[1000px]:flex">
         <Brand />
-        <div
-          role="img"
-          aria-label="Ảnh minh họa"
-          className="mx-auto flex aspect-[4/3] w-full max-w-md items-center justify-center rounded-lg border border-border/60 text-sm text-muted-foreground"
-        >
-          Ảnh minh họa
+        <div className="relative mx-auto aspect-[4/3] w-full max-w-md overflow-hidden rounded-lg border border-border/60">
+          <Image
+            src="/auth-hero.jpg"
+            alt="Tô phở bò Hà Nội"
+            fill
+            priority
+            sizes="448px"
+            className="object-cover"
+          />
         </div>
         <figure>
           <blockquote className="font-heading text-[28px] leading-snug text-foreground">

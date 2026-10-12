@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Brand } from "@/components/layout/brand";
 import { safeNext } from "@/lib/auth/next-url";
 import { useUser } from "@/lib/session";
 
@@ -15,7 +16,22 @@ export function GuestOnly({ children }: { children: ReactNode }) {
     if (status === "authenticated") router.replace(safeNext(next) ?? "/");
   }, [status, next, router]);
 
-  // Don't flash the form at someone who is already signed in.
-  if (status === "authenticated") return null;
+  // Don't flash the form at someone who is already signed in; show progress while the redirect loads.
+  if (status === "authenticated") {
+    return (
+      <div
+        role="status"
+        aria-busy="true"
+        className="flex min-h-screen flex-col items-center justify-center gap-6"
+      >
+        <Brand />
+        <span
+          aria-hidden
+          className="size-8 animate-spin rounded-full border-2 border-border border-t-primary"
+        />
+        <p className="text-sm text-muted-foreground">Đang chuyển hướng…</p>
+      </div>
+    );
+  }
   return <>{children}</>;
 }
