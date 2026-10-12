@@ -5,7 +5,7 @@ import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
@@ -25,6 +25,7 @@ from culinary_blog.config import get_settings
 from culinary_blog.database.session import DB_MAX_OVERFLOW, DB_POOL_SIZE, engine
 from culinary_blog.health.wiring import build_health_router
 from culinary_blog.problem_details import register_problem_handlers
+from culinary_blog.ratelimit.wiring import api_rate_limit, auth_rate_limit
 from culinary_blog.recipes.wiring import build_recipes_router
 
 settings = get_settings()
@@ -126,9 +127,10 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "If-Match", "X-Correlation-ID"],
+    expose_headers=["Retry-After", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
 )
 
 app.include_router(build_health_router())
-app.include_router(build_auth_router())
-app.include_router(build_categories_router())
-app.include_router(build_recipes_router())
+app.include_router(build_auth_router(), dependencies=[Depends(auth_rate_limit())])
+app.include_router(build_categories_router(), dependencies=[Depends(api_rate_limit())])
+app.include_router(build_recipes_router(), dependencies=[Depends(api_rate_limit())])
