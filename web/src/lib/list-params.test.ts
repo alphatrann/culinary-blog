@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildHref, listSortOptions, parseListParams } from "./list-params";
+import { buildHref, listSortOptions, parseListParams, parseSearchQuery } from "./list-params";
 
 describe("parseListParams", () => {
   it("accepts valid values", () => {
@@ -50,5 +50,26 @@ describe("listSortOptions", () => {
       "title",
       "cook_time_minutes",
     ]);
+  });
+});
+
+describe("parseSearchQuery", () => {
+  it("treats missing or blank q as empty", () => {
+    expect(parseSearchQuery({})).toEqual({ state: "empty", q: "" });
+    expect(parseSearchQuery({ q: "   " })).toEqual({ state: "empty", q: "" });
+  });
+
+  it("flags a single character as too short", () => {
+    expect(parseSearchQuery({ q: " p " })).toEqual({ state: "too_short", q: "p" });
+  });
+
+  it("trims and accepts valid queries, using the first of repeated params", () => {
+    expect(parseSearchQuery({ q: ["  phở ", "bún"] })).toEqual({ state: "valid", q: "phở" });
+  });
+
+  it("caps q at 200 characters", () => {
+    const r = parseSearchQuery({ q: "a".repeat(250) });
+    expect(r.state).toBe("valid");
+    expect(r.q).toHaveLength(200);
   });
 });
