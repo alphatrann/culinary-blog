@@ -44,6 +44,20 @@ export function parseListParams(sp: ListSearchParams) {
   };
 }
 
+export const SEARCH_MIN_LENGTH = 2;
+export const SEARCH_MAX_LENGTH = 200;
+
+export type SearchQuery =
+  { state: "empty"; q: "" } | { state: "too_short"; q: string } | { state: "valid"; q: string };
+
+/** Trim `q` and classify it so the page never sends an API call that would 422. */
+export function parseSearchQuery(sp: ListSearchParams): SearchQuery {
+  const q = (first(sp.q) ?? "").trim().slice(0, SEARCH_MAX_LENGTH);
+  if (q === "") return { state: "empty", q: "" };
+  if (q.length < SEARCH_MIN_LENGTH) return { state: "too_short", q };
+  return { state: "valid", q };
+}
+
 /** Build `?a=b&page=n` for the current path, dropping empty values. Resets nothing: callers pass the full set. */
 export function buildHref(
   basePath: string,
