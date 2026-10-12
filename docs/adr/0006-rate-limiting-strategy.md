@@ -28,4 +28,5 @@ Accepted
 - `culinary_blog/ratelimit/`: Lua scripts (atomic, Redis `TIME` as the clock) behind `SlidingWindowLimiter` / `TokenBucketLimiter`; FastAPI dependencies in `dependencies.py`; composition in `wiring.py`. The token bucket counts only `GET`/`HEAD` on the categories and recipes routers.
 - Denied requests get `429` problem+json with `code: RATE_LIMIT_EXCEEDED` (the problem `type` stays `about:blank`, like every other error), `Retry-After`, and `X-RateLimit-Limit/Remaining/Reset` (also sent on allowed requests).
 - Fail-open: any Redis error/timeout (`RATELIMIT_SOCKET_TIMEOUT_SECONDS`, 0.25s) lets the request through and logs a warning.
+- Client IPs are stored only as a keyed hash (HMAC-SHA256 of the IP, key derived from `JWT_SECRET_KEY`), never raw: the Redis is snapshotted to disk and a plain hash of an IPv4 address is brute-forceable. Per-user keys use the opaque `user_id`.
 - Client IP: `X-Forwarded-For` is read right-to-left, skipping `TRUSTED_PROXIES` (default loopback + private ranges, i.e. nginx); an untrusted peer's header is ignored. nginx `limit_req` is not configured: the app-level limiters are the NFR-SEC-003 mechanism.

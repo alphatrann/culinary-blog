@@ -8,10 +8,11 @@ from fastapi.testclient import TestClient
 from culinary_blog.auth.dependencies import Authenticator
 from culinary_blog.auth.security import TokenService
 from culinary_blog.problem_details import register_problem_handlers
-from culinary_blog.ratelimit.dependencies import ClientIpResolver, RateLimitGuard
+from culinary_blog.ratelimit.dependencies import ClientIpResolver, IdentifierHasher, RateLimitGuard
 from culinary_blog.ratelimit.limiter import SlidingWindowLimiter, TokenBucketLimiter
 
 TRUSTED = ["10.0.0.0/8", "127.0.0.0/8"]
+HASHER = IdentifierHasher(b"test-key")
 
 
 def _request(peer: str, xff: str | None = None) -> Request:
@@ -37,7 +38,7 @@ class TestClientIpResolver:
 
 def _app(limit: int = 2, peer: str = "10.0.0.5") -> TestClient:
     redis = FakeAsyncRedis(server=FakeServer())
-    guard = RateLimitGuard(ClientIpResolver(TRUSTED))
+    guard = RateLimitGuard(ClientIpResolver(TRUSTED), HASHER)
     router = APIRouter(dependencies=[Depends(guard.per_ip(SlidingWindowLimiter(redis, "t", limit, 60, 90)))])
     router.add_api_route("/ping", lambda: {"ok": True}, methods=["GET"])
     app = FastAPI()
@@ -77,7 +78,7 @@ def test_limit_is_per_client_ip() -> None:
 
 def test_token_bucket_dependency_blocks_after_burst() -> None:
     redis = FakeAsyncRedis(server=FakeServer())
-    guard = RateLimitGuard(ClientIpResolver(TRUSTED))
+    guard = RateLimitGuard(ClientIpResolver(TRUSTED), HASHER)
     router = APIRouter(dependencies=[Depends(guard.per_ip(TokenBucketLimiter(redis, "api", 3, 60, 90)))])
     router.add_api_route("/r", lambda: {}, methods=["GET"])
     app = FastAPI()
@@ -93,7 +94,7 @@ class TestUploadLimit:
             "test-secret-key-test-secret-key-12", access_ttl=timedelta(minutes=5), refresh_ttl=timedelta(days=1)
         )
         authenticator = Authenticator(tokens)
-        guard = RateLimitGuard(ClientIpResolver(TRUSTED))
+        guard = RateLimitGuard(ClientIpResolver(TRUSTED), HASHER)
         redis = FakeAsyncRedis(server=FakeServer())
         dep = guard.per_ip_and_user(SlidingWindowLimiter(redis, "upload", 2, 60, 90), authenticator)
         router = APIRouter()
@@ -132,7 +133,7 @@ class TestUploadLimit:
 
 def test_method_filter_skips_writes() -> None:
     redis = FakeAsyncRedis(server=FakeServer())
-    guard = RateLimitGuard(ClientIpResolver(TRUSTED))
+    guard = RateLimitGuard(ClientIpResolver(TRUSTED), HASHER)
     dep = guard.per_ip(TokenBucketLimiter(redis, "api", 1, 60, 90), methods=frozenset({"GET"}))
     router = APIRouter(dependencies=[Depends(dep)])
     router.add_api_route("/r", lambda: {}, methods=["GET", "POST"])
@@ -142,3 +143,28 @@ def test_method_filter_skips_writes() -> None:
     client = TestClient(app, client=("10.0.0.5", 50000))
     assert [client.post("/r").status_code for _ in range(3)] == [200, 200, 200]
     assert [client.get("/r").status_code for _ in range(2)] == [200, 429]
+
+
+def test_raw_ip_is_never_stored_in_redis() -> None:
+    redis = FakeAsyncRedis(server=FakeServer())
+    guard = RateLimitGuard(ClientIpResolver(TRUSTED), HASHER)
+    router = APIRouter(dependencies=[Depends(guard.per_ip(SlidingWindowLimiter(redis, "t", 5, 60, 90)))])
+    router.add_api_route("/r", lambda: {}, methods=["GET"])
+    app = FastAPI()
+    register_problem_handlers(app)
+    app.include_router(router)
+    TestClient(app, client=("10.0.0.5", 50000)).get("/r", headers={"X-Forwarded-For": "203.0.113.77"})
+
+    import asyncio
+
+    async def keys() -> list[str]:
+        return [k.decode() async for k in redis.scan_iter("*")]
+
+    stored = asyncio.run(keys())
+    assert stored and all("203.0.113.77" not in k for k in stored)
+
+
+def test_hasher_is_keyed_and_deterministic() -> None:
+    assert HASHER.hash("1.2.3.4") == HASHER.hash("1.2.3.4")
+    assert HASHER.hash("1.2.3.4") != HASHER.hash("1.2.3.5")
+    assert HASHER.hash("1.2.3.4") != IdentifierHasher(b"other").hash("1.2.3.4")

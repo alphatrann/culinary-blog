@@ -1,16 +1,21 @@
+import hashlib
+import hmac
 from collections.abc import Awaitable, Callable
 from functools import lru_cache
 
 from culinary_blog.auth.wiring import get_authenticator
 from culinary_blog.cache.redis import get_ratelimit_redis
 from culinary_blog.config import get_settings
-from culinary_blog.ratelimit.dependencies import ClientIpResolver, RateLimitGuard
+from culinary_blog.ratelimit.dependencies import ClientIpResolver, IdentifierHasher, RateLimitGuard
 from culinary_blog.ratelimit.limiter import SlidingWindowLimiter, TokenBucketLimiter
 
 
 @lru_cache
 def _guard() -> RateLimitGuard:
-    return RateLimitGuard(ClientIpResolver(get_settings().trusted_proxy_list))
+    settings = get_settings()
+    # Domain-separated from the JWT signing use of the same secret.
+    key = hmac.new(settings.jwt_secret_key.encode(), b"ratelimit-ip-v1", hashlib.sha256).digest()
+    return RateLimitGuard(ClientIpResolver(settings.trusted_proxy_list), IdentifierHasher(key))
 
 
 def auth_rate_limit() -> Callable[..., Awaitable[None]]:

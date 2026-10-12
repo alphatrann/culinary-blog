@@ -1,5 +1,7 @@
 """FastAPI dependencies enforcing the rate limits (HTTP layer; the algorithms live in `limiter.py`)."""
 
+import hashlib
+import hmac
 import ipaddress
 import time
 from collections.abc import Awaitable, Callable
@@ -37,11 +39,28 @@ class ClientIpResolver:
         return hops[0] if hops else peer
 
 
+class IdentifierHasher:
+    """Pseudonymises client IPs before they become Redis keys, so no raw IP is stored or snapshotted to disk.
+
+    Keyed (HMAC), not a plain hash: the IPv4 space is small enough to reverse an unkeyed digest by brute force.
+    """
+
+    def __init__(self, key: bytes) -> None:
+        self._key = key
+
+    def hash(self, value: str) -> str:
+        return hmac.new(self._key, value.encode(), hashlib.sha256).hexdigest()[:32]
+
+
 class RateLimitGuard:
     """Builds the per-class dependencies. Each denied request gets a 429 problem+json with Retry-After."""
 
-    def __init__(self, ip_resolver: ClientIpResolver) -> None:
+    def __init__(self, ip_resolver: ClientIpResolver, hasher: IdentifierHasher) -> None:
         self._ip = ip_resolver
+        self._hasher = hasher
+
+    def _ip_key(self, request: Request) -> str:
+        return self._hasher.hash(self._ip.resolve(request))
 
     @staticmethod
     def _headers(result: RateLimitResult) -> dict[str, str]:
@@ -66,7 +85,7 @@ class RateLimitGuard:
         async def dependency(request: Request, response: Response) -> None:
             if methods is not None and request.method not in methods:
                 return
-            self._enforce(await limiter.check(self._ip.resolve(request)), response)
+            self._enforce(await limiter.check(self._ip_key(request)), response)
 
         return dependency
 
@@ -78,7 +97,7 @@ class RateLimitGuard:
             response: Response,
             principal: Annotated[Principal, Depends(authenticator.require_principal)],
         ) -> None:
-            ip_result = await limiter.check(f"ip:{self._ip.resolve(request)}")
+            ip_result = await limiter.check(f"ip:{self._ip_key(request)}")
             if not ip_result.allowed:
                 self._enforce(ip_result, response)
             self._enforce(await limiter.check(f"user:{principal.user_id}"), response)
