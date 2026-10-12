@@ -79,6 +79,13 @@ describe("GuestOnly", () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
+  it("shows a loading state instead of the form for signed-in users", async () => {
+    me(["author"]);
+    renderWithClient(<GuestOnly>form</GuestOnly>);
+    expect(await screen.findByText("Đang chuyển hướng…")).toBeInTheDocument();
+    expect(screen.queryByText("form")).toBeNull();
+  });
+
   it("sends signed-in users to a safe next, else home", async () => {
     me(["author"]);
     search = "next=%2Fprofile";
