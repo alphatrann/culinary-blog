@@ -41,6 +41,15 @@ export class ApiError extends Error {
     return this.status === 401;
   }
 
+  /** Account temporarily locked after repeated failed logins. */
+  get isLocked(): boolean {
+    return this.status === 423;
+  }
+
+  get isRateLimited(): boolean {
+    return this.status === 429;
+  }
+
   /** `If-Match` row_version mismatch (optimistic concurrency). */
   get isConflict(): boolean {
     return this.status === 409 || this.status === 412;

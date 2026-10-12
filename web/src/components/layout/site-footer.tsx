@@ -13,8 +13,8 @@ const columns = [
   {
     title: "Tài khoản",
     links: [
-      { href: "/login", label: "Đăng nhập" },
-      { href: "/register", label: "Đăng ký" },
+      { href: "/auth/login", label: "Đăng nhập" },
+      { href: "/auth/register", label: "Đăng ký" },
       { href: "/recipes/new", label: "Viết công thức" },
     ],
   },
