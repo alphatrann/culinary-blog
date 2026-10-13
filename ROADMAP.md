@@ -78,7 +78,7 @@ Next.js app in `web/`, built from the design mockups in `mockups/`. Deferred to 
 
 #### M7e — Author area
 - [ ] #43 [backend] Filter recipe list by author and status
-- [ ] #44 Recipe editor: create
+- [x] #44 Recipe editor: create
 - [ ] #45 Image upload panel
 - [ ] #46 Recipe editor: edit
 - [ ] #47 Author dashboard and my recipes

@@ -1095,7 +1095,7 @@ Hệ thống cung cấp giao diện web duy nhất trên nền Next.js App Route
 | `/profile`                     | Xem và chỉnh sửa thông tin cá nhân                      | CSR                   | Bắt buộc                      |
 | `/dashboard`                   | Trang tổng quan của Author/Admin                        | CSR                   | Bắt buộc (Author/Admin)       |
 | `/dashboard/recipes`           | Quản lý danh sách recipe của user                       | CSR                   | Bắt buộc                      |
-| `/dashboard/recipes/new`       | Form tạo recipe mới (multi-step wizard)                 | CSR                   | Bắt buộc (Author/Admin)       |
+| `/dashboard/recipes/new`       | Form tạo recipe mới (editor một trang)                 | CSR                   | Bắt buộc (Author/Admin)       |
 | `/dashboard/recipes/[id]/edit` | Form chỉnh sửa recipe                                   | CSR                   | Bắt buộc (Owner/Admin)        |
 | `/dashboard/categories`        | Quản lý categories (chỉ Admin)                          | CSR                   | Bắt buộc (Admin)              |
 
