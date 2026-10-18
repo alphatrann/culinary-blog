@@ -17,6 +17,7 @@ import {
 } from "@/lib/recipes/schemas";
 import { useUnsavedChanges } from "@/lib/use-unsaved-changes";
 import { BasicInfoCard } from "./basic-info-card";
+import { ImagePanel } from "./image-panel";
 import { IngredientsCard } from "./ingredients-card";
 import { NutritionCard } from "./nutrition-card";
 import { PublishCard } from "./publish-card";
@@ -107,6 +108,8 @@ export function RecipeEditor() {
               categories={categories.data ?? []}
               categoriesLoading={categories.isPending}
             />
+            {/* The draft only exists after "Lưu nháp", which leaves this page; the edit page (#46) gets live uploads. */}
+            <ImagePanel recipeId={null} images={[]} onChange={() => undefined} />
             <IngredientsCard />
             <StepsCard />
           </div>

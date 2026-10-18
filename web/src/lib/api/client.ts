@@ -15,6 +15,8 @@ export interface RequestOptions {
   body?: unknown;
   /** Multipart body for uploads; the browser sets the boundary header. */
   formData?: FormData;
+  /** Upload progress as a 0–1 fraction. Only honoured with `formData`; `fetch` has no upload progress, so this uses XHR. */
+  onProgress?: (fraction: number) => void;
   path?: Record<string, string | number>;
   query?: Record<string, unknown>;
 }
@@ -115,6 +117,9 @@ export class ApiClient {
     }
     if (options.rowVersion !== undefined) headers.set("If-Match", String(options.rowVersion));
 
+    if (options.onProgress && options.formData) {
+      return sendWithProgress(method, url, headers, options.formData, options);
+    }
     return this.fetchImpl(url, {
       method: method.toUpperCase(),
       headers,
@@ -134,6 +139,44 @@ export class ApiClient {
       });
     return this.refreshInFlight;
   }
+}
+
+/**
+ * XHR transport for uploads that report progress. Resolves to a `Response`, so status handling and the
+ * 401 refresh-and-retry in `request` apply unchanged.
+ */
+function sendWithProgress(
+  method: Method,
+  url: string,
+  headers: Headers,
+  body: FormData,
+  options: RequestOptions,
+): Promise<Response> {
+  return new Promise((resolve, reject) => {
+    const abortError = () => new DOMException("The upload was cancelled.", "AbortError");
+    if (options.signal?.aborted) return reject(abortError());
+
+    const xhr = new XMLHttpRequest();
+    xhr.open(method.toUpperCase(), url);
+    xhr.withCredentials = true;
+    headers.forEach((value, key) => xhr.setRequestHeader(key, value));
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) options.onProgress?.(event.loaded / event.total);
+    };
+    xhr.onload = () => {
+      const noBody = xhr.status === 204 || xhr.status === 205;
+      resolve(
+        new Response(noBody ? null : xhr.responseText, {
+          status: xhr.status,
+          headers: { "Content-Type": xhr.getResponseHeader("Content-Type") ?? "application/json" },
+        }),
+      );
+    };
+    xhr.onerror = () => reject(new TypeError("Network request failed"));
+    xhr.onabort = () => reject(abortError());
+    options.signal?.addEventListener("abort", () => xhr.abort(), { once: true });
+    xhr.send(body);
+  });
 }
 
 /** Auth endpoints answer 401 for bad credentials/tokens; refreshing on them would loop or mask the error. */

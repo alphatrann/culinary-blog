@@ -1,5 +1,6 @@
 import type { FieldPath } from "react-hook-form";
 import { isApiError } from "@/lib/api";
+import { IMAGE_FORMAT_ERROR } from "./images";
 import type { RecipeFormValues } from "./schemas";
 
 export interface RecipeFailure {
@@ -33,6 +34,17 @@ export function mapRecipeError(error: unknown): RecipeFailure {
     return { banner: error.detail || GENERIC, fields };
   }
   return { banner: GENERIC, fields: {} };
+}
+
+/** Maps an image upload, primary or delete failure onto one Vietnamese message. */
+export function mapImageError(error: unknown): string {
+  if (!isApiError(error)) return GENERIC;
+  if (error.status === 400) return error.detail || IMAGE_FORMAT_ERROR;
+  if (error.status === 413) return "Ảnh vượt quá dung lượng tối đa 5 MB.";
+  if (error.status === 401) return "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
+  if (error.status === 403) return "Bạn không có quyền chỉnh sửa ảnh của công thức này.";
+  if (error.isRateLimited) return "Bạn tải ảnh quá nhanh. Vui lòng thử lại sau ít phút.";
+  return GENERIC;
 }
 
 export type RecipeFieldPath = FieldPath<RecipeFormValues>;
