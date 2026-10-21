@@ -19,7 +19,7 @@ from culinary_blog.recipes.commands.update_ingredient import UpdateIngredientCom
 from culinary_blog.recipes.commands.update_recipe import UpdateRecipeCommand, UpdateRecipeHandler
 from culinary_blog.recipes.commands.update_step import UpdateStepCommand, UpdateStepHandler
 from culinary_blog.recipes.commands.upload_image import UploadImageCommand, UploadImageHandler
-from culinary_blog.recipes.enums import RecipeDifficulty
+from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 from culinary_blog.recipes.queries.get_recipe import GetRecipeHandler, GetRecipeQuery
 from culinary_blog.recipes.queries.get_recipe_for_edit import GetRecipeForEditHandler, GetRecipeForEditQuery
 from culinary_blog.recipes.queries.list_recipes import ListRecipesHandler, ListRecipesQuery
@@ -37,6 +37,7 @@ from culinary_blog.recipes.schemas import (
     RecipeSearchResultsOut,
     RecipeSort,
     RecipeUpdateRequest,
+    StatusName,
     StepIn,
     StepOut,
 )
@@ -157,8 +158,18 @@ class RecipeRouter:
         difficulty: DifficultyName | None = None,
         max_cook_time: Annotated[int | None, Query(ge=0)] = None,
         sort: RecipeSort = "-created_at",
+        author_id: Annotated[str | None, Query(pattern=r"^(me|[0-9a-fA-F-]{36})$")] = None,
+        status: StatusName | None = None,
     ) -> RecipeListOut:
-        viewer = await self._authenticator.optional_principal(request)
+        # An author filter is the owner's own view, so it needs a session (401 for guests).
+        viewer = (
+            await self._authenticator.require_principal(request)
+            if author_id is not None
+            else await self._authenticator.optional_principal(request)
+        )
+        author = None
+        if author_id is not None:
+            author = viewer.user_id if author_id == "me" else uuid.UUID(author_id)
         return await self._list_recipes.handle(
             ListRecipesQuery(
                 page=page,
@@ -168,6 +179,8 @@ class RecipeRouter:
                 difficulty=RecipeDifficulty[difficulty.upper()] if difficulty else None,
                 max_cook_time=max_cook_time,
                 viewer=viewer,
+                author_id=author,
+                status=RecipeStatus[status.upper()] if status else None,
             )
         )
 
