@@ -30,7 +30,18 @@ export default function RootLayout({
   return (
     <html lang="vi" className={`${beVietnamPro.variable} ${fraunces.variable}`}>
       <body className="flex min-h-screen flex-col antialiased">
-        <Providers>{children}</Providers>
+        {/* First tab stop on every page: jumps past the header navigation straight to the page content. */}
+        <a
+          href="#content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-card focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:shadow-md"
+        >
+          Chuyển đến nội dung
+        </a>
+        <Providers>
+          <div id="content" tabIndex={-1} className="flex flex-1 flex-col focus:outline-none">
+            {children}
+          </div>
+        </Providers>
       </body>
     </html>
   );
