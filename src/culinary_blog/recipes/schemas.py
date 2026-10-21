@@ -12,6 +12,7 @@ from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 _HTML = re.compile(r"[<>]")
 
 DifficultyName = Literal["easy", "medium", "hard", "expert"]
+StatusName = Literal["draft", "published", "archived"]
 RecipeSort = Literal["created_at", "-created_at", "title", "-title", "cook_time_minutes", "-cook_time_minutes"]
 
 
@@ -165,9 +166,19 @@ class RecipeOut(BaseModel):
     ingredients: list[IngredientOut]
 
 
+class RecipeStatusCounts(BaseModel):
+    """How many of an author's recipes are in each status (the "my recipes" tab badges)."""
+
+    draft: int
+    published: int
+    archived: int
+
+
 class RecipeListOut(RecipePage):
     has_next_page: bool
     has_previous_page: bool
+    # Set only for an author filter (`author_id`), which is always a signed-in request.
+    status_counts: RecipeStatusCounts | None = None
 
 
 class RecipeSearchResultOut(RecipeSummaryOut):

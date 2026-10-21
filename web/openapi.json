@@ -871,6 +871,16 @@
             "title": "Page Size",
             "type": "integer"
           },
+          "status_counts": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecipeStatusCounts"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "total_count": {
             "title": "Total Count",
             "type": "integer"
@@ -1085,6 +1095,10 @@
             "title": "Relevance Score",
             "type": "number"
           },
+          "row_version": {
+            "title": "Row Version",
+            "type": "integer"
+          },
           "servings": {
             "title": "Servings",
             "type": "integer"
@@ -1110,6 +1124,18 @@
           "title": {
             "title": "Title",
             "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
           }
         },
         "required": [
@@ -1124,6 +1150,8 @@
           "status",
           "author_id",
           "published_at",
+          "updated_at",
+          "row_version",
           "category_name",
           "category_slug",
           "author_name",
@@ -1183,6 +1211,26 @@
         "title": "RecipeStatus",
         "type": "integer"
       },
+      "RecipeStatusCounts": {
+        "description": "How many of an author's recipes are in each status (the \"my recipes\" tab badges).",
+        "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "integer"
+          },
+          "draft": {
+            "title": "Draft",
+            "type": "integer"
+          },
+          "published": {
+            "title": "Published",
+            "type": "integer"
+          }
+        },
+        "required": ["draft", "published", "archived"],
+        "title": "RecipeStatusCounts",
+        "type": "object"
+      },
       "RecipeSummaryOut": {
         "properties": {
           "author_id": {
@@ -1234,6 +1282,10 @@
             ],
             "title": "Published At"
           },
+          "row_version": {
+            "title": "Row Version",
+            "type": "integer"
+          },
           "servings": {
             "title": "Servings",
             "type": "integer"
@@ -1259,6 +1311,18 @@
           "title": {
             "title": "Title",
             "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
           }
         },
         "required": [
@@ -1273,6 +1337,8 @@
           "status",
           "author_id",
           "published_at",
+          "updated_at",
+          "row_version",
           "category_name",
           "category_slug",
           "author_name"
@@ -1934,6 +2000,40 @@
               ],
               "title": "Sort",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "author_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(me|[0-9a-fA-F-]{36})$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Author Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": ["draft", "published", "archived"],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
             }
           }
         ],
