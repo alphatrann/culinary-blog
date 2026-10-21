@@ -37,7 +37,10 @@ export function HeaderActions() {
         </Link>
       )}
       <Menu.Root>
-        <Menu.Trigger className={avatarClass} aria-label="Menu tài khoản">
+        <Menu.Trigger
+          className={avatarClass}
+          aria-label={`Menu tài khoản ${initials(user.display_name)}`}
+        >
           {initials(user.display_name)}
         </Menu.Trigger>
         <Menu.Portal>

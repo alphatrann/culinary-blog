@@ -23,7 +23,6 @@ export function FeaturedRecipe({
     <Link
       href={`/recipes/${recipe.slug}`}
       data-slot="featured-recipe"
-      aria-label={`Món nổi bật: ${recipe.title}`}
       className={cn(
         "group overflow-hidden rounded-xl border border-border bg-card shadow-card transition-shadow hover:shadow-card-hover",
         className,
