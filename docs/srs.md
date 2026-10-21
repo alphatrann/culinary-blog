@@ -1090,14 +1090,16 @@ Hệ thống cung cấp giao diện web duy nhất trên nền Next.js App Route
 | `/categories`                  | Danh sách category                                      | ISR (revalidate=3600) | Không                         |
 | `/categories/[slug]`           | Danh sách recipe theo category                          | ISR (revalidate=600)  | Không                         |
 | `/search`                      | Trang kết quả full-text search                          | SSR                   | Không                         |
-| `/auth/login`                  | Form đăng nhập (email/password + nút Google)            | CSR                   | Không (redirect nếu đã login) |
+| `/auth/login`                  | Form đăng nhập bằng email/password (nút Google: S1)     | CSR                   | Không (redirect nếu đã login) |
 | `/auth/register`               | Form đăng ký tài khoản mới                              | CSR                   | Không                         |
-| `/profile`                     | Xem và chỉnh sửa thông tin cá nhân                      | CSR                   | Bắt buộc                      |
-| `/dashboard`                   | Trang tổng quan của Author/Admin                        | CSR                   | Bắt buộc (Author/Admin)       |
-| `/dashboard/recipes`           | Quản lý danh sách recipe của user                       | CSR                   | Bắt buộc                      |
-| `/dashboard/recipes/new`       | Form tạo recipe mới (editor một trang)                 | CSR                   | Bắt buộc (Author/Admin)       |
-| `/dashboard/recipes/[id]/edit` | Form chỉnh sửa recipe                                   | CSR                   | Bắt buộc (Owner/Admin)        |
-| `/dashboard/categories`        | Quản lý categories (chỉ Admin)                          | CSR                   | Bắt buộc (Admin)              |
+| `/profile`                     | Xem thông tin và công thức của tôi; chỉnh sửa hồ sơ: S2 (#24) | CSR        | Bắt buộc                      |
+| `/dashboard`                   | Tổng quan của Author/Admin: số công thức theo trạng thái, công thức gần đây | CSR | Bắt buộc (Author/Admin) |
+| `/dashboard/recipes`           | Công thức của tôi: tab Tất cả / Đã xuất bản / Bản nháp (lưu trữ: S3) | CSR   | Bắt buộc (Author/Admin)       |
+| `/dashboard/recipes/new`       | Form tạo recipe mới (editor một trang, có upload ảnh sau khi lưu nháp) | CSR | Bắt buộc (Author/Admin)  |
+| `/dashboard/recipes/[id]/edit` | Form chỉnh sửa recipe: tải theo id, lưu có kiểm tra phiên bản, xung đột, xuất bản/gỡ, xóa, ảnh | CSR | Bắt buộc (Owner/Admin) |
+| `/dashboard/categories`        | Trang tạm "Sắp ra mắt" (chỉ Admin); quản lý categories: S3 (#25) | CSR       | Bắt buộc (Admin)              |
+
+Ghi chú: các route `/auth/*` (đăng nhập bằng Google: S1, #23) và các phần lưu trữ (S3, #25) là phần mở rộng, chưa có trong bản MVP. Chiến lược rendering theo route được ghi trong ADR-0014.
 
 ## 5.2. Giao diện Phần mềm – REST API
 
