@@ -183,7 +183,8 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** Get For Edit */
+    get: operations["get_for_edit_api_v1_recipes__recipe_id__get"];
     /** Update */
     put: operations["update_api_v1_recipes__recipe_id__put"];
     post?: never;
@@ -1329,6 +1330,37 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["RecipeSearchResultsOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_for_edit_api_v1_recipes__recipe_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        recipe_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RecipeDetailOut"];
         };
       };
       /** @description Validation Error */

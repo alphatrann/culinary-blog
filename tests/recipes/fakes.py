@@ -117,7 +117,12 @@ class FakeRecipeRepository(RecipeRepository):
         return steps, ingredients
 
     async def get_aggregate_by_slug(self, slug: str) -> RecipeAggregate | None:
-        recipe = next((r for r in self._live() if r.slug == slug), None)
+        return await self._aggregate(next((r for r in self._live() if r.slug == slug), None))
+
+    async def get_aggregate_by_id(self, recipe_id: uuid.UUID) -> RecipeAggregate | None:
+        return await self._aggregate(next((r for r in self._live() if r.id == recipe_id), None))
+
+    async def _aggregate(self, recipe: Recipe | None) -> RecipeAggregate | None:
         if recipe is None:
             return None
         steps, ingredients = await self.get_children(recipe.id)

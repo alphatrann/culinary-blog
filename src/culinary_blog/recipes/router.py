@@ -21,6 +21,7 @@ from culinary_blog.recipes.commands.update_step import UpdateStepCommand, Update
 from culinary_blog.recipes.commands.upload_image import UploadImageCommand, UploadImageHandler
 from culinary_blog.recipes.enums import RecipeDifficulty
 from culinary_blog.recipes.queries.get_recipe import GetRecipeHandler, GetRecipeQuery
+from culinary_blog.recipes.queries.get_recipe_for_edit import GetRecipeForEditHandler, GetRecipeForEditQuery
 from culinary_blog.recipes.queries.list_recipes import ListRecipesHandler, ListRecipesQuery
 from culinary_blog.recipes.queries.search_recipes import SearchRecipesHandler, SearchRecipesQuery
 from culinary_blog.recipes.schemas import (
@@ -57,6 +58,7 @@ class RecipeRouter:
         list_recipes: ListRecipesHandler,
         search_recipes: SearchRecipesHandler,
         get_recipe: GetRecipeHandler,
+        get_recipe_for_edit: GetRecipeForEditHandler,
         publish_recipe: PublishRecipeHandler,
         unpublish_recipe: UnpublishRecipeHandler,
         add_ingredient: AddIngredientHandler,
@@ -77,6 +79,7 @@ class RecipeRouter:
         self._list_recipes = list_recipes
         self._search_recipes = search_recipes
         self._get_recipe = get_recipe
+        self._get_recipe_for_edit = get_recipe_for_edit
         self._publish_recipe = publish_recipe
         self._delete_recipe = delete_recipe
         self._unpublish_recipe = unpublish_recipe
@@ -95,6 +98,10 @@ class RecipeRouter:
         self.router.add_api_route("", self.create, methods=["POST"], response_model=RecipeOut, status_code=201)
         # Registered before "/{slug}": otherwise "/search" would be swallowed by the slug path parameter.
         self.router.add_api_route("/search", self.search, methods=["GET"], response_model=RecipeSearchResultsOut)
+        # A UUID-shaped path is the edit read by id; registered before "/{slug}" so it is not taken as a slug.
+        self.router.add_api_route(
+            "/{recipe_id:uuid}", self.get_for_edit, methods=["GET"], response_model=RecipeDetailOut
+        )
         self.router.add_api_route("/{slug}", self.detail, methods=["GET"], response_model=RecipeDetailOut)
         self.router.add_api_route("/{recipe_id}", self.update, methods=["PUT"], response_model=RecipeOut)
         self.router.add_api_route("/{recipe_id}", self.delete, methods=["DELETE"], status_code=204)
@@ -183,6 +190,12 @@ class RecipeRouter:
                 max_cook_time=max_cook_time,
             )
         )
+
+    async def get_for_edit(self, recipe_id: uuid.UUID, request: Request, response: Response) -> RecipeDetailOut:
+        actor = await self._authenticator.require_principal(request)
+        recipe = await self._get_recipe_for_edit.handle(GetRecipeForEditQuery(recipe_id, actor))
+        response.headers["ETag"] = _etag(recipe.row_version)
+        return recipe
 
     async def detail(self, slug: str, request: Request, response: Response) -> RecipeDetailOut:
         viewer = await self._authenticator.optional_principal(request)

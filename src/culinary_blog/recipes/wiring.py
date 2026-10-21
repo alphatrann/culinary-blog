@@ -23,6 +23,7 @@ from culinary_blog.recipes.commands.update_recipe import UpdateRecipeHandler
 from culinary_blog.recipes.commands.update_step import UpdateStepHandler
 from culinary_blog.recipes.commands.upload_image import UploadImageHandler
 from culinary_blog.recipes.queries.get_recipe import GetRecipeHandler
+from culinary_blog.recipes.queries.get_recipe_for_edit import GetRecipeForEditHandler
 from culinary_blog.recipes.queries.list_recipes import ListRecipesHandler
 from culinary_blog.recipes.queries.search_recipes import SearchRecipesHandler
 from culinary_blog.recipes.repository import RecipeRepository
@@ -45,6 +46,7 @@ def build_recipes_router() -> APIRouter:
         list_recipes=ListRecipesHandler(repository, cache, settings.cache_ttl_recipes_seconds),
         search_recipes=SearchRecipesHandler(repository, cache, settings.cache_ttl_search_seconds),
         get_recipe=GetRecipeHandler(repository, cache, settings.cache_ttl_recipes_seconds),
+        get_recipe_for_edit=GetRecipeForEditHandler(repository),
         publish_recipe=PublishRecipeHandler(repository, invalidator),
         unpublish_recipe=UnpublishRecipeHandler(repository, invalidator),
         delete_recipe=DeleteRecipeHandler(repository, invalidator),
