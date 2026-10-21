@@ -15,7 +15,7 @@ const columns = [
     links: [
       { href: "/auth/login", label: "Đăng nhập" },
       { href: "/auth/register", label: "Đăng ký" },
-      { href: "/recipes/new", label: "Viết công thức" },
+      { href: "/dashboard/recipes/new", label: "Viết công thức" },
     ],
   },
   {

@@ -143,3 +143,13 @@ async def test_slug_race_surfaces_as_conflict():
 
     with pytest.raises(ConflictError):
         await handler.handle(command(category_id))
+
+
+@pytest.mark.anyio
+async def test_title_that_slugifies_to_a_reserved_route_gets_a_suffix():
+    # /recipes/new is the create route on the web; a recipe must not take its slug.
+    repo, handler, category_id = make_handler()
+
+    out = await handler.handle(command(category_id, title="New"))
+
+    assert out.slug == "new-2"
