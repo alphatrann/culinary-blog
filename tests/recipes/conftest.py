@@ -22,6 +22,7 @@ from culinary_blog.recipes.commands.update_recipe import UpdateRecipeHandler
 from culinary_blog.recipes.commands.update_step import UpdateStepHandler
 from culinary_blog.recipes.commands.upload_image import UploadImageHandler
 from culinary_blog.recipes.queries.get_recipe import GetRecipeHandler
+from culinary_blog.recipes.queries.get_recipe_for_edit import GetRecipeForEditHandler
 from culinary_blog.recipes.queries.list_recipes import ListRecipesHandler
 from culinary_blog.recipes.queries.search_recipes import SearchRecipesHandler
 from culinary_blog.recipes.router import RecipeRouter
@@ -65,6 +66,7 @@ def client(repo, storage, queue, cache) -> TestClient:
         list_recipes=ListRecipesHandler(repo, cache),
         search_recipes=SearchRecipesHandler(repo, cache),
         get_recipe=GetRecipeHandler(repo, cache),
+        get_recipe_for_edit=GetRecipeForEditHandler(repo),
         publish_recipe=PublishRecipeHandler(repo, invalidator(cache)),
         unpublish_recipe=UnpublishRecipeHandler(repo, invalidator(cache)),
         delete_recipe=DeleteRecipeHandler(repo, invalidator(cache)),

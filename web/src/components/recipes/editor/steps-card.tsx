@@ -89,7 +89,12 @@ function StepRow({ id, index, onRemove }: { id: string; index: number; onRemove:
 
 export function StepsCard() {
   const { control } = useFormContext<RecipeFormValues>();
-  const { fields, append, remove, move } = useFieldArray({ control, name: "steps" });
+  // `rowKey`, not the default `id`: rows carry the server id in `id` (edit mode).
+  const { fields, append, remove, move } = useFieldArray({
+    control,
+    name: "steps",
+    keyName: "rowKey",
+  });
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -98,8 +103,8 @@ export function StepsCard() {
   function onDragEnd({ active, over }: DragEndEvent) {
     if (!over || active.id === over.id) return;
     move(
-      fields.findIndex((f) => f.id === active.id),
-      fields.findIndex((f) => f.id === over.id),
+      fields.findIndex((f) => f.rowKey === active.id),
+      fields.findIndex((f) => f.rowKey === over.id),
     );
   }
 
@@ -109,10 +114,15 @@ export function StepsCard() {
       hint="Cần ít nhất 1 bước để xuất bản. Dòng đầu tiên của mỗi bước dùng làm tiêu đề bước."
     >
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-        <SortableContext items={fields.map((f) => f.id)} strategy={verticalListSortingStrategy}>
+        <SortableContext items={fields.map((f) => f.rowKey)} strategy={verticalListSortingStrategy}>
           <ol className="flex flex-col gap-4">
             {fields.map((field, index) => (
-              <StepRow key={field.id} id={field.id} index={index} onRemove={() => remove(index)} />
+              <StepRow
+                key={field.rowKey}
+                id={field.rowKey}
+                index={index}
+                onRemove={() => remove(index)}
+              />
             ))}
           </ol>
         </SortableContext>
