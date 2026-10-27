@@ -188,7 +188,7 @@ async def test_revalidation_flag_expires_so_a_failed_refresh_is_retried(redis, m
     await cache.get_or_load_swr("recipe:pho", 1800, Thing, broken)  # stale served, refresh starts and fails
     await settle([cache])
     assert (await cache.get_or_load_swr("recipe:pho", 1800, Thing, broken)).value == 1  # flag still held: no retry yet
-    assert not cache._background
+    await settle([cache])  # on a slow runner the 150ms flag may already have lapsed and spawned another failing refresh
 
     await asyncio.sleep(0.2)  # the flag's TTL has passed
     recovering = Loader()

@@ -15,3 +15,7 @@ class CategoryCacheInvalidator:
         """Also moves the generation: category pages embed the category's name and description."""
         await self._cache.delete(keys.CATEGORIES_ALL)
         await self._cache.bump_generation()
+
+    async def deleted(self) -> None:
+        await self._cache.delete(keys.CATEGORIES_ALL)
+        await self._cache.bump_generation()

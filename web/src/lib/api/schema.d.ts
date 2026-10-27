@@ -136,7 +136,8 @@ export interface paths {
     /** Update */
     put: operations["update_api_v1_categories__category_id__put"];
     post?: never;
-    delete?: never;
+    /** Delete */
+    delete: operations["delete_api_v1_categories__category_id__delete"];
     options?: never;
     head?: never;
     patch?: never;
@@ -210,6 +211,23 @@ export interface paths {
     options?: never;
     head?: never;
     patch?: never;
+    trace?: never;
+  };
+  "/api/v1/recipes/{recipe_id}/archive": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Archive */
+    patch: operations["archive_api_v1_recipes__recipe_id__archive_patch"];
     trace?: never;
   };
   "/api/v1/recipes/{recipe_id}/images": {
@@ -348,6 +366,23 @@ export interface paths {
     options?: never;
     head?: never;
     patch?: never;
+    trace?: never;
+  };
+  "/api/v1/recipes/{recipe_id}/unarchive": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Unarchive */
+    patch: operations["unarchive_api_v1_recipes__recipe_id__unarchive_patch"];
     trace?: never;
   };
   "/api/v1/recipes/{recipe_id}/unpublish": {
@@ -1307,6 +1342,35 @@ export interface operations {
       };
     };
   };
+  delete_api_v1_categories__category_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        category_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   detail_api_v1_categories__slug__get: {
     parameters: {
       query?: {
@@ -1506,6 +1570,37 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  archive_api_v1_recipes__recipe_id__archive_patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        recipe_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RecipeOut"];
+        };
       };
       /** @description Validation Error */
       422: {
@@ -1836,6 +1931,37 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  unarchive_api_v1_recipes__recipe_id__unarchive_patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        recipe_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RecipeOut"];
+        };
       };
       /** @description Validation Error */
       422: {

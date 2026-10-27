@@ -9,6 +9,7 @@ from culinary_blog.auth.security import TokenService
 from culinary_blog.problem_details import register_problem_handlers
 from culinary_blog.recipes.commands.add_ingredient import AddIngredientHandler
 from culinary_blog.recipes.commands.add_step import AddStepHandler
+from culinary_blog.recipes.commands.archive_recipe import ArchiveRecipeHandler
 from culinary_blog.recipes.commands.create_recipe import CreateRecipeHandler
 from culinary_blog.recipes.commands.delete_image import DeleteImageHandler
 from culinary_blog.recipes.commands.delete_ingredient import DeleteIngredientHandler
@@ -16,6 +17,7 @@ from culinary_blog.recipes.commands.delete_recipe import DeleteRecipeHandler
 from culinary_blog.recipes.commands.delete_step import DeleteStepHandler
 from culinary_blog.recipes.commands.publish_recipe import PublishRecipeHandler
 from culinary_blog.recipes.commands.set_primary_image import SetPrimaryImageHandler
+from culinary_blog.recipes.commands.unarchive_recipe import UnarchiveRecipeHandler
 from culinary_blog.recipes.commands.unpublish_recipe import UnpublishRecipeHandler
 from culinary_blog.recipes.commands.update_ingredient import UpdateIngredientHandler
 from culinary_blog.recipes.commands.update_recipe import UpdateRecipeHandler
@@ -67,6 +69,8 @@ def client(repo, storage, queue, cache) -> TestClient:
         get_recipe=GetRecipeHandler(repo, cache),
         publish_recipe=PublishRecipeHandler(repo, invalidator(cache)),
         unpublish_recipe=UnpublishRecipeHandler(repo, invalidator(cache)),
+        archive_recipe=ArchiveRecipeHandler(repo, invalidator(cache)),
+        unarchive_recipe=UnarchiveRecipeHandler(repo, invalidator(cache)),
         delete_recipe=DeleteRecipeHandler(repo, invalidator(cache)),
         add_ingredient=AddIngredientHandler(repo, invalidator(cache)),
         update_ingredient=UpdateIngredientHandler(repo, invalidator(cache)),

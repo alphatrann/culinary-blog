@@ -775,7 +775,7 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 4. Lưu DB, xóa cache Redis.
 5. HTTP 200 OK. |
    | Luồng thay thế / Ngoại lệ | A1 – ID không tồn tại: HTTP 404. A2 – Không có quyền: HTTP 403. |
-   | HTTP Method & Endpoint | `PATCH /api/v1/recipes/{id}/archive` |
+   | HTTP Method & Endpoint | `PATCH /api/v1/recipes/{id}/archive`; `PATCH /api/v1/recipes/{id}/unarchive` (đưa Recipe `archived` về `draft`, không tự công khai lại) |
    | Kết quả mong đợi | `status = archived`. Recipe không còn xuất hiện trong public listing. |
    | HTTP Status Code trả về | 200 OK. 403 Forbidden. 404 Not Found. |
 
