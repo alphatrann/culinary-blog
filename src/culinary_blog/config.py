@@ -54,6 +54,8 @@ class Settings(BaseSettings):
     otel_service_name: str = "culinary-blog-api"
 
     cors_origins: str = "http://localhost:3000"
+    # Public web origin, used as the absolute base of sitemap <loc> entries (no trailing slash).
+    site_url: str = "http://localhost:3000"
 
     jwt_secret_key: str = "dev-only-insecure-secret-change-me"
     access_token_ttl_minutes: int = 15

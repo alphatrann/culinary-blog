@@ -34,6 +34,7 @@ from culinary_blog.middleware import CorrelationIdMiddleware
 from culinary_blog.problem_details import register_problem_handlers
 from culinary_blog.ratelimit.wiring import api_rate_limit, auth_rate_limit
 from culinary_blog.recipes.wiring import build_recipes_router
+from culinary_blog.sitemap.wiring import build_sitemap_router
 
 settings = get_settings()
 configure_logging()
@@ -165,3 +166,4 @@ app.include_router(build_health_router())
 app.include_router(build_auth_router(), dependencies=[Depends(auth_rate_limit())])
 app.include_router(build_categories_router(), dependencies=[Depends(api_rate_limit())])
 app.include_router(build_recipes_router(), dependencies=[Depends(api_rate_limit())])
+app.include_router(build_sitemap_router(), dependencies=[Depends(api_rate_limit())])

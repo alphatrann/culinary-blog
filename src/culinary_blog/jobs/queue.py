@@ -7,6 +7,7 @@ from redis.asyncio import Redis
 RESIZE_IMAGE = "resize_image"
 DELETE_FILE = "delete_file"
 WELCOME_EMAIL = "welcome_email"
+SITEMAP = "sitemap"
 
 
 def dead_letter_queue(queue: str) -> str:

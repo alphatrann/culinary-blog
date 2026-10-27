@@ -153,6 +153,35 @@ services:
       queue-redis:
         condition: service_healthy
 
+  sitemap-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["culinary-blog-sitemap-worker"]
+    env_file:
+      - .env.production
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      queue-redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  # Keep this single-replica: every running copy enqueues its own daily sitemap job.
+  cronjobs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["culinary-blog-cron"]
+    env_file:
+      - .env.production
+    depends_on:
+      queue-redis:
+        condition: service_healthy
+
   otel-collector:
     build:
       context: .
