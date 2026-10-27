@@ -352,6 +352,13 @@ class FakeStorage(FileStorageService):
             raise ServiceUnavailableError()
         self.objects.pop(url, None)
 
+    async def put_at(self, key: str, data: bytes, content_type: str) -> str:
+        self.objects[f"http://storage/{key}"] = data
+        return f"http://storage/{key}"
+
+    async def get_at(self, key: str) -> bytes | None:
+        return self.objects.get(f"http://storage/{key}")
+
 
 class FakeJobQueue(JobQueue):
     def __init__(self) -> None:

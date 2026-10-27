@@ -122,6 +122,39 @@ services:
       mailhog:
         condition: service_started
 
+  sitemap-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["culinary-blog-sitemap-worker"]
+    env_file:
+      - .env.development
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-culinary}:${POSTGRES_PASSWORD:-culinary}@postgres:5432/${POSTGRES_DB:-culinary_blog}
+      QUEUE_REDIS_URL: redis://queue-redis:6379/0
+      MINIO_ENDPOINT: minio:9000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      queue-redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  # Keep this single-replica: every running copy enqueues its own daily sitemap job.
+  cronjobs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["culinary-blog-cron"]
+    env_file:
+      - .env.development
+    environment:
+      QUEUE_REDIS_URL: redis://queue-redis:6379/0
+    depends_on:
+      queue-redis:
+        condition: service_healthy
+
 volumes:
   pgdata:
   queuedata:

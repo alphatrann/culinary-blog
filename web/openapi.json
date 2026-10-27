@@ -3119,6 +3119,18 @@
         "summary": "Ready",
         "tags": ["health"]
       }
+    },
+    "/sitemap.xml": {
+      "get": {
+        "operationId": "sitemap_sitemap_xml_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Sitemap",
+        "tags": ["seo"]
+      }
     }
   }
 }

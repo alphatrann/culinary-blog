@@ -39,6 +39,13 @@ class MinioFileStorage(FileStorageService):
     async def delete(self, url: str) -> None:
         await self._run(self._remove, self._key_from_url(url))
 
+    async def put_at(self, key: str, data: bytes, content_type: str) -> str:
+        await self._run(self._put, key, data, content_type)
+        return self._prefix + key
+
+    async def get_at(self, key: str) -> bytes | None:
+        return await self._run(self._get_if_exists, key)
+
     def _key_from_url(self, url: str) -> str:
         if not url.startswith(self._prefix):
             raise ValueError(f"URL does not belong to bucket {self._bucket}: {url}")
@@ -74,6 +81,14 @@ class MinioFileStorage(FileStorageService):
         finally:
             response.close()
             response.release_conn()
+
+    def _get_if_exists(self, key: str) -> bytes | None:
+        try:
+            return self._get(key)
+        except S3Error as exc:
+            if exc.code == "NoSuchKey":
+                return None
+            raise
 
     def _remove(self, key: str) -> None:
         try:

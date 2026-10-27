@@ -35,6 +35,8 @@ dependencies = [
 culinary-blog = "culinary_blog:main"
 culinary-blog-image-worker = "culinary_blog.workers.image:main"
 culinary-blog-email-worker = "culinary_blog.workers.email:main"
+culinary-blog-sitemap-worker = "culinary_blog.workers.sitemap:main"
+culinary-blog-cron = "culinary_blog.workers.cron:main"
 
 [build-system]
 requires = ["uv_build>=0.12.6,<0.13.0"]
@@ -72,7 +74,7 @@ layers = [
     "(repository)",
     "(models) | (schemas)",
 ]
-containers = ["culinary_blog.health", "culinary_blog.auth", "culinary_blog.categories", "culinary_blog.recipes"]
+containers = ["culinary_blog.health", "culinary_blog.auth", "culinary_blog.categories", "culinary_blog.recipes", "culinary_blog.sitemap"]
 
 [[tool.importlinter.contracts]]
 name = "Handlers and repositories are HTTP-free (NFR-MAINT-004)"

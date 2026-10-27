@@ -47,6 +47,16 @@ class CategoryRepository:
             )
             return [(category, int(count)) for category, count in result.all()]
 
+    async def list_for_sitemap(self) -> list[tuple[str, datetime]]:
+        """(slug, lastmod) of every live category. lastmod falls back to created_at if never updated."""
+        async with self._read_session_factory() as session:
+            result = await session.execute(
+                select(Category.slug, func.coalesce(col(Category.updated_at), col(Category.created_at))).where(
+                    col(Category.is_deleted).is_(False)
+                )
+            )
+            return [(slug, lastmod) for slug, lastmod in result.all()]
+
     async def get_by_slug(self, slug: str) -> Category | None:
         async with self._read_session_factory() as session:
             result = await session.execute(

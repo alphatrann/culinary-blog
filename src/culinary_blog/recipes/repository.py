@@ -104,6 +104,16 @@ class RecipeRepository:
         self._session_factory = session_factory
         self._read_session_factory = read_session_factory or session_factory  # AUTOCOMMIT reads when provided
 
+    async def list_published_for_sitemap(self) -> list[tuple[str, datetime]]:
+        """(slug, lastmod) of every live published recipe. lastmod falls back to created_at if never updated."""
+        async with self._read_session_factory() as session:
+            result = await session.execute(
+                select(Recipe.slug, func.coalesce(col(Recipe.updated_at), col(Recipe.created_at))).where(
+                    col(Recipe.is_deleted).is_(False), Recipe.status == RecipeStatus.PUBLISHED
+                )
+            )
+            return [(slug, lastmod) for slug, lastmod in result.all()]
+
     # The uniqueness check includes soft-deleted rows: the unique constraint does too.
     async def slug_taken(self, slug: str) -> bool:
         async with self._read_session_factory() as session:
