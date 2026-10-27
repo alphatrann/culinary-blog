@@ -90,8 +90,8 @@ Next.js app in `web/`, built from the design mockups in `mockups/`. Deferred to 
 ## Should-Have
 
 ### S1 — Google OAuth (FR-AUTH-003)
-- [ ] Verify ID token, create/link user
-- [ ] "Sign in with Google" button
+- [x] Verify ID token, create/link user
+- [x] "Sign in with Google" button
 
 ### S2 — Profile (FR-AUTH-006/007)
 - [ ] View and edit name, avatar, bio

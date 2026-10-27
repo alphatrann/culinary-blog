@@ -2,11 +2,12 @@ import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
+from culinary_blog.auth.google import GoogleIdTokenVerifier, GoogleProfile
 from culinary_blog.auth.models import RefreshToken, User
 from culinary_blog.auth.repository import AuthRepository
 from culinary_blog.auth.security import PasswordHasher, TokenService
 from culinary_blog.auth.session_issuer import SessionIssuer
-from culinary_blog.errors import ConflictError
+from culinary_blog.errors import ConflictError, UnauthorizedError
 
 PASSWORD = "Str0ng!Pass"
 
@@ -20,6 +21,9 @@ class FakeAuthRepository(AuthRepository):
 
     async def get_user_by_email(self, email: str) -> User | None:
         return next((u for u in self.users.values() if u.email == email and not u.is_deleted), None)
+
+    async def get_user_by_google_sub(self, google_sub: str) -> User | None:
+        return next((u for u in self.users.values() if u.google_sub == google_sub and not u.is_deleted), None)
 
     async def get_user_by_id(self, user_id: uuid.UUID) -> User | None:
         user = self.users.get(user_id)
@@ -60,17 +64,30 @@ class FakeAuthRepository(AuthRepository):
                 token.revoked_at = datetime.now(UTC)
 
 
+class FakeGoogleVerifier(GoogleIdTokenVerifier):
+    """Maps a token string to a profile; any unknown token is rejected like a bad signature would be."""
+
+    def __init__(self) -> None:  # deliberately skips super().__init__: no HTTP client
+        self.profiles: dict[str, GoogleProfile] = {}
+
+    async def verify(self, token: str) -> GoogleProfile:
+        if token not in self.profiles:
+            raise UnauthorizedError("Invalid Google ID token")
+        return self.profiles[token]
+
+
 @dataclass
 class Services:
     repository: FakeAuthRepository
     hasher: PasswordHasher
     tokens: TokenService
     issuer: SessionIssuer
+    google: FakeGoogleVerifier
 
 
 def make_services() -> Services:
     tokens = TokenService("test-secret-key-at-least-32-bytes-long", timedelta(minutes=15), timedelta(days=7))
-    return Services(FakeAuthRepository(), PasswordHasher(), tokens, SessionIssuer(tokens))
+    return Services(FakeAuthRepository(), PasswordHasher(), tokens, SessionIssuer(tokens), FakeGoogleVerifier())
 
 
 async def add_user(services: Services, email: str = "cook@example.com", **overrides: object) -> User:

@@ -213,6 +213,19 @@
         "title": "CategoryUpdateRequest",
         "type": "object"
       },
+      "GoogleLoginRequest": {
+        "properties": {
+          "id_token": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "title": "Id Token",
+            "type": "string"
+          }
+        },
+        "required": ["id_token"],
+        "title": "GoogleLoginRequest",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1538,6 +1551,45 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/auth/google": {
+      "post": {
+        "operationId": "google_api_v1_auth_google_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoogleLoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Google",
+        "tags": ["auth"]
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "operationId": "login_api_v1_auth_login_post",
