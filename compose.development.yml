@@ -77,6 +77,51 @@ services:
       timeout: 5s
       retries: 10
 
+  mailhog:
+    image: mailhog/mailhog:v1.0.1  # dev SMTP sink: SMTP on 1025, web UI on 8025
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  # Workers run from the api image. Inside the network they reach the infra by service name, not localhost.
+  image-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["culinary-blog-image-worker"]
+    env_file:
+      - .env.development
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-culinary}:${POSTGRES_PASSWORD:-culinary}@postgres:5432/${POSTGRES_DB:-culinary_blog}
+      CACHE_REDIS_URL: redis://cache-redis:6379/0
+      QUEUE_REDIS_URL: redis://queue-redis:6379/0
+      MINIO_ENDPOINT: minio:9000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      cache-redis:
+        condition: service_healthy
+      queue-redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  email-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["culinary-blog-email-worker"]
+    env_file:
+      - .env.development
+    environment:
+      QUEUE_REDIS_URL: redis://queue-redis:6379/0
+      SMTP_HOST: mailhog
+    depends_on:
+      queue-redis:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+
 volumes:
   pgdata:
   queuedata:

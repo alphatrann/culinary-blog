@@ -123,6 +123,36 @@ services:
       timeout: 5s
       retries: 10
 
+  image-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["culinary-blog-image-worker"]
+    env_file:
+      - .env.production
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      cache-redis:
+        condition: service_healthy
+      queue-redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  email-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["culinary-blog-email-worker"]
+    env_file:
+      - .env.production
+    depends_on:
+      queue-redis:
+        condition: service_healthy
+
   otel-collector:
     build:
       context: .

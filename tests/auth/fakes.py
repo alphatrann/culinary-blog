@@ -8,6 +8,7 @@ from culinary_blog.auth.repository import AuthRepository
 from culinary_blog.auth.security import PasswordHasher, TokenService
 from culinary_blog.auth.session_issuer import SessionIssuer
 from culinary_blog.errors import ConflictError, UnauthorizedError
+from tests.recipes.fakes import FakeJobQueue
 
 PASSWORD = "Str0ng!Pass"
 
@@ -92,11 +93,14 @@ class Services:
     tokens: TokenService
     issuer: SessionIssuer
     google: FakeGoogleVerifier
+    queue: FakeJobQueue
 
 
 def make_services() -> Services:
     tokens = TokenService("test-secret-key-at-least-32-bytes-long", timedelta(minutes=15), timedelta(days=7))
-    return Services(FakeAuthRepository(), PasswordHasher(), tokens, SessionIssuer(tokens), FakeGoogleVerifier())
+    return Services(
+        FakeAuthRepository(), PasswordHasher(), tokens, SessionIssuer(tokens), FakeGoogleVerifier(), FakeJobQueue()
+    )
 
 
 async def add_user(services: Services, email: str = "cook@example.com", **overrides: object) -> User:

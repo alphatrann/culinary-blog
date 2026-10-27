@@ -358,7 +358,7 @@ class FakeJobQueue(JobQueue):
         self.jobs: list[tuple[str, dict[str, object]]] = []
         self.fail = False
 
-    async def enqueue(self, queue: str, payload: dict[str, object]) -> None:
+    async def enqueue(self, queue: str, payload: dict[str, object], delay_seconds: int = 0) -> None:
         if self.fail:
             raise ConnectionError("redis down")
         self.jobs.append((queue, payload))

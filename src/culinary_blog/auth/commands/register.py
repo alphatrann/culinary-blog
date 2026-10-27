@@ -8,6 +8,7 @@ from culinary_blog.auth.schemas import AuthSession
 from culinary_blog.auth.security import PasswordHasher
 from culinary_blog.auth.session_issuer import SessionIssuer
 from culinary_blog.cqrs import Command, CommandHandler
+from culinary_blog.jobs.queue import WELCOME_EMAIL, JobQueue
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +27,13 @@ class RegisterHandler(CommandHandler[RegisterCommand, AuthSession]):
     Duplicate emails are rejected by the unique index (the repository raises ConflictError), not by a racy pre-check.
     """
 
-    def __init__(self, repository: AuthRepository, hasher: PasswordHasher, issuer: SessionIssuer) -> None:
+    def __init__(
+        self, repository: AuthRepository, hasher: PasswordHasher, issuer: SessionIssuer, queue: JobQueue
+    ) -> None:
         self._repository = repository
         self._hasher = hasher
         self._issuer = issuer
+        self._queue = queue
 
     async def handle(self, command: RegisterCommand) -> AuthSession:
         email = command.email.lower()
@@ -42,4 +46,10 @@ class RegisterHandler(CommandHandler[RegisterCommand, AuthSession]):
         session, refresh_record = self._issuer.issue(user, command.client_ip)
         await self._repository.create_user_with_refresh_token(user, refresh_record)
         logger.info("user registered", extra={"user_id": str(user.id), "at": datetime.now(UTC).isoformat()})
+        try:
+            await self._queue.enqueue(
+                WELCOME_EMAIL, {"user_id": str(user.id), "email": email, "display_name": user.display_name}
+            )
+        except Exception:  # the account exists; a missed welcome email must not fail registration
+            logger.exception("could not enqueue welcome email", extra={"user_id": str(user.id)})
         return session
