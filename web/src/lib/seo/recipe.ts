@@ -23,17 +23,16 @@ export function buildRecipeMetadata(recipe: Recipe, siteUrl: string): Metadata {
   const title = truncate(recipe.title, TITLE_MAX - suffix.length) + suffix;
   const description = truncate(recipe.description, DESCRIPTION_MAX);
   const url = `${siteUrl}/recipes/${recipe.slug}`;
-  const primary = recipe.images.find((image) => image.is_primary);
-  const images = primary ? [primary.original_url] : undefined;
   const published = recipe.status === PUBLISHED;
 
+  // og:image and twitter:image come from the segment's opengraph-image route (share card), not from here.
   return {
     title,
     description,
     alternates: { canonical: url },
     robots: { index: published, follow: published },
-    openGraph: { title, description, url, type: "article", images },
-    twitter: { card: "summary_large_image", title, description, images },
+    openGraph: { title, description, url, type: "article" },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 

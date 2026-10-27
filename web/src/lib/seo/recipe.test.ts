@@ -84,12 +84,14 @@ describe("buildRecipeMetadata", () => {
       description: "Nước dùng trong, thơm mùi quế.",
       url: "https://example.test/recipes/pho-bo",
       type: "article",
-      images: ["https://cdn.test/hero.jpg"],
     });
-    expect(meta.twitter).toMatchObject({
-      card: "summary_large_image",
-      images: ["https://cdn.test/hero.jpg"],
-    });
+    expect(meta.twitter).toMatchObject({ card: "summary_large_image" });
+  });
+
+  it("leaves og and twitter images to the opengraph-image route", () => {
+    const meta = buildRecipeMetadata(makeRecipe(), SITE);
+    expect(meta.openGraph).not.toHaveProperty("images");
+    expect(meta.twitter).not.toHaveProperty("images");
   });
 
   it("caps the title at 60 characters and keeps the suffix", () => {
@@ -101,11 +103,6 @@ describe("buildRecipeMetadata", () => {
   it("caps the description at 160 characters", () => {
     const meta = buildRecipeMetadata(makeRecipe({ description: "b".repeat(300) }), SITE);
     expect(meta.description).toHaveLength(160);
-  });
-
-  it("omits images when there is no primary image", () => {
-    const meta = buildRecipeMetadata(makeRecipe({ images: [] }), SITE);
-    expect(meta.openGraph).toMatchObject({ images: undefined });
   });
 
   it("marks non-published recipes noindex,nofollow", () => {
