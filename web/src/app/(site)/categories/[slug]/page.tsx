@@ -5,6 +5,7 @@ import { RecipeGrid } from "@/components/recipes/recipe-grid";
 import { RecipePagination } from "@/components/recipes/recipe-pagination";
 import { serverGet } from "@/lib/api/server";
 import { isApiError } from "@/lib/api";
+import { siteUrl } from "@/lib/env";
 import { difficultyLabel, formatMinutes } from "@/lib/labels";
 import { parseListParams, type ListSearchParams } from "@/lib/list-params";
 
@@ -36,6 +37,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${category.name} | Culinary Blog`,
     description: category.description ?? `Công thức nấu ăn thuộc danh mục ${category.name}.`,
+    // No ?page in the canonical: every page of the listing points at the category itself.
+    alternates: { canonical: `${siteUrl()}/categories/${slug}` },
   };
 }
 
