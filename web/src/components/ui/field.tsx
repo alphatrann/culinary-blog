@@ -3,6 +3,7 @@ import { cn } from "cn";
 
 function Label({ className, ...props }: React.ComponentProps<"label">) {
   return (
+    // eslint-disable-next-line jsx-a11y/label-has-associated-control -- callers pass htmlFor; the rule cannot see props
     <label
       data-slot="label"
       className={cn("text-sm leading-none font-medium", className)}

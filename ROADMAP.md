@@ -59,33 +59,33 @@ Next.js app in `web/`, built from the design mockups in `mockups/`. Deferred to 
 #### M7a — Foundation
 - [x] #31 Scaffold `web/` (Next.js App Router, TS, Tailwind, Docker, nginx)
 - [x] #32 Design tokens, fonts and UI primitives
-- [ ] #33 API client, RFC 7807 errors and silent refresh
+- [x] #33 API client, RFC 7807 errors and silent refresh
 
 #### M7b — Shared layout
 - [x] #34 Header and Footer
 - [x] #35 RecipeCard, grid, pagination and filter bar
 
 #### M7c — Public pages
-- [ ] #36 Home (`/`)
+- [x] #36 Home (`/`)
 - [x] #37 Recipe list (`/recipes`)
-- [ ] #38 Recipe detail (`/recipes/[slug]`)
-- [ ] #39 Categories (`/categories`, `/categories/[slug]`)
-- [ ] #40 Search (`/search`)
+- [x] #38 Recipe detail (`/recipes/[slug]`)
+- [x] #39 Categories (`/categories`, `/categories/[slug]`)
+- [x] #40 Search (`/search`)
 
 #### M7d — Auth
-- [ ] #41 Session layer and route guards
+- [x] #41 Session layer and route guards
 - [x] #42 Login and register pages (refined: redirect loading screen, hero photo on the auth aside)
 
 #### M7e — Author area
-- [ ] #43 [backend] Filter recipe list by author and status
+- [x] #43 [backend] Filter recipe list by author and status
 - [x] #44 Recipe editor: create
-- [ ] #45 Image upload panel
-- [ ] #46 Recipe editor: edit
-- [ ] #47 Author dashboard and my recipes
+- [x] #45 Image upload panel
+- [x] #46 Recipe editor: edit
+- [x] #47 Author dashboard and my recipes
 
 #### M7f — Quality & delivery
-- [ ] #48 Responsive and accessibility pass, e2e smoke tests
-- [ ] #49 Web CI, Lighthouse budgets and ADR-0011
+- [x] #48 Responsive and accessibility pass, e2e smoke tests
+- [x] #49 Web CI, Lighthouse budgets and ADR-0014
 
 ## Should-Have
 
