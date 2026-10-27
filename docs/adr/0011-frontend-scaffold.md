@@ -22,3 +22,4 @@ Accepted
 - No CORS configuration is needed.
 - The nginx location regex must be extended when a new unversioned API path is added.
 - The build downloads Google Fonts, so the image build needs internet access.
+- Rendering per route (ISR, dynamic, client) and the Lighthouse budgets are recorded in ADR-0014.
