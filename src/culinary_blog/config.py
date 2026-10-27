@@ -64,6 +64,14 @@ class Settings(BaseSettings):
     # FR-AUTH-003. Empty disables Google sign-in (the endpoint answers 503); the audience check needs this value.
     google_client_id: str = ""
 
+    # Welcome email (FR-AUTH-001, FR-JOB-002). Dev defaults point at Mailhog (see compose.development.yml).
+    smtp_host: str = "localhost"
+    smtp_port: int = 1025
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "Culinary Blog <no-reply@culinary.local>"
+    smtp_use_tls: bool = False  # STARTTLS; turn on for real SMTP providers
+
     @model_validator(mode="after")
     def _require_real_secret_outside_development(self) -> "Settings":
         if self.environment != "development" and self.jwt_secret_key.startswith("dev-only"):

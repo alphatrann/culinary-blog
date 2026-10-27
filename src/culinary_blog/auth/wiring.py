@@ -17,8 +17,10 @@ from culinary_blog.auth.repository import AuthRepository
 from culinary_blog.auth.router import AuthRouter
 from culinary_blog.auth.security import PasswordHasher, TokenService
 from culinary_blog.auth.session_issuer import SessionIssuer
+from culinary_blog.cache.redis import get_queue_redis
 from culinary_blog.config import get_settings
 from culinary_blog.database.session import async_session_factory, read_session_factory
+from culinary_blog.jobs.queue import RedisJobQueue
 
 
 @lru_cache
@@ -47,7 +49,7 @@ def build_auth_router() -> APIRouter:
     return AuthRouter(
         authenticator=get_authenticator(),
         cookies=AuthCookies(settings.cookie_secure, tokens.access_ttl, tokens.refresh_ttl),
-        register=RegisterHandler(repository, hasher, issuer),
+        register=RegisterHandler(repository, hasher, issuer, RedisJobQueue(get_queue_redis())),
         login=LoginHandler(
             repository,
             hasher,

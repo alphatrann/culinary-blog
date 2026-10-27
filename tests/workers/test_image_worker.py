@@ -115,7 +115,9 @@ async def test_job_goes_to_dlq_after_max_attempts(worker, repo, storage, redis):
     await worker.process(RESIZE_IMAGE, job(image, attempts=MAX_ATTEMPTS - 1))
     assert RESIZE_IMAGE not in redis.lists
     assert json.loads(redis.lists[dead_letter_queue(RESIZE_IMAGE)][0])["attempts"] == MAX_ATTEMPTS
-    assert image.thumbnail_url is None  # graceful: the original stays usable
+    # graceful: no variants were recorded, and the original is still in storage for the API to serve
+    assert image.thumbnail_url is None and image.medium_url is None
+    assert image.original_url in storage.objects
 
 
 @pytest.mark.anyio

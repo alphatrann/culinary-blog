@@ -27,7 +27,7 @@ def make_client() -> tuple[TestClient, Services]:
     router = AuthRouter(
         authenticator=Authenticator(s.tokens),
         cookies=AuthCookies(False, s.tokens.access_ttl, s.tokens.refresh_ttl),  # http://testserver, so not Secure
-        register=RegisterHandler(s.repository, s.hasher, s.issuer),
+        register=RegisterHandler(s.repository, s.hasher, s.issuer, s.queue),
         login=LoginHandler(s.repository, s.hasher, s.issuer, 5, timedelta(minutes=15)),
         refresh=RefreshHandler(s.repository, s.tokens, s.issuer),
         logout=LogoutHandler(s.repository, s.tokens),
