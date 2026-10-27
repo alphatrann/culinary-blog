@@ -29,6 +29,15 @@ class FakeAuthRepository(AuthRepository):
         user = self.users.get(user_id)
         return user if user and not user.is_deleted else None
 
+    async def update_profile(self, user_id: uuid.UUID, values: dict[str, object]) -> User | None:
+        user = await self.get_user_by_id(user_id)
+        if user is None or not user.is_active:
+            return None
+        for name, value in values.items():
+            setattr(user, name, value)
+        user.row_version += 1
+        return user
+
     async def create_user_with_refresh_token(self, user: User, token: RefreshToken) -> None:
         if await self.get_user_by_email(user.email):
             raise ConflictError("Email is already registered")

@@ -38,12 +38,22 @@ class AuthRepository:
 
     async def get_user_by_id(self, user_id: uuid.UUID) -> User | None:
         async with self._read_session_factory() as session:
-            result = await session.execute(
-                select(User)
-                .where(User.id == user_id, col(User.is_deleted).is_(False))
-                .options(load_only(User.id, User.email, User.display_name, User.avatar_url, User.roles, User.is_active))
-            )
+            result = await session.execute(select(User).where(User.id == user_id, col(User.is_deleted).is_(False)))
             return result.scalars().first()
+
+    async def update_profile(self, user_id: uuid.UUID, values: dict[str, object]) -> User | None:
+        """Applies `values` to a live, active user and bumps row_version. None when no such user matches."""
+        async with self._session_factory() as session:
+            result = await session.execute(
+                update(User)
+                .where(col(User.id) == user_id, col(User.is_deleted).is_(False), col(User.is_active).is_(True))
+                .values(**values, updated_at=datetime.now(UTC), row_version=User.row_version + 1)
+            )
+            if result.rowcount == 0:  # type: ignore[attr-defined]
+                await session.rollback()
+                return None
+            await session.commit()
+        return await self.get_user_by_id(user_id)
 
     async def create_user_with_refresh_token(self, user: User, token: RefreshToken) -> None:
         async with self._session_factory() as session:

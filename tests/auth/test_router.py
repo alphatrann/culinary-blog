@@ -9,6 +9,7 @@ from culinary_blog.auth.commands.login import LoginHandler
 from culinary_blog.auth.commands.logout import LogoutHandler
 from culinary_blog.auth.commands.refresh import RefreshHandler
 from culinary_blog.auth.commands.register import RegisterHandler
+from culinary_blog.auth.commands.update_profile import UpdateProfileHandler
 from culinary_blog.auth.cookies import AuthCookies
 from culinary_blog.auth.dependencies import Authenticator
 from culinary_blog.auth.google import GoogleProfile
@@ -32,6 +33,7 @@ def make_client() -> tuple[TestClient, Services]:
         logout=LogoutHandler(s.repository, s.tokens),
         get_current_user=GetCurrentUserHandler(s.repository),
         google_login=GoogleLoginHandler(s.repository, s.google, s.issuer),
+        update_profile=UpdateProfileHandler(s.repository),
     ).router
     app = FastAPI()
     register_problem_handlers(app)
@@ -134,6 +136,55 @@ def test_me_without_or_with_garbage_cookie_is_401(client):
     assert client.get("/api/v1/auth/me").status_code == 401
     client.cookies.set("access_token", "garbage")
     assert client.get("/api/v1/auth/me").status_code == 401
+
+
+def test_me_exposes_profile_fields_but_never_password_hash(client):
+    client.post("/api/v1/auth/register", json=REGISTER)
+    body = client.get("/api/v1/auth/me").json()
+    assert {"bio", "email_confirmed", "created_at"} <= body.keys()
+    assert "password_hash" not in body
+
+
+def test_patch_me_updates_only_the_sent_fields(client):
+    client.post("/api/v1/auth/register", json=REGISTER)
+    response = client.patch(
+        "/api/v1/auth/me", json={"bio": "Thích nấu ăn", "avatar_url": "https://cdn.example.com/a.png"}
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["bio"] == "Thích nấu ăn" and body["avatar_url"] == "https://cdn.example.com/a.png"
+    assert body["display_name"] == "Cook" and body["email"] == "cook@example.com"
+    assert client.get("/api/v1/auth/me").json()["bio"] == "Thích nấu ăn"
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"email": "other@example.com"},  # immutable through this endpoint
+        {"display_name": " x "},
+        {"display_name": None},
+        {"avatar_url": "not a url"},
+        {"bio": "x" * 1001},
+    ],
+)
+def test_patch_me_invalid_input_is_422(client, body):
+    client.post("/api/v1/auth/register", json=REGISTER)
+    response = client.patch("/api/v1/auth/me", json=body)
+    assert response.status_code == 422
+    assert response.headers["content-type"].startswith("application/problem+json")
+
+
+def test_patch_me_without_cookie_is_401(client):
+    assert client.patch("/api/v1/auth/me", json={"bio": "x"}).status_code == 401
+
+
+def test_patch_me_for_deleted_account_is_401():
+    client, s = make_client()
+    client.post("/api/v1/auth/register", json=REGISTER)
+    next(iter(s.repository.users.values())).is_deleted = True
+
+    assert client.patch("/api/v1/auth/me", json={"bio": "x"}).status_code == 401
 
 
 # --- refresh --------------------------------------------------------------------------------------------------------

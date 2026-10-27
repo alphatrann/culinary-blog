@@ -592,6 +592,52 @@
         "title": "NutritionOut",
         "type": "object"
       },
+      "ProfileUpdateRequest": {
+        "additionalProperties": false,
+        "description": "PATCH body: only the fields sent are changed (`model_dump(exclude_unset=True)`). `email` is not accepted.",
+        "properties": {
+          "avatar_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar Url"
+          },
+          "bio": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bio"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          }
+        },
+        "title": "ProfileUpdateRequest",
+        "type": "object"
+      },
       "RecipeCreateRequest": {
         "properties": {
           "category_id": {
@@ -1482,6 +1528,22 @@
             ],
             "title": "Avatar Url"
           },
+          "bio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bio"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
           "display_name": {
             "title": "Display Name",
             "type": "string"
@@ -1489,6 +1551,10 @@
           "email": {
             "title": "Email",
             "type": "string"
+          },
+          "email_confirmed": {
+            "title": "Email Confirmed",
+            "type": "boolean"
           },
           "id": {
             "format": "uuid",
@@ -1503,7 +1569,16 @@
             "type": "array"
           }
         },
-        "required": ["id", "display_name", "email", "avatar_url", "roles"],
+        "required": [
+          "id",
+          "display_name",
+          "email",
+          "avatar_url",
+          "bio",
+          "roles",
+          "email_confirmed",
+          "created_at"
+        ],
         "title": "UserOut",
         "type": "object"
       },
@@ -1657,6 +1732,43 @@
           }
         },
         "summary": "Me",
+        "tags": ["auth"]
+      },
+      "patch": {
+        "operationId": "update_me_api_v1_auth_me_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Me",
         "tags": ["auth"]
       }
     },

@@ -8,6 +8,7 @@ from culinary_blog.auth.commands.login import LoginHandler
 from culinary_blog.auth.commands.logout import LogoutHandler
 from culinary_blog.auth.commands.refresh import RefreshHandler
 from culinary_blog.auth.commands.register import RegisterHandler
+from culinary_blog.auth.commands.update_profile import UpdateProfileHandler
 from culinary_blog.auth.cookies import AuthCookies
 from culinary_blog.auth.dependencies import Authenticator
 from culinary_blog.auth.google import GoogleIdTokenVerifier
@@ -58,4 +59,5 @@ def build_auth_router() -> APIRouter:
         logout=LogoutHandler(repository, tokens),
         get_current_user=GetCurrentUserHandler(repository),
         google_login=GoogleLoginHandler(repository, GoogleIdTokenVerifier(settings.google_client_id), issuer),
+        update_profile=UpdateProfileHandler(repository),
     ).router
