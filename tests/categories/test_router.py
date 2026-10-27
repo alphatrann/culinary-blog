@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from culinary_blog.auth.dependencies import Authenticator
 from culinary_blog.auth.security import TokenService
 from culinary_blog.categories.commands.create_category import CreateCategoryHandler
+from culinary_blog.categories.commands.delete_category import DeleteCategoryHandler
 from culinary_blog.categories.commands.update_category import UpdateCategoryHandler
 from culinary_blog.categories.queries.get_category import GetCategoryHandler
 from culinary_blog.categories.queries.list_categories import ListCategoriesHandler
@@ -41,6 +42,7 @@ def client(repo, cache) -> TestClient:
         authenticator=Authenticator(TOKENS),
         create_category=CreateCategoryHandler(repo, invalidator(cache)),
         update_category=UpdateCategoryHandler(repo, invalidator(cache)),
+        delete_category=DeleteCategoryHandler(repo, invalidator(cache)),
         list_categories=ListCategoriesHandler(repo, cache),
         get_category=GetCategoryHandler(repo, cache),
     ).router
@@ -138,6 +140,38 @@ def test_update_without_cookie_is_401(client, repo):
 def test_update_bad_uuid_is_422(client):
     as_user(client, ADMIN)
     assert client.put(f"{BASE}/not-a-uuid", json={"name": "Whatever"}).status_code == 422
+
+
+# --- delete ---------------------------------------------------------------------------------------------------------
+
+
+def test_admin_deletes_empty_category_204(client, repo):
+    category = make_category(repo)
+    as_user(client, ADMIN)
+    assert client.delete(f"{BASE}/{category.id}").status_code == 204
+    assert category.is_deleted is True
+
+
+def test_delete_category_with_recipes_is_409_with_count(client, repo):
+    category = make_category(repo)
+    repo.add_recipe(category, AUTHOR, RecipeStatus.ARCHIVED)
+    as_user(client, ADMIN)
+    response = client.delete(f"{BASE}/{category.id}")
+
+    assert response.status_code == 409 and "1 recipe" in response.json()["detail"]
+    assert category.is_deleted is False
+
+
+def test_delete_unknown_category_is_404(client):
+    as_user(client, ADMIN)
+    assert client.delete(f"{BASE}/{uuid.uuid4()}").status_code == 404
+
+
+def test_delete_as_author_is_403_and_anonymous_is_401(client, repo):
+    category = make_category(repo)
+    assert client.delete(f"{BASE}/{category.id}").status_code == 401
+    as_user(client, AUTHOR)
+    assert client.delete(f"{BASE}/{category.id}").status_code == 403
 
 
 # --- list / detail (public) -----------------------------------------------------------------------------------------

@@ -107,6 +107,9 @@ class FakeRecipeRepository(RecipeRepository):
     async def get_by_id(self, recipe_id: uuid.UUID) -> Recipe | None:
         return next((r for r in self._live() if r.id == recipe_id), None)
 
+    async def get_full_by_id(self, recipe_id: uuid.UUID) -> Recipe | None:
+        return await self.get_by_id(recipe_id)
+
     async def get_children(self, recipe_id: uuid.UUID) -> tuple[list[RecipeStep], list[RecipeIngredient]]:
         steps = sorted(
             (s for s in self.steps if s.recipe_id == recipe_id and not s.is_deleted), key=lambda s: s.step_number

@@ -65,6 +65,9 @@ class FakeCategoryRepository(CategoryRepository):
     async def count_published_recipes(self, category_id: uuid.UUID) -> int:
         return self._published(category_id)
 
+    async def count_recipes(self, category_id: uuid.UUID) -> int:
+        return sum(1 for r in self.recipes if r.category_id == category_id and not r.is_deleted)
+
     async def name_taken(self, name: str, *, excluding: uuid.UUID | None = None) -> bool:
         return any(c.name == name and c.id != excluding for c in self.categories.values())
 

@@ -49,6 +49,7 @@ class Settings(BaseSettings):
     minio_bucket_name: str = "culinary-blog"
     minio_secure: bool = False
 
+    otel_enabled: bool = True  # False in local dev without a collector: no exporters, so no connection-refused noise
     otel_exporter_otlp_endpoint: str = "http://localhost:4317"
     otel_service_name: str = "culinary-blog-api"
 

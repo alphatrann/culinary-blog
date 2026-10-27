@@ -76,6 +76,16 @@ class CategoryRepository:
             )
             return int(result.scalar_one())
 
+    async def count_recipes(self, category_id: uuid.UUID) -> int:
+        """All non-deleted recipes regardless of status (FR-CAT-005 counts drafts and archived)."""
+        async with self._read_session_factory() as session:
+            result = await session.execute(
+                select(func.count())
+                .select_from(Recipe)
+                .where(Recipe.category_id == category_id, col(Recipe.is_deleted).is_(False))
+            )
+            return int(result.scalar_one())
+
     # Uniqueness checks deliberately include soft-deleted rows: the unique constraints do too.
     async def name_taken(self, name: str, *, excluding: uuid.UUID | None = None) -> bool:
         async with self._read_session_factory() as session:

@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, Header, Query, Request, Resp
 from culinary_blog.auth.dependencies import Authenticator
 from culinary_blog.recipes.commands.add_ingredient import AddIngredientCommand, AddIngredientHandler
 from culinary_blog.recipes.commands.add_step import AddStepCommand, AddStepHandler
+from culinary_blog.recipes.commands.archive_recipe import ArchiveRecipeCommand, ArchiveRecipeHandler
 from culinary_blog.recipes.commands.create_recipe import CreateRecipeCommand, CreateRecipeHandler
 from culinary_blog.recipes.commands.delete_image import DeleteImageCommand, DeleteImageHandler
 from culinary_blog.recipes.commands.delete_ingredient import DeleteIngredientCommand, DeleteIngredientHandler
@@ -14,6 +15,7 @@ from culinary_blog.recipes.commands.delete_recipe import DeleteRecipeCommand, De
 from culinary_blog.recipes.commands.delete_step import DeleteStepCommand, DeleteStepHandler
 from culinary_blog.recipes.commands.publish_recipe import PublishRecipeCommand, PublishRecipeHandler
 from culinary_blog.recipes.commands.set_primary_image import SetPrimaryImageCommand, SetPrimaryImageHandler
+from culinary_blog.recipes.commands.unarchive_recipe import UnarchiveRecipeCommand, UnarchiveRecipeHandler
 from culinary_blog.recipes.commands.unpublish_recipe import UnpublishRecipeCommand, UnpublishRecipeHandler
 from culinary_blog.recipes.commands.update_ingredient import UpdateIngredientCommand, UpdateIngredientHandler
 from culinary_blog.recipes.commands.update_recipe import UpdateRecipeCommand, UpdateRecipeHandler
@@ -59,6 +61,8 @@ class RecipeRouter:
         get_recipe: GetRecipeHandler,
         publish_recipe: PublishRecipeHandler,
         unpublish_recipe: UnpublishRecipeHandler,
+        archive_recipe: ArchiveRecipeHandler,
+        unarchive_recipe: UnarchiveRecipeHandler,
         add_ingredient: AddIngredientHandler,
         update_ingredient: UpdateIngredientHandler,
         delete_ingredient: DeleteIngredientHandler,
@@ -80,6 +84,8 @@ class RecipeRouter:
         self._publish_recipe = publish_recipe
         self._delete_recipe = delete_recipe
         self._unpublish_recipe = unpublish_recipe
+        self._archive_recipe = archive_recipe
+        self._unarchive_recipe = unarchive_recipe
         self._add_ingredient = add_ingredient
         self._update_ingredient = update_ingredient
         self._delete_ingredient = delete_ingredient
@@ -100,6 +106,8 @@ class RecipeRouter:
         self.router.add_api_route("/{recipe_id}", self.delete, methods=["DELETE"], status_code=204)
         self.router.add_api_route("/{recipe_id}/publish", self.publish, methods=["PATCH"], response_model=RecipeOut)
         self.router.add_api_route("/{recipe_id}/unpublish", self.unpublish, methods=["PATCH"], response_model=RecipeOut)
+        self.router.add_api_route("/{recipe_id}/archive", self.archive, methods=["PATCH"], response_model=RecipeOut)
+        self.router.add_api_route("/{recipe_id}/unarchive", self.unarchive, methods=["PATCH"], response_model=RecipeOut)
         self.router.add_api_route(
             "/{recipe_id}/ingredients",
             self.add_ingredient,
@@ -252,6 +260,18 @@ class RecipeRouter:
     async def unpublish(self, recipe_id: uuid.UUID, request: Request, response: Response) -> RecipeOut:
         actor = await self._authenticator.require_principal(request)
         recipe = await self._unpublish_recipe.handle(UnpublishRecipeCommand(actor, recipe_id))
+        response.headers["ETag"] = _etag(recipe.row_version)
+        return recipe
+
+    async def archive(self, recipe_id: uuid.UUID, request: Request, response: Response) -> RecipeOut:
+        actor = await self._authenticator.require_principal(request)
+        recipe = await self._archive_recipe.handle(ArchiveRecipeCommand(actor, recipe_id))
+        response.headers["ETag"] = _etag(recipe.row_version)
+        return recipe
+
+    async def unarchive(self, recipe_id: uuid.UUID, request: Request, response: Response) -> RecipeOut:
+        actor = await self._authenticator.require_principal(request)
+        recipe = await self._unarchive_recipe.handle(UnarchiveRecipeCommand(actor, recipe_id))
         response.headers["ETag"] = _etag(recipe.row_version)
         return recipe
 

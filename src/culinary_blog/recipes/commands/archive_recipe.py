@@ -1,0 +1,58 @@
+import logging
+import uuid
+from dataclasses import dataclass
+from datetime import UTC, datetime
+
+from culinary_blog.auth.principal import Principal
+from culinary_blog.cqrs import Command, CommandHandler
+from culinary_blog.errors import NotFoundError
+from culinary_blog.recipes.access import ensure_can_edit
+from culinary_blog.recipes.cache import RecipeCacheInvalidator
+from culinary_blog.recipes.enums import RecipeStatus
+from culinary_blog.recipes.mapping import to_recipe_out
+from culinary_blog.recipes.repository import RecipeRepository
+from culinary_blog.recipes.schemas import RecipeOut
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class ArchiveRecipeCommand(Command):
+    actor: Principal
+    recipe_id: uuid.UUID
+
+
+class ArchiveRecipeHandler(CommandHandler[ArchiveRecipeCommand, RecipeOut]):
+    """FR-RCP-006: hide a recipe from public listing without deleting it; idempotent if already archived."""
+
+    def __init__(self, repository: RecipeRepository, cache: RecipeCacheInvalidator) -> None:
+        self._repository = repository
+        self._cache = cache
+
+    async def handle(self, command: ArchiveRecipeCommand) -> RecipeOut:
+        recipe = await self._repository.get_by_id(command.recipe_id)
+        if recipe is None:
+            raise NotFoundError("Không tìm thấy công thức nấu ăn.")
+        ensure_can_edit(command.actor, recipe)
+
+        if recipe.status != RecipeStatus.ARCHIVED:
+            updated = await self._repository.set_status(recipe.id, RecipeStatus.ARCHIVED, stamp_published_at=False)
+            if updated is None:
+                raise NotFoundError("Không tìm thấy công thức nấu ăn.")
+            recipe = updated
+            await self._cache.visibility_changed(recipe.slug)
+            logger.info(
+                "recipe archived",
+                extra={
+                    "user_id": str(command.actor.user_id),
+                    "recipe_id": str(recipe.id),
+                    "at": datetime.now(UTC).isoformat(),
+                },
+            )
+        else:  # no-op: get_by_id is a partial (authorization-only) load, so reload the full row to serialize it
+            full = await self._repository.get_full_by_id(recipe.id)
+            if full is None:
+                raise NotFoundError("Không tìm thấy công thức nấu ăn.")
+            recipe = full
+        steps, ingredients = await self._repository.get_children(recipe.id)
+        return to_recipe_out(recipe, steps, ingredients)

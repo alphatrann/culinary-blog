@@ -119,6 +119,14 @@ class RecipeRepository:
             )
             return result.scalars().first()
 
+    async def get_full_by_id(self, recipe_id: uuid.UUID) -> Recipe | None:
+        """Like `get_by_id` but with every column loaded, for serializing the recipe."""
+        async with self._read_session_factory() as session:
+            result = await session.execute(
+                select(Recipe).where(Recipe.id == recipe_id, col(Recipe.is_deleted).is_(False))
+            )
+            return result.scalars().first()
+
     async def get_children(self, recipe_id: uuid.UUID) -> tuple[list[RecipeStep], list[RecipeIngredient]]:
         """A recipe's live steps (by step_number) and ingredients (by order_index)."""
         async with self._read_session_factory() as session:

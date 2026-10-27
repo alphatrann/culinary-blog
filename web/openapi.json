@@ -1891,6 +1891,38 @@
       }
     },
     "/api/v1/categories/{category_id}": {
+      "delete": {
+        "operationId": "delete_api_v1_categories__category_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "category_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Category Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete",
+        "tags": ["categories"]
+      },
       "put": {
         "operationId": "update_api_v1_categories__category_id__put",
         "parameters": [
@@ -2370,6 +2402,47 @@
           }
         },
         "summary": "Update",
+        "tags": ["recipes"]
+      }
+    },
+    "/api/v1/recipes/{recipe_id}/archive": {
+      "patch": {
+        "operationId": "archive_api_v1_recipes__recipe_id__archive_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recipe_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Recipe Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Archive",
         "tags": ["recipes"]
       }
     },
@@ -2865,6 +2938,47 @@
           }
         },
         "summary": "Update Step",
+        "tags": ["recipes"]
+      }
+    },
+    "/api/v1/recipes/{recipe_id}/unarchive": {
+      "patch": {
+        "operationId": "unarchive_api_v1_recipes__recipe_id__unarchive_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recipe_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Recipe Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unarchive",
         "tags": ["recipes"]
       }
     },

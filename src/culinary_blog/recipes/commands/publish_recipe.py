@@ -53,4 +53,9 @@ class PublishRecipeHandler(CommandHandler[PublishRecipeCommand, RecipeOut]):
                     "at": datetime.now(UTC).isoformat(),
                 },
             )
+        else:  # no-op: get_by_id is a partial (authorization-only) load, so reload the full row to serialize it
+            full = await self._repository.get_full_by_id(recipe.id)
+            if full is None:
+                raise NotFoundError("Không tìm thấy công thức nấu ăn.")
+            recipe = full
         return to_recipe_out(recipe, steps, ingredients)

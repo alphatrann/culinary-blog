@@ -5,6 +5,7 @@ from fastapi import APIRouter, Query, Request, Response
 
 from culinary_blog.auth.dependencies import Authenticator
 from culinary_blog.categories.commands.create_category import CreateCategoryCommand, CreateCategoryHandler
+from culinary_blog.categories.commands.delete_category import DeleteCategoryCommand, DeleteCategoryHandler
 from culinary_blog.categories.commands.update_category import UpdateCategoryCommand, UpdateCategoryHandler
 from culinary_blog.categories.queries.get_category import GetCategoryHandler, GetCategoryQuery
 from culinary_blog.categories.queries.list_categories import ListCategoriesHandler, ListCategoriesQuery
@@ -24,12 +25,14 @@ class CategoryRouter:
         authenticator: Authenticator,
         create_category: CreateCategoryHandler,
         update_category: UpdateCategoryHandler,
+        delete_category: DeleteCategoryHandler,
         list_categories: ListCategoriesHandler,
         get_category: GetCategoryHandler,
     ) -> None:
         self._authenticator = authenticator
         self._create_category = create_category
         self._update_category = update_category
+        self._delete_category = delete_category
         self._list_categories = list_categories
         self._get_category = get_category
 
@@ -38,6 +41,7 @@ class CategoryRouter:
         self.router.add_api_route("", self.create, methods=["POST"], response_model=CategoryOut, status_code=201)
         self.router.add_api_route("/{slug}", self.detail, methods=["GET"], response_model=CategoryDetailOut)
         self.router.add_api_route("/{category_id}", self.update, methods=["PUT"], response_model=CategoryOut)
+        self.router.add_api_route("/{category_id}", self.delete, methods=["DELETE"], status_code=204)
 
     async def list_categories(self) -> list[CategoryOut]:
         return await self._list_categories.handle(ListCategoriesQuery())
@@ -65,3 +69,8 @@ class CategoryRouter:
         return await self._update_category.handle(
             UpdateCategoryCommand(actor, category_id, body.name, body.description, body.image_url, body.order_index)
         )
+
+    async def delete(self, category_id: uuid.UUID, request: Request) -> Response:
+        actor = await self._authenticator.require_principal(request)
+        await self._delete_category.handle(DeleteCategoryCommand(actor, category_id))
+        return Response(status_code=204)

@@ -86,9 +86,10 @@ resource = Resource.create(
 )
 
 trace.set_tracer_provider(TracerProvider(resource=resource))
-trace.get_tracer_provider().add_span_processor(
-    BatchSpanProcessor(OTLPSpanExporter(endpoint=settings.otel_exporter_otlp_endpoint, insecure=True))
-)
+if settings.otel_enabled:
+    trace.get_tracer_provider().add_span_processor(
+        BatchSpanProcessor(OTLPSpanExporter(endpoint=settings.otel_exporter_otlp_endpoint, insecure=True))
+    )
 metrics.set_meter_provider(
     MeterProvider(
         resource=resource,
@@ -96,7 +97,9 @@ metrics.set_meter_provider(
             PeriodicExportingMetricReader(
                 OTLPMetricExporter(endpoint=settings.otel_exporter_otlp_endpoint, insecure=True)
             )
-        ],
+        ]
+        if settings.otel_enabled
+        else [],
     )
 )
 _meter = metrics.get_meter(__name__)

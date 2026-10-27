@@ -541,6 +541,36 @@ def test_delete_unknown_recipe_is_404(client, owned):
     assert_problem(client.delete(f"{BASE}/00000000-0000-0000-0000-000000000000"), 404)
 
 
+# --- archive / unarchive ----------------------------------------------------------------------------------------
+
+
+def test_owner_archives_and_unarchives_recipe(client, owned):
+    as_user(client, AUTHOR)
+    archived = client.patch(f"{BASE}/{owned.id}/archive")
+    assert archived.status_code == 200 and archived.json()["status"] == RecipeStatus.ARCHIVED
+
+    restored = client.patch(f"{BASE}/{owned.id}/unarchive")
+    assert restored.status_code == 200 and restored.json()["status"] == RecipeStatus.DRAFT
+
+
+def test_archived_recipe_is_hidden_from_guests(client, owned):
+    as_user(client, AUTHOR)
+    client.patch(f"{BASE}/{owned.id}/publish")
+    client.patch(f"{BASE}/{owned.id}/archive")
+    client.cookies.clear()
+
+    assert client.get(f"{BASE}/{owned.slug}").status_code == 403
+
+
+@pytest.mark.parametrize("action", ["archive", "unarchive"])
+def test_archive_actions_error_cases(client, owned, action):
+    assert_problem(client.patch(f"{BASE}/{owned.id}/{action}"), 401)
+    as_user(client, OTHER_AUTHOR)
+    assert_problem(client.patch(f"{BASE}/{owned.id}/{action}"), 403)
+    as_user(client, AUTHOR)
+    assert_problem(client.patch(f"{BASE}/00000000-0000-0000-0000-000000000000/{action}"), 404)
+
+
 def test_recipes_reads_still_succeed_when_the_cache_is_unavailable(client, cache):
     cache.unavailable = True
 
