@@ -6,35 +6,27 @@ Failed jobs are retried up to MAX_ATTEMPTS times, then parked in `<queue>:dlq`.
 
 import asyncio
 import io
-import json
-import logging
 import uuid
 from collections.abc import Awaitable, Callable
 
 from PIL import Image, ImageOps
 from redis.asyncio import Redis
-from redis.exceptions import ConnectionError as RedisConnectionError
-from redis.exceptions import TimeoutError as RedisTimeoutError
 
 from culinary_blog.cache.redis import get_cache_redis, get_queue_redis
 from culinary_blog.cache.service import RedisCache
 from culinary_blog.config import get_settings
 from culinary_blog.database.session import async_session_factory
-from culinary_blog.jobs.queue import DELETE_FILE, RESIZE_IMAGE, dead_letter_queue
+from culinary_blog.jobs.queue import DELETE_FILE, RESIZE_IMAGE
 from culinary_blog.logging import configure_logging
 from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.repository import RecipeRepository
 from culinary_blog.storage.minio_storage import MinioFileStorage
 from culinary_blog.storage.service import FileStorageService
-
-logger = logging.getLogger(__name__)
+from culinary_blog.workers.base import JobWorker
 
 MAX_ATTEMPTS = 3
 THUMBNAIL_SIZE = (300, 300)  # cropped to fill
 MEDIUM_SIZE = (800, 600)  # fitted inside, aspect ratio kept, never upscaled
-# Must stay below the Redis client's socket timeout (redis-py default: 5 s), or every idle BRPOP would raise.
-POLL_TIMEOUT_SECONDS = 2
-RECONNECT_DELAY_SECONDS = 1
 
 
 def render_variants(original: bytes) -> tuple[bytes, bytes]:
@@ -53,7 +45,10 @@ def _jpeg(image: Image.Image) -> bytes:
     return buffer.getvalue()
 
 
-class ImageWorker:
+class ImageWorker(JobWorker):
+    max_attempts = MAX_ATTEMPTS
+    backoff = (2, 4)  # seconds before attempts 2 and 3
+
     def __init__(
         self,
         redis: Redis,
@@ -62,42 +57,10 @@ class ImageWorker:
         cache: RecipeCacheInvalidator,
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
     ) -> None:
-        self._redis = redis
         self._storage = storage
         self._repository = repository
         self._cache = cache
-        self._sleep = sleep
-        self._handlers = {RESIZE_IMAGE: self._resize_image, DELETE_FILE: self._delete_files}
-
-    async def run(self) -> None:
-        logger.info("image worker started")
-        while True:
-            try:
-                popped = await self._redis.brpop(list(self._handlers), timeout=POLL_TIMEOUT_SECONDS)  # type: ignore[misc]
-            except (RedisConnectionError, RedisTimeoutError):  # Redis restarting or briefly unreachable: keep polling
-                logger.warning("job queue unavailable, retrying", exc_info=True)
-                await self._sleep(RECONNECT_DELAY_SECONDS)
-                continue
-            if popped is None:
-                continue
-            queue, raw = popped
-            await self.process(queue.decode() if isinstance(queue, bytes) else queue, raw)
-
-    async def process(self, queue: str, raw: bytes | str) -> None:
-        """Run one job; on failure re-enqueue it, or dead-letter it once attempts are exhausted."""
-        payload = json.loads(raw)
-        logger.info("job started: %s %s", queue, payload)
-        try:
-            await self._handlers[queue](payload)
-            logger.info("job done: %s", queue)
-        except Exception:
-            attempts = payload.get("attempts", 0) + 1
-            logger.exception("job failed: %s (attempt %d/%d)", queue, attempts, MAX_ATTEMPTS)
-            if attempts < MAX_ATTEMPTS:
-                await self._sleep(2**attempts)
-                await self._redis.lpush(queue, json.dumps({**payload, "attempts": attempts}))  # type: ignore[misc]
-            else:
-                await self._redis.lpush(dead_letter_queue(queue), json.dumps({**payload, "attempts": attempts}))  # type: ignore[misc]
+        super().__init__(redis, {RESIZE_IMAGE: self._resize_image, DELETE_FILE: self._delete_files}, sleep)
 
     async def _resize_image(self, payload: dict) -> None:
         image = await self._repository.get_image(uuid.UUID(payload["recipe_id"]), uuid.UUID(payload["image_id"]))
