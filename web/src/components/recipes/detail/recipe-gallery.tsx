@@ -36,7 +36,8 @@ function RecipeGallery({
     <figure className="m-0">
       <div
         className={cn(
-          "relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl border border-border text-muted-foreground sm:aspect-video",
+          // Foreground, not muted: the tinted placeholder backgrounds fall below 4.5:1 with muted text.
+          "relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl border border-border text-foreground sm:aspect-video",
           !heroSrc && tintFor(slug),
         )}
       >
