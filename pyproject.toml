@@ -12,6 +12,7 @@ dependencies = [
     "asyncpg>=0.31.0",
     "email-validator>=2.2",
     "fastapi>=0.141.1",
+    "google-auth[requests]>=2.35",
     "httpx>=0.28.0",
     "minio>=7.2.20",
     "opentelemetry-distro>=0.50b0",

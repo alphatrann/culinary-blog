@@ -4,12 +4,14 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from culinary_blog.auth.commands.google_login import GoogleLoginHandler
 from culinary_blog.auth.commands.login import LoginHandler
 from culinary_blog.auth.commands.logout import LogoutHandler
 from culinary_blog.auth.commands.refresh import RefreshHandler
 from culinary_blog.auth.commands.register import RegisterHandler
 from culinary_blog.auth.cookies import AuthCookies
 from culinary_blog.auth.dependencies import Authenticator
+from culinary_blog.auth.google import GoogleProfile
 from culinary_blog.auth.queries.get_current_user import GetCurrentUserHandler
 from culinary_blog.auth.router import AuthRouter
 from culinary_blog.problem_details import register_problem_handlers
@@ -29,6 +31,7 @@ def make_client() -> tuple[TestClient, Services]:
         refresh=RefreshHandler(s.repository, s.tokens, s.issuer),
         logout=LogoutHandler(s.repository, s.tokens),
         get_current_user=GetCurrentUserHandler(s.repository),
+        google_login=GoogleLoginHandler(s.repository, s.google, s.issuer),
     ).router
     app = FastAPI()
     register_problem_handlers(app)
@@ -169,3 +172,32 @@ def test_logout_revokes_refresh_token_and_clears_cookies(client):
 
 def test_logout_requires_authentication(client):
     assert client.post("/api/v1/auth/logout").status_code == 401
+
+
+# --- google ---------------------------------------------------------------------------------------------------------
+
+GOOGLE_PROFILE = GoogleProfile(sub="g-123", email="cook@example.com", email_verified=True, name="Cook", picture=None)
+
+
+def test_google_login_sets_cookies_and_returns_user():
+    client, s = make_client()
+    s.google.profiles["good"] = GOOGLE_PROFILE
+    response = client.post("/api/v1/auth/google", json={"id_token": "good"})
+
+    assert response.status_code == 200
+    assert response.json()["email"] == "cook@example.com"
+    assert {h.split("=", 1)[0] for h in set_cookie_headers(response)} == {"access_token", "refresh_token"}
+
+
+def test_google_login_with_invalid_token_is_401_problem_json():
+    client, _ = make_client()
+    response = client.post("/api/v1/auth/google", json={"id_token": "forged"})
+
+    assert response.status_code == 401
+    assert response.headers["content-type"].startswith("application/problem+json")
+    assert not set_cookie_headers(response)
+
+
+def test_google_login_without_id_token_is_422():
+    client, _ = make_client()
+    assert client.post("/api/v1/auth/google", json={}).status_code == 422

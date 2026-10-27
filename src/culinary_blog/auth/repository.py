@@ -29,6 +29,13 @@ class AuthRepository:
             result = await session.execute(select(User).where(User.email == email, col(User.is_deleted).is_(False)))
             return result.scalars().first()
 
+    async def get_user_by_google_sub(self, google_sub: str) -> User | None:
+        async with self._read_session_factory() as session:
+            result = await session.execute(
+                select(User).where(User.google_sub == google_sub, col(User.is_deleted).is_(False))
+            )
+            return result.scalars().first()
+
     async def get_user_by_id(self, user_id: uuid.UUID) -> User | None:
         async with self._read_session_factory() as session:
             result = await session.execute(

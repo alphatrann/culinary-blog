@@ -31,6 +31,10 @@ class LoginRequest(BaseModel):
     password: str = Field(min_length=1, max_length=128)
 
 
+class GoogleLoginRequest(BaseModel):
+    id_token: str = Field(min_length=1, max_length=4096)
+
+
 class UserOut(BaseModel):
     """Build with `UserOut.model_validate(user)`; never exposes password_hash."""
 

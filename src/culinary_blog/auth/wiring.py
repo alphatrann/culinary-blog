@@ -3,12 +3,14 @@ from functools import lru_cache
 
 from fastapi import APIRouter
 
+from culinary_blog.auth.commands.google_login import GoogleLoginHandler
 from culinary_blog.auth.commands.login import LoginHandler
 from culinary_blog.auth.commands.logout import LogoutHandler
 from culinary_blog.auth.commands.refresh import RefreshHandler
 from culinary_blog.auth.commands.register import RegisterHandler
 from culinary_blog.auth.cookies import AuthCookies
 from culinary_blog.auth.dependencies import Authenticator
+from culinary_blog.auth.google import GoogleIdTokenVerifier
 from culinary_blog.auth.queries.get_current_user import GetCurrentUserHandler
 from culinary_blog.auth.repository import AuthRepository
 from culinary_blog.auth.router import AuthRouter
@@ -55,4 +57,5 @@ def build_auth_router() -> APIRouter:
         refresh=RefreshHandler(repository, tokens, issuer),
         logout=LogoutHandler(repository, tokens),
         get_current_user=GetCurrentUserHandler(repository),
+        google_login=GoogleLoginHandler(repository, GoogleIdTokenVerifier(settings.google_client_id), issuer),
     ).router

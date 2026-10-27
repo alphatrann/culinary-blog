@@ -60,6 +60,8 @@ class Settings(BaseSettings):
     cookie_secure: bool = True
     max_failed_logins: int = 5
     lockout_minutes: int = 15
+    # FR-AUTH-003. Empty disables Google sign-in (the endpoint answers 503); the audience check needs this value.
+    google_client_id: str = ""
 
     @model_validator(mode="after")
     def _require_real_secret_outside_development(self) -> "Settings":

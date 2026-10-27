@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { PasswordInput } from "@/components/auth/password-input";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -26,13 +27,15 @@ export function LoginForm({ next }: { next?: string | null }) {
     formState: { errors },
   } = useForm<LoginValues>({ resolver: zodResolver(loginSchema) });
 
+  const signedIn = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["auth"] });
+    router.replace(safeNext(next) ?? "/");
+    router.refresh();
+  };
+
   const login = useMutation({
     mutationFn: (body: LoginValues) => api.post("/auth/login", { body }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["auth"] });
-      router.replace(safeNext(next) ?? "/");
-      router.refresh();
-    },
+    onSuccess: signedIn,
     onError: (error) => {
       const failure = mapAuthError(error, "login");
       setBanner(failure.banner);
@@ -40,6 +43,12 @@ export function LoginForm({ next }: { next?: string | null }) {
         setError(field as keyof LoginValues, { message });
       }
     },
+  });
+
+  const googleLogin = useMutation({
+    mutationFn: (id_token: string) => api.post("/auth/google", { body: { id_token } }),
+    onSuccess: signedIn,
+    onError: (error) => setBanner(mapAuthError(error, "login").banner),
   });
 
   return (
@@ -77,9 +86,15 @@ export function LoginForm({ next }: { next?: string | null }) {
         />
         <FieldError id="password-error">{errors.password?.message}</FieldError>
       </Field>
-      <Button type="submit" disabled={login.isPending}>
+      <Button type="submit" disabled={login.isPending || googleLogin.isPending}>
         {login.isPending ? "Đang đăng nhập…" : "Đăng nhập"}
       </Button>
+      <GoogleSignInButton
+        onCredential={(idToken) => {
+          setBanner(undefined);
+          googleLogin.mutate(idToken);
+        }}
+      />
     </form>
   );
 }
