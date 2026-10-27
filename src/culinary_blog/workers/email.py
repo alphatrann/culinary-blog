@@ -16,6 +16,7 @@ from redis.asyncio import Redis
 from culinary_blog.cache.redis import get_queue_redis
 from culinary_blog.config import Settings, get_settings
 from culinary_blog.jobs.queue import WELCOME_EMAIL
+from culinary_blog.logging import configure_logging
 from culinary_blog.workers.base import JobWorker
 
 logger = logging.getLogger(__name__)
@@ -60,7 +61,7 @@ class WelcomeEmailWorker(JobWorker):
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO)
+    configure_logging()
     asyncio.run(WelcomeEmailWorker(get_queue_redis(), get_settings()).run())
 
 
