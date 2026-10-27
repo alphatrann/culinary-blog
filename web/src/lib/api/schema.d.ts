@@ -69,7 +69,8 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    patch?: never;
+    /** Update Me */
+    patch: operations["update_me_api_v1_auth_me_patch"];
     trace?: never;
   };
   "/api/v1/auth/refresh": {
@@ -624,6 +625,18 @@ export interface components {
       /** Sodium */
       sodium?: number | null;
     };
+    /**
+     * ProfileUpdateRequest
+     * @description PATCH body: only the fields sent are changed (`model_dump(exclude_unset=True)`). `email` is not accepted.
+     */
+    ProfileUpdateRequest: {
+      /** Avatar Url */
+      avatar_url?: string | null;
+      /** Bio */
+      bio?: string | null;
+      /** Display Name */
+      display_name?: string | null;
+    };
     /** RecipeCreateRequest */
     RecipeCreateRequest: {
       /**
@@ -973,10 +986,19 @@ export interface components {
     UserOut: {
       /** Avatar Url */
       avatar_url: string | null;
+      /** Bio */
+      bio: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
       /** Display Name */
       display_name: string;
       /** Email */
       email: string;
+      /** Email Confirmed */
+      email_confirmed: boolean;
       /**
        * Id
        * Format: uuid
@@ -1107,6 +1129,39 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["UserOut"];
+        };
+      };
+    };
+  };
+  update_me_api_v1_auth_me_patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ProfileUpdateRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
         };
       };
     };
