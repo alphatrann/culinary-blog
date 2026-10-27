@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro, Fraunces } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { siteUrl } from "@/lib/env";
 import "./globals.css";
 
 const beVietnamPro = Be_Vietnam_Pro({
@@ -18,6 +19,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
   title: "Culinary Blog",
   description: "Recipe-sharing platform",
 };

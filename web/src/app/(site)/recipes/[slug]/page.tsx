@@ -9,8 +9,10 @@ import { RecipeMeta } from "@/components/recipes/detail/recipe-meta";
 import { RecipeNutrition } from "@/components/recipes/detail/recipe-nutrition";
 import { RecipeSteps } from "@/components/recipes/detail/recipe-steps";
 import { isApiError } from "@/lib/api";
+import { siteUrl } from "@/lib/env";
 import { serverGet } from "@/lib/api/server";
 import { difficultyLabel, formatMinutes } from "@/lib/labels";
+import { buildRecipeJsonLd, buildRecipeMetadata, serializeJsonLd } from "@/lib/seo/recipe";
 
 export const revalidate = 300;
 
@@ -42,7 +44,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const { slug } = await params;
   try {
     const recipe = await serverGet("/recipes/{slug}", { path: { slug }, revalidate: 300 });
-    return { title: `${recipe.title} | Culinary Blog`, description: recipe.description };
+    return buildRecipeMetadata(recipe, siteUrl());
   } catch {
     return { title: "Không tìm thấy công thức | Culinary Blog" };
   }
@@ -52,9 +54,14 @@ export default async function RecipePage({ params }: { params: Params }) {
   const { slug } = await params;
   const recipe = await loadRecipe(slug);
   const related = await loadRelated(recipe.category_id, recipe.slug);
+  const jsonLd = buildRecipeJsonLd(recipe, siteUrl());
 
   return (
     <main className="mx-auto w-full max-w-[1200px] px-4 sm:px-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
+      />
       <Breadcrumb
         items={[
           { label: "Trang chủ", href: "/" },
