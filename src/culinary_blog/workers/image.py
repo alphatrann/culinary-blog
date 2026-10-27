@@ -21,6 +21,7 @@ from culinary_blog.cache.service import RedisCache
 from culinary_blog.config import get_settings
 from culinary_blog.database.session import async_session_factory
 from culinary_blog.jobs.queue import DELETE_FILE, RESIZE_IMAGE, dead_letter_queue
+from culinary_blog.logging import configure_logging
 from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.repository import RecipeRepository
 from culinary_blog.storage.minio_storage import MinioFileStorage
@@ -121,7 +122,7 @@ class ImageWorker:
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO)
+    configure_logging()
     worker = ImageWorker(
         get_queue_redis(),
         MinioFileStorage(get_settings()),
