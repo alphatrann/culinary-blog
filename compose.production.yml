@@ -18,6 +18,8 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
+        # Same-origin: nginx proxies /api/ on localhost to the API, keeping the auth cookies first-party.
+        NEXT_PUBLIC_API_BASE_URL: /api/v1
     restart: unless-stopped
     environment:
       API_BASE_URL: http://api:8000
@@ -32,6 +34,9 @@ services:
     command: ["uvicorn", "culinary_blog.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
     env_file:
       - .env.production
+    environment:
+      # The frontend origin is http://localhost (not the :3000 default), so CORS must allow it.
+      CORS_ORIGINS: http://localhost
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -224,8 +229,8 @@ services:
       context: .
       dockerfile: docker/grafana.Dockerfile
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    environment:
+      GF_SERVER_ROOT_URL: http://grafana.localhost/
     env_file:
       - .env.production
     volumes:
