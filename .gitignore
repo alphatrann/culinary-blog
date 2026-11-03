@@ -14,3 +14,9 @@ scripts/seed/images/
 
 # Impeccable launcher binary (platform-specific; downloaded on first run)
 .claude/skills/impeccable/scripts/bin/
+.agents/skills/impeccable/scripts/bin/
+
+# Local agent and tool artifacts (not project source)
+.claude/worktrees/
+.playwright-mcp/
+AGENTS.md
