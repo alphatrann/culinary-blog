@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Menu } from "@base-ui/react/menu";
-import { LogOut, User, UtensilsCrossed } from "lucide-react";
+import { LogOut, Tags, User, UtensilsCrossed } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { hasRole, initials, useUser } from "@/lib/session";
 
@@ -50,6 +50,11 @@ export function HeaderActions() {
               {canWrite && (
                 <Menu.Item render={<Link href="/dashboard/recipes" />} className={itemClass}>
                   <UtensilsCrossed className="size-4" aria-hidden="true" /> Công thức của tôi
+                </Menu.Item>
+              )}
+              {hasRole(user, "admin") && (
+                <Menu.Item render={<Link href="/dashboard/categories" />} className={itemClass}>
+                  <Tags className="size-4" aria-hidden="true" /> Quản lý danh mục
                 </Menu.Item>
               )}
               <Menu.Item onClick={logout} className={itemClass}>
