@@ -30,7 +30,7 @@ class CategoryCreateRequest(CategoryWrite):
 
 
 class CategoryUpdateRequest(CategoryWrite):
-    order_index: int = Field(default=0, ge=0)
+    order_index: int | None = Field(default=None, ge=0)  # omitted = keep current position
 
 
 class CategoryOut(BaseModel):

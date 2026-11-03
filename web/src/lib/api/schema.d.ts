@@ -568,11 +568,8 @@ export interface components {
       image_url?: string | null;
       /** Name */
       name: string;
-      /**
-       * Order Index
-       * @default 0
-       */
-      order_index: number;
+      /** Order Index */
+      order_index?: number | null;
     };
     /** GoogleLoginRequest */
     GoogleLoginRequest: {

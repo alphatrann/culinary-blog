@@ -203,10 +203,16 @@
             "type": "string"
           },
           "order_index": {
-            "default": 0,
-            "minimum": 0.0,
-            "title": "Order Index",
-            "type": "integer"
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Index"
           }
         },
         "required": ["name"],

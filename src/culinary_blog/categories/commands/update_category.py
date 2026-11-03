@@ -20,7 +20,7 @@ class UpdateCategoryCommand(Command):
     name: str
     description: str | None
     image_url: str | None
-    order_index: int
+    order_index: int | None  # None = keep the current position (the admin form doesn't show it)
 
 
 class UpdateCategoryHandler(CommandHandler[UpdateCategoryCommand, CategoryOut]):
@@ -42,7 +42,8 @@ class UpdateCategoryHandler(CommandHandler[UpdateCategoryCommand, CategoryOut]):
         category.name = command.name
         category.description = command.description
         category.image_url = command.image_url
-        category.order_index = command.order_index
+        if command.order_index is not None:
+            category.order_index = command.order_index
         await self._repository.save(category)
         await self._cache.updated()
         logger.info(
