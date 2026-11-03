@@ -36,7 +36,12 @@ export function HeaderActions() {
           Viết công thức
         </Link>
       )}
-      <UserMenu name={user.display_name} canWrite={canWrite} onLogout={logout} />
+      <UserMenu
+        name={user.display_name}
+        canWrite={canWrite}
+        isAdmin={hasRole(user, "admin")}
+        onLogout={logout}
+      />
     </div>
   );
 }

@@ -10,6 +10,7 @@ from culinary_blog.recipes.access import ensure_can_edit
 from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.enums import RecipeStatus
 from culinary_blog.recipes.mapping import to_recipe_out
+from culinary_blog.recipes.metrics import recipes_published
 from culinary_blog.recipes.repository import RecipeRepository
 from culinary_blog.recipes.schemas import RecipeOut
 
@@ -45,6 +46,7 @@ class PublishRecipeHandler(CommandHandler[PublishRecipeCommand, RecipeOut]):
                 raise NotFoundError("Không tìm thấy công thức nấu ăn.")
             recipe = updated
             await self._cache.visibility_changed(recipe.slug)
+            recipes_published.add(1)
             logger.info(
                 "recipe published",
                 extra={

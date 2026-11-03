@@ -5,6 +5,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { FormProvider, useForm, useWatch, type Path } from "react-hook-form";
+import { toast } from "sonner";
 import { Alert } from "@/components/ui/alert";
 import { api, isApiError, type ResponseBody } from "@/lib/api";
 import {
@@ -97,6 +98,7 @@ export function RecipeEditor(props: RecipeEditorProps) {
     },
     onSuccess: (saved, { mode }) => {
       setDone(true);
+      toast.success(mode === "publish" ? "Đã xuất bản công thức." : "Đã lưu bản nháp.");
       router.push(mode === "publish" ? `/recipes/${saved.slug}` : "/dashboard/recipes");
     },
     onError: (error) => {

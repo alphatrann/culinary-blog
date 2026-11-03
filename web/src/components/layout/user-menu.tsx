@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Menu } from "@base-ui/react/menu";
-import { LogOut, User, UtensilsCrossed } from "lucide-react";
+import { LogOut, Tags, User, UtensilsCrossed } from "lucide-react";
 import { initials, type useUser } from "@/lib/session";
 
 const avatarClass =
@@ -17,10 +17,12 @@ const itemClass =
 export function UserMenu({
   name,
   canWrite,
+  isAdmin,
   onLogout,
 }: {
   name: string;
   canWrite: boolean;
+  isAdmin: boolean;
   onLogout: ReturnType<typeof useUser>["logout"];
 }) {
   return (
@@ -38,6 +40,11 @@ export function UserMenu({
             {canWrite && (
               <Menu.Item render={<Link href="/dashboard/recipes" />} className={itemClass}>
                 <UtensilsCrossed className="size-4" aria-hidden="true" /> Công thức của tôi
+              </Menu.Item>
+            )}
+            {isAdmin && (
+              <Menu.Item render={<Link href="/dashboard/categories" />} className={itemClass}>
+                <Tags className="size-4" aria-hidden="true" /> Quản lý danh mục
               </Menu.Item>
             )}
             <Menu.Item onClick={onLogout} className={itemClass}>

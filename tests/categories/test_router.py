@@ -121,6 +121,16 @@ def test_admin_updates_category_and_slug_is_stable(client, repo):
     assert response.json()["name"] == "Entrées" and response.json()["slug"] == "main"
 
 
+def test_update_without_order_index_keeps_current_position(client, repo):
+    category = make_category(repo, "Main", "main")
+    category.order_index = 7
+    as_user(client, ADMIN)
+    response = client.put(f"{BASE}/{category.id}", json={"name": "Main", "description": None})
+
+    assert response.status_code == 200
+    assert repo.categories[category.id].order_index == 7
+
+
 def test_update_unknown_id_is_404(client):
     as_user(client, ADMIN)
     assert client.put(f"{BASE}/{uuid.uuid4()}", json={"name": "Whatever"}).status_code == 404

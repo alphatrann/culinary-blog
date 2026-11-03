@@ -10,6 +10,7 @@ from culinary_blog.errors import ForbiddenError
 from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 from culinary_blog.recipes.mapping import to_recipe_out
+from culinary_blog.recipes.metrics import recipes_created
 from culinary_blog.recipes.models import Recipe, RecipeIngredient, RecipeStep
 from culinary_blog.recipes.repository import RecipeRepository
 from culinary_blog.recipes.schemas import IngredientIn, NutritionIn, RecipeOut, StepIn
@@ -81,6 +82,7 @@ class CreateRecipeHandler(CommandHandler[CreateRecipeCommand, RecipeOut]):
         ]
         await self._repository.add(recipe, steps, ingredients)
         await self._cache.created()
+        recipes_created.add(1)
         logger.info(
             "recipe created",
             extra={
