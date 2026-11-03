@@ -24,6 +24,8 @@ const optionalDecimal = (label: string) =>
 
 export const ingredientSchema = z
   .object({
+    /** Server id of an existing ingredient (edit mode); absent on rows that have not been saved yet. */
+    id: z.string().optional(),
     name: z.string().trim().max(100, "Tối đa 100 ký tự."),
     quantity: z
       .string()
@@ -47,6 +49,8 @@ export const ingredientSchema = z
   });
 
 export const stepSchema = z.object({
+  /** Server id of an existing step (edit mode). */
+  id: z.string().optional(),
   text: z.string().trim().max(2000, "Nội dung bước tối đa 2000 ký tự."),
 });
 

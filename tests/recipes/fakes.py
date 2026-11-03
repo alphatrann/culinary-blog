@@ -120,7 +120,12 @@ class FakeRecipeRepository(RecipeRepository):
         return steps, ingredients
 
     async def get_aggregate_by_slug(self, slug: str) -> RecipeAggregate | None:
-        recipe = next((r for r in self._live() if r.slug == slug), None)
+        return await self._aggregate(next((r for r in self._live() if r.slug == slug), None))
+
+    async def get_aggregate_by_id(self, recipe_id: uuid.UUID) -> RecipeAggregate | None:
+        return await self._aggregate(next((r for r in self._live() if r.id == recipe_id), None))
+
+    async def _aggregate(self, recipe: Recipe | None) -> RecipeAggregate | None:
         if recipe is None:
             return None
         steps, ingredients = await self.get_children(recipe.id)
@@ -142,11 +147,15 @@ class FakeRecipeRepository(RecipeRepository):
         sort: str,
         page: int,
         page_size: int,
+        author_id: uuid.UUID | None = None,
+        status: RecipeStatus | None = None,
     ) -> tuple[list[RecipeSummaryOut], int]:
         visible = [
             r
             for r in self._live()
             if (see_all or r.status == RecipeStatus.PUBLISHED or (viewer_id is not None and r.author_id == viewer_id))
+            and (author_id is None or r.author_id == author_id)
+            and (status is None or r.status == status)
             and (category_id is None or r.category_id == category_id)
             and (difficulty is None or r.difficulty == difficulty)
             and (max_cook_time is None or r.cook_time_minutes <= max_cook_time)
@@ -154,6 +163,13 @@ class FakeRecipeRepository(RecipeRepository):
         visible.sort(key=lambda r: getattr(r, sort.removeprefix("-")), reverse=sort.startswith("-"))
         start = (page - 1) * page_size
         return [self._summary(r) for r in visible[start : start + page_size]], len(visible)
+
+    async def count_by_status(self, author_id: uuid.UUID) -> dict[RecipeStatus, int]:
+        counts: dict[RecipeStatus, int] = {}
+        for r in self._live():
+            if r.author_id == author_id:
+                counts[r.status] = counts.get(r.status, 0) + 1
+        return counts
 
     async def search_published(
         self,

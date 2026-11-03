@@ -62,6 +62,8 @@ class RecipeSummaryOut(BaseModel):
     status: RecipeStatus
     author_id: uuid.UUID
     published_at: datetime | None
+    updated_at: datetime | None
+    row_version: int
     category_name: str
     category_slug: str
     author_name: str

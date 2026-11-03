@@ -202,7 +202,8 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** Get For Edit */
+    get: operations["get_for_edit_api_v1_recipes__recipe_id__get"];
     /** Update */
     put: operations["update_api_v1_recipes__recipe_id__put"];
     post?: never;
@@ -801,6 +802,7 @@ export interface components {
       page: number;
       /** Page Size */
       page_size: number;
+      status_counts?: components["schemas"]["RecipeStatusCounts"] | null;
       /** Total Count */
       total_count: number;
       /** Total Pages */
@@ -894,6 +896,8 @@ export interface components {
       published_at: string | null;
       /** Relevance Score */
       relevance_score: number;
+      /** Row Version */
+      row_version: number;
       /** Servings */
       servings: number;
       /** Slug */
@@ -903,6 +907,8 @@ export interface components {
       thumbnail_url?: string | null;
       /** Title */
       title: string;
+      /** Updated At */
+      updated_at: string | null;
     };
     /** RecipeSearchResultsOut */
     RecipeSearchResultsOut: {
@@ -926,6 +932,18 @@ export interface components {
      * @enum {integer}
      */
     RecipeStatus: 0 | 1 | 2;
+    /**
+     * RecipeStatusCounts
+     * @description How many of an author's recipes are in each status (the "my recipes" tab badges).
+     */
+    RecipeStatusCounts: {
+      /** Archived */
+      archived: number;
+      /** Draft */
+      draft: number;
+      /** Published */
+      published: number;
+    };
     /** RecipeSummaryOut */
     RecipeSummaryOut: {
       /**
@@ -953,6 +971,8 @@ export interface components {
       prep_time_minutes: number;
       /** Published At */
       published_at: string | null;
+      /** Row Version */
+      row_version: number;
       /** Servings */
       servings: number;
       /** Slug */
@@ -962,6 +982,8 @@ export interface components {
       thumbnail_url?: string | null;
       /** Title */
       title: string;
+      /** Updated At */
+      updated_at: string | null;
     };
     /**
      * RecipeUpdateRequest
@@ -1437,6 +1459,8 @@ export interface operations {
           | "-title"
           | "cook_time_minutes"
           | "-cook_time_minutes";
+        author_id?: string | null;
+        status?: ("draft" | "published" | "archived") | null;
       };
       header?: never;
       path?: never;
@@ -1520,6 +1544,37 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["RecipeSearchResultsOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_for_edit_api_v1_recipes__recipe_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        recipe_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RecipeDetailOut"];
         };
       };
       /** @description Validation Error */

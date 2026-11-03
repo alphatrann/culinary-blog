@@ -14,7 +14,12 @@ export function IngredientsCard() {
     control,
     formState: { errors },
   } = useFormContext<RecipeFormValues>();
-  const { fields, append, remove } = useFieldArray({ control, name: "ingredients" });
+  // `rowKey`, not the default `id`: rows carry the server id in `id` (edit mode).
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "ingredients",
+    keyName: "rowKey",
+  });
 
   return (
     <EditorCard title="Nguyên liệu" hint="Cần ít nhất 1 nguyên liệu để xuất bản">
@@ -23,7 +28,7 @@ export function IngredientsCard() {
           const e = errors.ingredients?.[index];
           const n = index + 1;
           return (
-            <li key={field.id} className="flex flex-wrap items-start gap-3">
+            <li key={field.rowKey} className="flex flex-wrap items-start gap-3">
               <div className="flex min-w-48 flex-[3] flex-col gap-1">
                 <Input
                   aria-label={`Tên nguyên liệu ${n}`}
