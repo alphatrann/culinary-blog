@@ -16,6 +16,8 @@ services:
     build:
       context: web
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
     restart: unless-stopped
     environment:
       API_BASE_URL: http://api:8000
@@ -120,6 +122,65 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  image-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["culinary-blog-image-worker"]
+    env_file:
+      - .env.production
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      cache-redis:
+        condition: service_healthy
+      queue-redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  email-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["culinary-blog-email-worker"]
+    env_file:
+      - .env.production
+    depends_on:
+      queue-redis:
+        condition: service_healthy
+
+  sitemap-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["culinary-blog-sitemap-worker"]
+    env_file:
+      - .env.production
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      queue-redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  # Keep this single-replica: every running copy enqueues its own daily sitemap job.
+  cronjobs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["culinary-blog-cron"]
+    env_file:
+      - .env.production
+    depends_on:
+      queue-redis:
+        condition: service_healthy
 
   otel-collector:
     build:

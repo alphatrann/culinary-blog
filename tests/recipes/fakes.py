@@ -107,6 +107,9 @@ class FakeRecipeRepository(RecipeRepository):
     async def get_by_id(self, recipe_id: uuid.UUID) -> Recipe | None:
         return next((r for r in self._live() if r.id == recipe_id), None)
 
+    async def get_full_by_id(self, recipe_id: uuid.UUID) -> Recipe | None:
+        return await self.get_by_id(recipe_id)
+
     async def get_children(self, recipe_id: uuid.UUID) -> tuple[list[RecipeStep], list[RecipeIngredient]]:
         steps = sorted(
             (s for s in self.steps if s.recipe_id == recipe_id and not s.is_deleted), key=lambda s: s.step_number
@@ -365,13 +368,20 @@ class FakeStorage(FileStorageService):
             raise ServiceUnavailableError()
         self.objects.pop(url, None)
 
+    async def put_at(self, key: str, data: bytes, content_type: str) -> str:
+        self.objects[f"http://storage/{key}"] = data
+        return f"http://storage/{key}"
+
+    async def get_at(self, key: str) -> bytes | None:
+        return self.objects.get(f"http://storage/{key}")
+
 
 class FakeJobQueue(JobQueue):
     def __init__(self) -> None:
         self.jobs: list[tuple[str, dict[str, object]]] = []
         self.fail = False
 
-    async def enqueue(self, queue: str, payload: dict[str, object]) -> None:
+    async def enqueue(self, queue: str, payload: dict[str, object], delay_seconds: int = 0) -> None:
         if self.fail:
             raise ConnectionError("redis down")
         self.jobs.append((queue, payload))

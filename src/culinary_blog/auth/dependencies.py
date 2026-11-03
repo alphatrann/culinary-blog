@@ -4,6 +4,7 @@ from culinary_blog.auth.cookies import ACCESS_COOKIE
 from culinary_blog.auth.principal import Principal
 from culinary_blog.auth.security import TokenService
 from culinary_blog.errors import UnauthorizedError
+from culinary_blog.logging import user_id_var
 
 
 class Authenticator:
@@ -19,7 +20,9 @@ class Authenticator:
         token = request.cookies.get(ACCESS_COOKIE)
         if not token:
             raise UnauthorizedError("Not authenticated")
-        return self._tokens.decode_access_token(token)
+        principal = self._tokens.decode_access_token(token)
+        user_id_var.set(str(principal.user_id))  # request logs carry the caller (CONS-010)
+        return principal
 
     async def optional_principal(self, request: Request) -> Principal | None:
         """For public endpoints that show more to a logged-in caller; a bad/expired cookie just means guest."""
@@ -27,6 +30,8 @@ class Authenticator:
         if not token:
             return None
         try:
-            return self._tokens.decode_access_token(token)
+            principal = self._tokens.decode_access_token(token)
         except UnauthorizedError:
             return None
+        user_id_var.set(str(principal.user_id))
+        return principal

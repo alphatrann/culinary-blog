@@ -6,7 +6,10 @@ const user = (roles: string[]): SessionUser => ({
   display_name: "A",
   email: "a@b.c",
   avatar_url: null,
+  bio: null,
   roles,
+  email_confirmed: false,
+  created_at: "2026-01-01T00:00:00Z",
 });
 
 describe("hasRole", () => {

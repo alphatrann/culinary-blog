@@ -1,13 +1,22 @@
 from fastapi import APIRouter, Request, Response
 
+from culinary_blog.auth.commands.google_login import GoogleLoginCommand, GoogleLoginHandler
 from culinary_blog.auth.commands.login import LoginCommand, LoginHandler
 from culinary_blog.auth.commands.logout import LogoutCommand, LogoutHandler
 from culinary_blog.auth.commands.refresh import RefreshCommand, RefreshHandler
 from culinary_blog.auth.commands.register import RegisterCommand, RegisterHandler
+from culinary_blog.auth.commands.update_profile import UpdateProfileCommand, UpdateProfileHandler
 from culinary_blog.auth.cookies import REFRESH_COOKIE, AuthCookies
 from culinary_blog.auth.dependencies import Authenticator
 from culinary_blog.auth.queries.get_current_user import GetCurrentUserHandler, GetCurrentUserQuery
-from culinary_blog.auth.schemas import AuthSession, LoginRequest, RegisterRequest, UserOut
+from culinary_blog.auth.schemas import (
+    AuthSession,
+    GoogleLoginRequest,
+    LoginRequest,
+    ProfileUpdateRequest,
+    RegisterRequest,
+    UserOut,
+)
 from culinary_blog.errors import UnauthorizedError
 
 
@@ -23,6 +32,8 @@ class AuthRouter:
         refresh: RefreshHandler,
         logout: LogoutHandler,
         get_current_user: GetCurrentUserHandler,
+        google_login: GoogleLoginHandler,
+        update_profile: UpdateProfileHandler,
     ) -> None:
         self._authenticator = authenticator
         self._cookies = cookies
@@ -31,13 +42,17 @@ class AuthRouter:
         self._refresh = refresh
         self._logout = logout
         self._get_current_user = get_current_user
+        self._google_login = google_login
+        self._update_profile = update_profile
 
         self.router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
         self.router.add_api_route("/register", self.register, methods=["POST"], response_model=UserOut, status_code=201)
         self.router.add_api_route("/login", self.login, methods=["POST"], response_model=UserOut)
         self.router.add_api_route("/refresh", self.refresh, methods=["POST"], response_model=UserOut)
+        self.router.add_api_route("/google", self.google, methods=["POST"], response_model=UserOut)
         self.router.add_api_route("/logout", self.logout, methods=["POST"], status_code=204)
         self.router.add_api_route("/me", self.me, methods=["GET"], response_model=UserOut)
+        self.router.add_api_route("/me", self.update_me, methods=["PATCH"], response_model=UserOut)
 
     async def register(self, body: RegisterRequest, request: Request, response: Response) -> UserOut:
         session = await self._register.handle(
@@ -47,6 +62,10 @@ class AuthRouter:
 
     async def login(self, body: LoginRequest, request: Request, response: Response) -> UserOut:
         session = await self._login.handle(LoginCommand(str(body.email), body.password, self._client_ip(request)))
+        return self._with_cookies(session, response)
+
+    async def google(self, body: GoogleLoginRequest, request: Request, response: Response) -> UserOut:
+        session = await self._google_login.handle(GoogleLoginCommand(body.id_token, self._client_ip(request)))
         return self._with_cookies(session, response)
 
     async def refresh(self, request: Request, response: Response) -> UserOut:
@@ -66,6 +85,11 @@ class AuthRouter:
     async def me(self, request: Request) -> UserOut:
         actor = await self._authenticator.require_principal(request)
         return await self._get_current_user.handle(GetCurrentUserQuery(actor))
+
+    async def update_me(self, body: ProfileUpdateRequest, request: Request) -> UserOut:
+        actor = await self._authenticator.require_principal(request)
+        changes = body.model_dump(mode="json", exclude_unset=True)  # mode=json: avatar_url goes to the DB as a str
+        return await self._update_profile.handle(UpdateProfileCommand(actor, changes))
 
     def _with_cookies(self, session: AuthSession, response: Response) -> UserOut:
         self._cookies.set(response, session.access_token, session.refresh_token)

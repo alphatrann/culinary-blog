@@ -49,10 +49,13 @@ class Settings(BaseSettings):
     minio_bucket_name: str = "culinary-blog"
     minio_secure: bool = False
 
+    otel_enabled: bool = True  # False in local dev without a collector: no exporters, so no connection-refused noise
     otel_exporter_otlp_endpoint: str = "http://localhost:4317"
     otel_service_name: str = "culinary-blog-api"
 
     cors_origins: str = "http://localhost:3000"
+    # Public web origin, used as the absolute base of sitemap <loc> entries (no trailing slash).
+    site_url: str = "http://localhost:3000"
 
     jwt_secret_key: str = "dev-only-insecure-secret-change-me"
     access_token_ttl_minutes: int = 15
@@ -60,6 +63,16 @@ class Settings(BaseSettings):
     cookie_secure: bool = True
     max_failed_logins: int = 5
     lockout_minutes: int = 15
+    # FR-AUTH-003. Empty disables Google sign-in (the endpoint answers 503); the audience check needs this value.
+    google_client_id: str = ""
+
+    # Welcome email (FR-AUTH-001, FR-JOB-002). Dev defaults point at Mailhog (see compose.development.yml).
+    smtp_host: str = "localhost"
+    smtp_port: int = 1025
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "Culinary Blog <no-reply@culinary.local>"
+    smtp_use_tls: bool = False  # STARTTLS; turn on for real SMTP providers
 
     @model_validator(mode="after")
     def _require_real_secret_outside_development(self) -> "Settings":

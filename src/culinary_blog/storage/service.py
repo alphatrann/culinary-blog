@@ -15,3 +15,11 @@ class FileStorageService(ABC):
     @abstractmethod
     async def delete(self, url: str) -> None:
         """Remove a file by URL. Idempotent: a missing object is not an error."""
+
+    @abstractmethod
+    async def put_at(self, key: str, data: bytes, content_type: str) -> str:
+        """Store `data` under a fixed `key`, overwriting any previous object (e.g. `sitemap/sitemap.xml`)."""
+
+    @abstractmethod
+    async def get_at(self, key: str) -> bytes | None:
+        """Fetch the object stored under a fixed `key`, or None when it does not exist."""

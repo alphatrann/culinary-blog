@@ -32,5 +32,23 @@ export const registerSchema = z.object({
     .refine((v) => passwordRules.every((r) => r.test(v)), "Mật khẩu chưa đáp ứng yêu cầu."),
 });
 
+export const profileSchema = z.object({
+  display_name: z
+    .string()
+    .trim()
+    .min(2, "Tên hiển thị cần từ 2 đến 100 ký tự.")
+    .max(100, "Tên hiển thị cần từ 2 đến 100 ký tự."),
+  avatar_url: z
+    .string()
+    .trim()
+    .max(500, "Liên kết ảnh tối đa 500 ký tự.")
+    .refine(
+      (v) => v === "" || /^https?:\/\/\S+$/.test(v),
+      "Liên kết ảnh phải bắt đầu bằng http:// hoặc https://.",
+    ),
+  bio: z.string().trim().max(1000, "Giới thiệu tối đa 1000 ký tự."),
+});
+
 export type LoginValues = z.infer<typeof loginSchema>;
 export type RegisterValues = z.infer<typeof registerSchema>;
+export type ProfileValues = z.infer<typeof profileSchema>;

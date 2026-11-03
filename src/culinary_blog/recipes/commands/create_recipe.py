@@ -17,6 +17,8 @@ from culinary_blog.recipes.schemas import IngredientIn, NutritionIn, RecipeOut, 
 logger = logging.getLogger(__name__)
 
 _SLUG_BASE_MAX = 200  # leaves room under the 220-char column for a numeric suffix
+# Web routes that share the /recipes/<slug> namespace; a recipe must never claim one of them.
+RESERVED_SLUGS = frozenset({"new"})
 
 
 @dataclass(frozen=True)
@@ -92,7 +94,7 @@ class CreateRecipeHandler(CommandHandler[CreateRecipeCommand, RecipeOut]):
     async def _unique_slug(self, title: str) -> str:
         base = slugify(title)[:_SLUG_BASE_MAX].strip("-") or "recipe"
         slug, suffix = base, 1
-        while await self._repository.slug_taken(slug):
+        while slug in RESERVED_SLUGS or await self._repository.slug_taken(slug):
             suffix += 1
             slug = f"{base}-{suffix}"
         return slug

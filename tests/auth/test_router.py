@@ -4,12 +4,15 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from culinary_blog.auth.commands.google_login import GoogleLoginHandler
 from culinary_blog.auth.commands.login import LoginHandler
 from culinary_blog.auth.commands.logout import LogoutHandler
 from culinary_blog.auth.commands.refresh import RefreshHandler
 from culinary_blog.auth.commands.register import RegisterHandler
+from culinary_blog.auth.commands.update_profile import UpdateProfileHandler
 from culinary_blog.auth.cookies import AuthCookies
 from culinary_blog.auth.dependencies import Authenticator
+from culinary_blog.auth.google import GoogleProfile
 from culinary_blog.auth.queries.get_current_user import GetCurrentUserHandler
 from culinary_blog.auth.router import AuthRouter
 from culinary_blog.problem_details import register_problem_handlers
@@ -24,11 +27,13 @@ def make_client() -> tuple[TestClient, Services]:
     router = AuthRouter(
         authenticator=Authenticator(s.tokens),
         cookies=AuthCookies(False, s.tokens.access_ttl, s.tokens.refresh_ttl),  # http://testserver, so not Secure
-        register=RegisterHandler(s.repository, s.hasher, s.issuer),
+        register=RegisterHandler(s.repository, s.hasher, s.issuer, s.queue),
         login=LoginHandler(s.repository, s.hasher, s.issuer, 5, timedelta(minutes=15)),
         refresh=RefreshHandler(s.repository, s.tokens, s.issuer),
         logout=LogoutHandler(s.repository, s.tokens),
         get_current_user=GetCurrentUserHandler(s.repository),
+        google_login=GoogleLoginHandler(s.repository, s.google, s.issuer),
+        update_profile=UpdateProfileHandler(s.repository),
     ).router
     app = FastAPI()
     register_problem_handlers(app)
@@ -133,6 +138,55 @@ def test_me_without_or_with_garbage_cookie_is_401(client):
     assert client.get("/api/v1/auth/me").status_code == 401
 
 
+def test_me_exposes_profile_fields_but_never_password_hash(client):
+    client.post("/api/v1/auth/register", json=REGISTER)
+    body = client.get("/api/v1/auth/me").json()
+    assert {"bio", "email_confirmed", "created_at"} <= body.keys()
+    assert "password_hash" not in body
+
+
+def test_patch_me_updates_only_the_sent_fields(client):
+    client.post("/api/v1/auth/register", json=REGISTER)
+    response = client.patch(
+        "/api/v1/auth/me", json={"bio": "Thích nấu ăn", "avatar_url": "https://cdn.example.com/a.png"}
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["bio"] == "Thích nấu ăn" and body["avatar_url"] == "https://cdn.example.com/a.png"
+    assert body["display_name"] == "Cook" and body["email"] == "cook@example.com"
+    assert client.get("/api/v1/auth/me").json()["bio"] == "Thích nấu ăn"
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"email": "other@example.com"},  # immutable through this endpoint
+        {"display_name": " x "},
+        {"display_name": None},
+        {"avatar_url": "not a url"},
+        {"bio": "x" * 1001},
+    ],
+)
+def test_patch_me_invalid_input_is_422(client, body):
+    client.post("/api/v1/auth/register", json=REGISTER)
+    response = client.patch("/api/v1/auth/me", json=body)
+    assert response.status_code == 422
+    assert response.headers["content-type"].startswith("application/problem+json")
+
+
+def test_patch_me_without_cookie_is_401(client):
+    assert client.patch("/api/v1/auth/me", json={"bio": "x"}).status_code == 401
+
+
+def test_patch_me_for_deleted_account_is_401():
+    client, s = make_client()
+    client.post("/api/v1/auth/register", json=REGISTER)
+    next(iter(s.repository.users.values())).is_deleted = True
+
+    assert client.patch("/api/v1/auth/me", json={"bio": "x"}).status_code == 401
+
+
 # --- refresh --------------------------------------------------------------------------------------------------------
 
 
@@ -169,3 +223,32 @@ def test_logout_revokes_refresh_token_and_clears_cookies(client):
 
 def test_logout_requires_authentication(client):
     assert client.post("/api/v1/auth/logout").status_code == 401
+
+
+# --- google ---------------------------------------------------------------------------------------------------------
+
+GOOGLE_PROFILE = GoogleProfile(sub="g-123", email="cook@example.com", email_verified=True, name="Cook", picture=None)
+
+
+def test_google_login_sets_cookies_and_returns_user():
+    client, s = make_client()
+    s.google.profiles["good"] = GOOGLE_PROFILE
+    response = client.post("/api/v1/auth/google", json={"id_token": "good"})
+
+    assert response.status_code == 200
+    assert response.json()["email"] == "cook@example.com"
+    assert {h.split("=", 1)[0] for h in set_cookie_headers(response)} == {"access_token", "refresh_token"}
+
+
+def test_google_login_with_invalid_token_is_401_problem_json():
+    client, _ = make_client()
+    response = client.post("/api/v1/auth/google", json={"id_token": "forged"})
+
+    assert response.status_code == 401
+    assert response.headers["content-type"].startswith("application/problem+json")
+    assert not set_cookie_headers(response)
+
+
+def test_google_login_without_id_token_is_422():
+    client, _ = make_client()
+    assert client.post("/api/v1/auth/google", json={}).status_code == 422

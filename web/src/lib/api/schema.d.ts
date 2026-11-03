@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+  "/api/v1/auth/google": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Google */
+    post: operations["google_api_v1_auth_google_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/auth/login": {
     parameters: {
       query?: never;
@@ -52,7 +69,8 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    patch?: never;
+    /** Update Me */
+    patch: operations["update_me_api_v1_auth_me_patch"];
     trace?: never;
   };
   "/api/v1/auth/refresh": {
@@ -118,7 +136,8 @@ export interface paths {
     /** Update */
     put: operations["update_api_v1_categories__category_id__put"];
     post?: never;
-    delete?: never;
+    /** Delete */
+    delete: operations["delete_api_v1_categories__category_id__delete"];
     options?: never;
     head?: never;
     patch?: never;
@@ -193,6 +212,23 @@ export interface paths {
     options?: never;
     head?: never;
     patch?: never;
+    trace?: never;
+  };
+  "/api/v1/recipes/{recipe_id}/archive": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Archive */
+    patch: operations["archive_api_v1_recipes__recipe_id__archive_patch"];
     trace?: never;
   };
   "/api/v1/recipes/{recipe_id}/images": {
@@ -333,6 +369,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/recipes/{recipe_id}/unarchive": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Unarchive */
+    patch: operations["unarchive_api_v1_recipes__recipe_id__unarchive_patch"];
+    trace?: never;
+  };
   "/api/v1/recipes/{recipe_id}/unpublish": {
     parameters: {
       query?: never;
@@ -410,6 +463,23 @@ export interface paths {
     };
     /** Ready */
     get: operations["ready_health_ready_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/sitemap.xml": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Sitemap */
+    get: operations["sitemap_sitemap_xml_get"];
     put?: never;
     post?: never;
     delete?: never;
@@ -504,6 +574,11 @@ export interface components {
        * @default 0
        */
       order_index: number;
+    };
+    /** GoogleLoginRequest */
+    GoogleLoginRequest: {
+      /** Id Token */
+      id_token: string;
     };
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -602,6 +677,18 @@ export interface components {
       protein?: number | null;
       /** Sodium */
       sodium?: number | null;
+    };
+    /**
+     * ProfileUpdateRequest
+     * @description PATCH body: only the fields sent are changed (`model_dump(exclude_unset=True)`). `email` is not accepted.
+     */
+    ProfileUpdateRequest: {
+      /** Avatar Url */
+      avatar_url?: string | null;
+      /** Bio */
+      bio?: string | null;
+      /** Display Name */
+      display_name?: string | null;
     };
     /** RecipeCreateRequest */
     RecipeCreateRequest: {
@@ -973,10 +1060,19 @@ export interface components {
     UserOut: {
       /** Avatar Url */
       avatar_url: string | null;
+      /** Bio */
+      bio: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
       /** Display Name */
       display_name: string;
       /** Email */
       email: string;
+      /** Email Confirmed */
+      email_confirmed: boolean;
       /**
        * Id
        * Format: uuid
@@ -1007,6 +1103,39 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  google_api_v1_auth_google_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["GoogleLoginRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   login_api_v1_auth_login_post: {
     parameters: {
       query?: never;
@@ -1074,6 +1203,39 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["UserOut"];
+        };
+      };
+    };
+  };
+  update_me_api_v1_auth_me_patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ProfileUpdateRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
         };
       };
     };
@@ -1207,6 +1369,35 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["CategoryOut"];
         };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_api_v1_categories__category_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        category_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       /** @description Validation Error */
       422: {
@@ -1451,6 +1642,37 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  archive_api_v1_recipes__recipe_id__archive_patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        recipe_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RecipeOut"];
+        };
       };
       /** @description Validation Error */
       422: {
@@ -1793,6 +2015,37 @@ export interface operations {
       };
     };
   };
+  unarchive_api_v1_recipes__recipe_id__unarchive_patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        recipe_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RecipeOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   unpublish_api_v1_recipes__recipe_id__unpublish_patch: {
     parameters: {
       query?: never;
@@ -1912,6 +2165,24 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["HealthReport"];
         };
+      };
+    };
+  };
+  sitemap_sitemap_xml_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };

@@ -47,6 +47,16 @@ class CategoryRepository:
             )
             return [(category, int(count)) for category, count in result.all()]
 
+    async def list_for_sitemap(self) -> list[tuple[str, datetime]]:
+        """(slug, lastmod) of every live category. lastmod falls back to created_at if never updated."""
+        async with self._read_session_factory() as session:
+            result = await session.execute(
+                select(Category.slug, func.coalesce(col(Category.updated_at), col(Category.created_at))).where(
+                    col(Category.is_deleted).is_(False)
+                )
+            )
+            return [(slug, lastmod) for slug, lastmod in result.all()]
+
     async def get_by_slug(self, slug: str) -> Category | None:
         async with self._read_session_factory() as session:
             result = await session.execute(
@@ -73,6 +83,16 @@ class CategoryRepository:
                     col(Recipe.is_deleted).is_(False),
                     Recipe.status == RecipeStatus.PUBLISHED,
                 )
+            )
+            return int(result.scalar_one())
+
+    async def count_recipes(self, category_id: uuid.UUID) -> int:
+        """All non-deleted recipes regardless of status (FR-CAT-005 counts drafts and archived)."""
+        async with self._read_session_factory() as session:
+            result = await session.execute(
+                select(func.count())
+                .select_from(Recipe)
+                .where(Recipe.category_id == category_id, col(Recipe.is_deleted).is_(False))
             )
             return int(result.scalar_one())
 

@@ -67,6 +67,10 @@ Next.js 15 App Router, TypeScript strict, Tailwind v4, shadcn/ui (add components
 - Test files mirror source in `tests/`; see `tests/test_health.py`.
 - Cache concurrency tests need a real Redis: `export TEST_REDIS_URL=$(scripts/test-redis.sh start)` (and `scripts/test-redis.sh stop` after). They skip when it's unset; CI runs the same script. The DB is flushed.
 
+## Dev test account & seeded data
+
+Local dev only (`scripts/seed/seed.py` creates it; Admin + Author): `seed.author@example.com` / `SeedAuthor#2026`. Use it for curl/API/Playwright checks, e.g. `curl -c jar -H 'content-type: application/json' -d '{"email":"seed.author@example.com","password":"SeedAuthor#2026"}' localhost:8000/api/v1/auth/login`. It owns all seeded data (20 categories, 100 published recipes with real photos). **Never edit or delete seeded data**: create your own throwaway category/recipe, test against that, and clean it up (soft delete via the API) when done. Don't leave test users/recipes behind (e2e-style leftovers pollute home/listing screenshots).
+
 ## Process
 
 - ADR for every significant architectural decision (`docs/adr/NNNN-title.md`); keep CHANGELOG.md per release (Keep a Changelog + SemVer).

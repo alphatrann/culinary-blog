@@ -213,6 +213,19 @@
         "title": "CategoryUpdateRequest",
         "type": "object"
       },
+      "GoogleLoginRequest": {
+        "properties": {
+          "id_token": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "title": "Id Token",
+            "type": "string"
+          }
+        },
+        "required": ["id_token"],
+        "title": "GoogleLoginRequest",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -577,6 +590,52 @@
           }
         },
         "title": "NutritionOut",
+        "type": "object"
+      },
+      "ProfileUpdateRequest": {
+        "additionalProperties": false,
+        "description": "PATCH body: only the fields sent are changed (`model_dump(exclude_unset=True)`). `email` is not accepted.",
+        "properties": {
+          "avatar_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar Url"
+          },
+          "bio": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bio"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          }
+        },
+        "title": "ProfileUpdateRequest",
         "type": "object"
       },
       "RecipeCreateRequest": {
@@ -1535,6 +1594,22 @@
             ],
             "title": "Avatar Url"
           },
+          "bio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bio"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
           "display_name": {
             "title": "Display Name",
             "type": "string"
@@ -1542,6 +1617,10 @@
           "email": {
             "title": "Email",
             "type": "string"
+          },
+          "email_confirmed": {
+            "title": "Email Confirmed",
+            "type": "boolean"
           },
           "id": {
             "format": "uuid",
@@ -1556,7 +1635,16 @@
             "type": "array"
           }
         },
-        "required": ["id", "display_name", "email", "avatar_url", "roles"],
+        "required": [
+          "id",
+          "display_name",
+          "email",
+          "avatar_url",
+          "bio",
+          "roles",
+          "email_confirmed",
+          "created_at"
+        ],
         "title": "UserOut",
         "type": "object"
       },
@@ -1604,6 +1692,45 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/auth/google": {
+      "post": {
+        "operationId": "google_api_v1_auth_google_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoogleLoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Google",
+        "tags": ["auth"]
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "operationId": "login_api_v1_auth_login_post",
@@ -1671,6 +1798,43 @@
           }
         },
         "summary": "Me",
+        "tags": ["auth"]
+      },
+      "patch": {
+        "operationId": "update_me_api_v1_auth_me_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Me",
         "tags": ["auth"]
       }
     },
@@ -1793,6 +1957,38 @@
       }
     },
     "/api/v1/categories/{category_id}": {
+      "delete": {
+        "operationId": "delete_api_v1_categories__category_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "category_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Category Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete",
+        "tags": ["categories"]
+      },
       "put": {
         "operationId": "update_api_v1_categories__category_id__put",
         "parameters": [
@@ -2348,6 +2544,47 @@
         "tags": ["recipes"]
       }
     },
+    "/api/v1/recipes/{recipe_id}/archive": {
+      "patch": {
+        "operationId": "archive_api_v1_recipes__recipe_id__archive_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recipe_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Recipe Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Archive",
+        "tags": ["recipes"]
+      }
+    },
     "/api/v1/recipes/{recipe_id}/images": {
       "post": {
         "operationId": "upload_image_api_v1_recipes__recipe_id__images_post",
@@ -2843,6 +3080,47 @@
         "tags": ["recipes"]
       }
     },
+    "/api/v1/recipes/{recipe_id}/unarchive": {
+      "patch": {
+        "operationId": "unarchive_api_v1_recipes__recipe_id__unarchive_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recipe_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Recipe Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unarchive",
+        "tags": ["recipes"]
+      }
+    },
     "/api/v1/recipes/{recipe_id}/unpublish": {
       "patch": {
         "operationId": "unpublish_api_v1_recipes__recipe_id__unpublish_patch",
@@ -2979,6 +3257,18 @@
         },
         "summary": "Ready",
         "tags": ["health"]
+      }
+    },
+    "/sitemap.xml": {
+      "get": {
+        "operationId": "sitemap_sitemap_xml_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Sitemap",
+        "tags": ["seo"]
       }
     }
   }

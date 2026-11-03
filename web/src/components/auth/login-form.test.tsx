@@ -8,6 +8,13 @@ import { LoginForm } from "./login-form";
 const replace = vi.fn();
 const post = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace, refresh: vi.fn() }) }));
+vi.mock("@/components/auth/google-sign-in-button", () => ({
+  GoogleSignInButton: ({ onCredential }: { onCredential: (token: string) => void }) => (
+    <button type="button" onClick={() => onCredential("google.id.token")}>
+      Google stub
+    </button>
+  ),
+}));
 vi.mock("@/lib/api", async (orig) => ({
   ...(await orig<typeof import("@/lib/api")>()),
   api: { post: (...a: unknown[]) => post(...a) },
@@ -76,6 +83,26 @@ describe("LoginForm", () => {
     const user = setup();
     await fill(user);
     expect(await screen.findByRole("alert")).toHaveTextContent(message);
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("posts the Google ID token to /auth/google and redirects on success", async () => {
+    post.mockResolvedValue({});
+    const user = setup("/recipes");
+    await user.click(screen.getByRole("button", { name: "Google stub" }));
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/recipes"));
+    expect(post).toHaveBeenCalledWith("/auth/google", { body: { id_token: "google.id.token" } });
+  });
+
+  it("shows the generic banner when the Google token is rejected", async () => {
+    post.mockRejectedValue(
+      new ApiError(401, { title: "Unauthorized", detail: "Invalid Google ID token" }),
+    );
+    const user = setup();
+    await user.click(screen.getByRole("button", { name: "Google stub" }));
+
+    expect(await screen.findByText("Email hoặc mật khẩu không đúng.")).toBeInTheDocument();
     expect(replace).not.toHaveBeenCalled();
   });
 });
