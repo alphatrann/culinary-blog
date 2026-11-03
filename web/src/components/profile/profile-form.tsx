@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldHint, Label } from "@/components/ui/field";
@@ -45,6 +46,7 @@ export function ProfileForm() {
     onSuccess: (updated) => {
       queryClient.setQueryData(sessionQueryKey, updated);
       setSaved(true);
+      toast.success("Đã lưu thay đổi.");
     },
     onError: (error) => {
       const fieldErrors = isApiError(error) ? error.errors : {};
