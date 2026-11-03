@@ -50,6 +50,8 @@ _RECIPE_SUMMARY_ONLY = load_only(
     Recipe.status,
     Recipe.author_id,
     Recipe.published_at,
+    Recipe.updated_at,
+    Recipe.row_version,
 )
 
 # Columns StepOut/IngredientOut/RecipeImageOut actually surface.
@@ -144,13 +146,20 @@ class RecipeRepository:
 
     async def get_aggregate_by_slug(self, slug: str) -> RecipeAggregate | None:
         """A live recipe by slug with its category, author, steps, ingredients and images."""
+        return await self._aggregate(Recipe.slug == slug)
+
+    async def get_aggregate_by_id(self, recipe_id: uuid.UUID) -> RecipeAggregate | None:
+        """A live recipe by id, drafts included. Callers must enforce visibility."""
+        return await self._aggregate(Recipe.id == recipe_id)
+
+    async def _aggregate(self, condition: ColumnElement[bool]) -> RecipeAggregate | None:
         async with self._read_session_factory() as session:
             head = (
                 await session.execute(
                     select(Recipe, Category, User)
                     .join(Category, col(Category.id) == col(Recipe.category_id))
                     .join(User, col(User.id) == col(Recipe.author_id))
-                    .where(Recipe.slug == slug, col(Recipe.is_deleted).is_(False))
+                    .where(condition, col(Recipe.is_deleted).is_(False))
                     .options(
                         load_only(Category.id, Category.name, Category.slug),
                         load_only(User.id, User.display_name, User.avatar_url),
@@ -182,6 +191,8 @@ class RecipeRepository:
         sort: str,
         page: int,
         page_size: int,
+        author_id: uuid.UUID | None = None,
+        status: RecipeStatus | None = None,
     ) -> tuple[list[RecipeSummaryOut], int]:
         """One page of recipes plus the total. Non-admins see published + their own."""
         conditions: list[ColumnElement[bool]] = [col(Recipe.is_deleted).is_(False)]
@@ -190,6 +201,10 @@ class RecipeRepository:
             if viewer_id is not None:
                 visible.append(col(Recipe.author_id) == viewer_id)
             conditions.append(or_(*visible))
+        if author_id is not None:
+            conditions.append(col(Recipe.author_id) == author_id)
+        if status is not None:
+            conditions.append(col(Recipe.status) == status)
         if category_id is not None:
             conditions.append(col(Recipe.category_id) == category_id)
         if difficulty is not None:
@@ -210,6 +225,16 @@ class RecipeRepository:
                 .options(_RECIPE_SUMMARY_ONLY)
             )
             return [to_summary(*row) for row in result.all()], int(total)
+
+    async def count_by_status(self, author_id: uuid.UUID) -> dict[RecipeStatus, int]:
+        """Live recipes by status for one author (every status: the caller decides who may see the counts)."""
+        async with self._read_session_factory() as session:
+            rows = await session.execute(
+                select(Recipe.status, func.count())
+                .where(col(Recipe.author_id) == author_id, col(Recipe.is_deleted).is_(False))
+                .group_by(Recipe.status)
+            )
+            return {RecipeStatus(status): int(count) for status, count in rows.all()}
 
     async def search_published(
         self,
