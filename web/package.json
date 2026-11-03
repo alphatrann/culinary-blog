@@ -13,7 +13,8 @@
     "api:types": "openapi-typescript openapi.json -o src/lib/api/schema.d.ts && prettier --write src/lib/api/schema.d.ts openapi.json",
     "api:export": "cd .. && uv run python scripts/export_openapi.py",
     "api:sync": "npm run api:export && npm run api:types",
-    "test": "vitest run"
+    "test": "vitest run",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -34,7 +35,9 @@
     "zod": "^4.6.6"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",

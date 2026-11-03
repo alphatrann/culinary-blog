@@ -1,0 +1,136 @@
+# Full stack for the Playwright e2e suite and Lighthouse CI: the same images as production, with test-only secrets.
+# Only nginx is published (host 8080), so the browser sees one origin, as in production.
+# Run: docker compose -f compose.e2e.yml up -d --build --wait
+name: culinary-blog-e2e
+
+x-api-env: &api-env
+  ENVIRONMENT: development
+  DATABASE_URL: postgresql+asyncpg://culinary:culinary@postgres:5432/culinary_blog
+  CACHE_REDIS_URL: redis://cache-redis:6379/0
+  QUEUE_REDIS_URL: redis://queue-redis:6379/0
+  RATELIMIT_REDIS_URL: redis://ratelimit-redis:6379/0
+  RATELIMIT_HASH_KEY: e2e-only-ratelimit-key
+  MINIO_ENDPOINT: minio:9000
+  MINIO_ACCESS_KEY: minioadmin
+  MINIO_SECRET_KEY: minioadmin-e2e
+  MINIO_BUCKET_NAME: culinary-blog
+  MINIO_SECURE: "false"
+  JWT_SECRET_KEY: e2e-only-insecure-secret-key-change-me
+  COOKIE_SECURE: "false"
+  CORS_ORIGINS: http://localhost:8080
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx.Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+      - web
+
+  web:
+    build:
+      context: web
+      dockerfile: Dockerfile
+    environment:
+      API_BASE_URL: http://api:8000
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment: *api-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      cache-redis:
+        condition: service_healthy
+      queue-redis:
+        condition: service_healthy
+      ratelimit-redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  image-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["culinary-blog-image-worker"]
+    environment: *api-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      queue-redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["alembic", "upgrade", "head"]
+    environment: *api-env
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: culinary
+      POSTGRES_PASSWORD: culinary
+      POSTGRES_DB: culinary_blog
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U culinary -d culinary_blog"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  cache-redis:
+    build:
+      context: .
+      dockerfile: docker/redis-cache.Dockerfile
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  queue-redis:
+    build:
+      context: .
+      dockerfile: docker/redis-job-queue.Dockerfile
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  ratelimit-redis:
+    build:
+      context: .
+      dockerfile: docker/redis-rate-limit.Dockerfile
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    build:
+      context: .
+      dockerfile: docker/minio.Dockerfile
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin-e2e
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 3s
+      timeout: 3s
+      retries: 20

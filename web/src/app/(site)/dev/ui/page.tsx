@@ -44,6 +44,8 @@ export default function UiKitchenSink() {
         <option value="b">Trung bình</option>
       </Select>
       <div className="flex gap-4">
+        {/* The rule cannot see that Checkbox and Radio render the <input> inside the label. */}
+        {/* eslint-disable jsx-a11y/label-has-associated-control */}
         <label className="flex items-center gap-2">
           <Checkbox defaultChecked /> Ăn chay
         </label>
@@ -53,6 +55,7 @@ export default function UiKitchenSink() {
         <label className="flex items-center gap-2">
           <Radio name="r" /> Hai
         </label>
+        {/* eslint-enable jsx-a11y/label-has-associated-control */}
       </div>
       <div className="flex flex-wrap gap-2">
         <Badge>Món chính</Badge>

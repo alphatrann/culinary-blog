@@ -35,7 +35,7 @@ describe("Home page", () => {
     mockApi([item]);
     render(await Home());
     expect(screen.getByRole("heading", { name: "Công thức mới nhất" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Món nổi bật: Phở bò Hà Nội")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Món nổi bật.*Phở bò Hà Nội/ })).toBeInTheDocument();
     expect(screen.getByText("Hiển thị 1 công thức")).toBeInTheDocument();
     expect(screen.getByRole("search", { name: "Bộ lọc công thức" })).toHaveAttribute(
       "action",

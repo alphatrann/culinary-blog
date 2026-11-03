@@ -1,0 +1,27 @@
+{
+  "ci": {
+    "collect": {
+      "url": [
+        "http://localhost:8080/",
+        "http://localhost:8080/search?q=canh",
+        "http://localhost:8080/auth/login"
+      ],
+      "numberOfRuns": 3,
+      "settings": {
+        "chromeFlags": "--no-sandbox --headless=new"
+      }
+    },
+    "assert": {
+      "assertions": {
+        "largest-contentful-paint": ["error", { "maxNumericValue": 2500 }],
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
+        "total-blocking-time": ["error", { "maxNumericValue": 200 }],
+        "resource-summary:script:size": ["error", { "maxNumericValue": 204800 }]
+      }
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": "lhci-reports"
+    }
+  }
+}
