@@ -120,6 +120,7 @@ def test_unknown_category_is_422_problem_json(client, repo):
         {"title": "x" * 201},
         {"title": "<script>alert(1)</script>"},
         {"description": "   "},
+        {"description": "x" * 2001},
         {"prep_time_minutes": 0},
         {"cook_time_minutes": -5},
         {"servings": 0},

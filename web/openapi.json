@@ -657,6 +657,7 @@
             "type": "integer"
           },
           "description": {
+            "maxLength": 2000,
             "minLength": 1,
             "title": "Description",
             "type": "string"
@@ -1425,6 +1426,7 @@
             "type": "integer"
           },
           "description": {
+            "maxLength": 2000,
             "minLength": 1,
             "title": "Description",
             "type": "string"

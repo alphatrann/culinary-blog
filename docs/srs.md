@@ -693,7 +693,7 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 | Điều kiện tiên quyết     | 1. Cookie `access_token` hợp lệ với role Author/Admin. 2. `category_id` tham chiếu danh mục đã tồn tại.                                                                                            |
 | Luồng chính (Happy Path) | 1. Author gửi `POST /api/v1/recipes` với `{ title, description, category_id, prep_time_minutes, cook_time_minutes, servings, difficulty, nutrition?: {...}, steps?: [...], ingredients?: [...] }`. |
 
-2. Validate: `title` 5–200 ký tự, `prep_time_minutes`/`cook_time_minutes`/`servings` > 0, `category_id` hợp lệ.
+2. Validate: `title` 5–200 ký tự, `description` 1–2000 ký tự, `prep_time_minutes`/`cook_time_minutes`/`servings` > 0, `category_id` hợp lệ.
 3. Sinh `slug` từ `title`, đảm bảo unique.
 4. Tạo `Recipe` với `status = draft`, `author_id = current_user_id`.
 5. Nếu có `steps`/`ingredients`: tạo kèm (áp dụng cùng rule với FR-RCP-009/010).
@@ -1301,7 +1301,7 @@ Các bước thực hiện chi tiết của một Recipe, sắp xếp theo `step
 | ------------- | ------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `id`          | uuid          | PK (BaseModel)                                 | UUID khóa chính.                                                                                            |
 | `recipe_id`   | uuid          | NOT NULL, FK → `recipes.id`, ON DELETE CASCADE | Cascade delete.                                                                                             |
-| `name`        | varchar(200)  | NOT NULL                                       | Tên nguyên liệu (ví dụ: "Thịt bò thăn").                                                                    |
+| `name`        | varchar(200)  | NOT NULL                                       | Tên nguyên liệu (ví dụ: "Thịt bò thăn"). Validation API chỉ nhận 1–100 ký tự (FR-RCP-009); cột rộng hơn để chừa chỗ, không đổi schema.                                                                    |
 | `quantity`    | decimal(10,3) | NULL                                           | Số lượng (hỗ trợ phân số, ví dụ 1.5). NULL khi và chỉ khi `unit` cũng NULL (CHECK constraint).              |
 | `unit`        | varchar(50)   | NULL                                           | Đơn vị đo lường (gram, ml, thìa canh, quả...). NULL khi và chỉ khi `quantity` cũng NULL (CHECK constraint). |
 | `notes`       | varchar(500)  | NULL                                           | Ghi chú tùy chọn (ví dụ: "thái lát mỏng").                                                                  |
@@ -1329,7 +1329,7 @@ Bảng con độc lập (không phải owned/embedded) — mỗi ảnh là một
 | Column        | Kiểu         | Ràng buộc                             | Mô tả                                |
 | ------------- | ------------ | ------------------------------------- | ------------------------------------ |
 | `id`          | uuid         | PK (BaseModel)                        | UUID khóa chính.                     |
-| `name`        | varchar(100) | NOT NULL, UNIQUE                      | Tên danh mục (ví dụ: "Món khai vị"). |
+| `name`        | varchar(100) | NOT NULL, UNIQUE                      | Tên danh mục (ví dụ: "Món khai vị"). Validation API chỉ nhận 2–50 ký tự (FR-CAT-003); cột rộng hơn để chừa chỗ, không đổi schema. |
 | `slug`        | varchar(120) | NOT NULL, UNIQUE, `idx_category_slug` | URL-friendly name, sinh từ `name`.   |
 | `description` | text         | NULL                                  | Mô tả danh mục.                      |
 | `image_url`   | varchar(500) | NULL                                  | URL ảnh đại diện category.           |

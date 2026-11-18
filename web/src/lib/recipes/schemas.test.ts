@@ -40,6 +40,15 @@ describe("recipeFormSchema", () => {
     expect(messages({ ...valid, title: "Món <b>ngon</b>" })[0]).toMatch(/^title:/);
   });
 
+  it("limits the description to 2000 characters", () => {
+    expect(recipeFormSchema.safeParse({ ...valid, description: "x".repeat(2000) }).success).toBe(
+      true,
+    );
+    expect(recipeFormSchema.safeParse({ ...valid, description: "x".repeat(2001) }).success).toBe(
+      false,
+    );
+  });
+
   it("requires positive integers for time and servings", () => {
     const errs = messages({
       ...valid,
