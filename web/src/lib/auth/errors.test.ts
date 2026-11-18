@@ -24,6 +24,17 @@ describe("mapAuthError", () => {
     );
     expect(r.fields).toEqual({ password: "bad" });
   });
+  it("uses error codes when the API sends them", () => {
+    expect(mapAuthError(err(401, { code: "AUTH_INVALID_CREDENTIALS" }), "login").banner).toMatch(
+      /không đúng/,
+    );
+    expect(mapAuthError(err(423, { code: "AUTH_ACCOUNT_LOCKED" }), "login").banner).toMatch(
+      /15 phút/,
+    );
+    expect(
+      mapAuthError(err(409, { code: "AUTH_EMAIL_EXISTS" }), "register").fields.email,
+    ).toBeTruthy();
+  });
   it("falls back for unknown errors", () => {
     expect(mapAuthError(new Error("boom"), "login").banner).toBeTruthy();
   });

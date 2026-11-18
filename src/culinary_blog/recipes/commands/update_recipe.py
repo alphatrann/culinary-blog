@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 
 from culinary_blog.auth.principal import Principal
 from culinary_blog.cqrs import Command, CommandHandler
-from culinary_blog.errors import ConflictError, ForbiddenError, NotFoundError
+from culinary_blog.errors import ConflictError, ErrorCode, ForbiddenError, NotFoundError
 from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.enums import RecipeDifficulty
 from culinary_blog.recipes.mapping import to_recipe_out
@@ -45,9 +45,9 @@ class UpdateRecipeHandler(CommandHandler[UpdateRecipeCommand, RecipeOut]):
         actor = command.actor
         existing = await self._repository.get_by_id(command.recipe_id)
         if existing is None:
-            raise NotFoundError("Không tìm thấy công thức nấu ăn.")
+            raise NotFoundError("Không tìm thấy công thức nấu ăn.", code=ErrorCode.RECIPE_NOT_FOUND)
         if not (actor.is_admin or (actor.can_write_recipes and existing.author_id == actor.user_id)):
-            raise ForbiddenError("Only the recipe's author or an Admin can update it")
+            raise ForbiddenError("Only the recipe's author or an Admin can update it", code=ErrorCode.RECIPE_FORBIDDEN)
 
         category_changed = existing.category_id != command.category_id
         values: dict[str, object] = {
@@ -64,7 +64,9 @@ class UpdateRecipeHandler(CommandHandler[UpdateRecipeCommand, RecipeOut]):
 
         recipe = await self._repository.update(command.recipe_id, command.expected_version, values)
         if recipe is None:
-            raise ConflictError("Dữ liệu đã bị thay đổi bởi người dùng khác.")
+            raise ConflictError(
+                "Dữ liệu đã bị thay đổi bởi người dùng khác.", code=ErrorCode.RECIPE_CONCURRENCY_CONFLICT
+            )
 
         await self._cache.updated(recipe.slug, category_changed=category_changed)
         logger.info(

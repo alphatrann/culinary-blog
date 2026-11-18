@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Brand } from "./brand";
 import { HeaderActions } from "./header-actions";
 import { MobileMenu } from "./mobile-menu";
-import { mainNav } from "./nav-links";
+import { mainNav, prefetchFor } from "./nav-links";
 import { SearchForm } from "./search-form";
 
 /** Server component: renders the guest state; auth-dependent parts hydrate client-side. */
@@ -16,6 +16,7 @@ export function SiteHeader() {
             <Link
               key={l.href}
               href={l.href}
+              prefetch={prefetchFor(l.href)}
               className="flex h-11 items-center rounded-md px-3 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
             >
               {l.label}

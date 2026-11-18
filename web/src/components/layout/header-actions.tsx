@@ -19,10 +19,14 @@ export function HeaderActions() {
   if (!user) {
     return (
       <div className="hidden items-center gap-2 md:flex">
-        <Link href="/auth/login" className={buttonVariants({ variant: "outline" })}>
+        <Link
+          href="/auth/login"
+          prefetch={false}
+          className={buttonVariants({ variant: "outline" })}
+        >
           Đăng nhập
         </Link>
-        <Link href="/auth/register" className={buttonVariants()}>
+        <Link href="/auth/register" prefetch={false} className={buttonVariants()}>
           Đăng ký
         </Link>
       </div>
@@ -32,7 +36,7 @@ export function HeaderActions() {
   return (
     <div className="hidden items-center gap-2 md:flex">
       {canWrite && (
-        <Link href="/dashboard/recipes/new" className={buttonVariants()}>
+        <Link href="/dashboard/recipes/new" prefetch={false} className={buttonVariants()}>
           Viết công thức
         </Link>
       )}

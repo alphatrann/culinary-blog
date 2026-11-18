@@ -8,7 +8,7 @@ from culinary_blog.categories.cache import CategoryCacheInvalidator
 from culinary_blog.categories.repository import CategoryRepository
 from culinary_blog.categories.schemas import CategoryOut
 from culinary_blog.cqrs import Command, CommandHandler
-from culinary_blog.errors import ConflictError, ForbiddenError, NotFoundError
+from culinary_blog.errors import ConflictError, ErrorCode, ForbiddenError, NotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -35,9 +35,9 @@ class UpdateCategoryHandler(CommandHandler[UpdateCategoryCommand, CategoryOut]):
             raise ForbiddenError("Admin role required")
         category = await self._repository.get_by_id(command.category_id)
         if category is None:
-            raise NotFoundError("Category not found")
+            raise NotFoundError("Category not found", code=ErrorCode.CATEGORY_NOT_FOUND)
         if await self._repository.name_taken(command.name, excluding=category.id):
-            raise ConflictError("A category with this name already exists")
+            raise ConflictError("A category with this name already exists", code=ErrorCode.CATEGORY_NAME_EXISTS)
 
         category.name = command.name
         category.description = command.description

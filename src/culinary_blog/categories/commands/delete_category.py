@@ -7,7 +7,7 @@ from culinary_blog.auth.principal import Principal
 from culinary_blog.categories.cache import CategoryCacheInvalidator
 from culinary_blog.categories.repository import CategoryRepository
 from culinary_blog.cqrs import Command, CommandHandler
-from culinary_blog.errors import ConflictError, ForbiddenError, NotFoundError
+from culinary_blog.errors import ConflictError, ErrorCode, ForbiddenError, NotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +30,13 @@ class DeleteCategoryHandler(CommandHandler[DeleteCategoryCommand, None]):
             raise ForbiddenError("Admin role required")
         category = await self._repository.get_by_id(command.category_id)
         if category is None:
-            raise NotFoundError("Category not found")
+            raise NotFoundError("Category not found", code=ErrorCode.CATEGORY_NOT_FOUND)
         count = await self._repository.count_recipes(category.id)
         if count > 0:
-            raise ConflictError(f"Category still has {count} recipe(s); reassign or delete them first")
+            raise ConflictError(
+                f"Category still has {count} recipe(s); reassign or delete them first",
+                code=ErrorCode.CATEGORY_DELETE_HAS_RECIPES,
+            )
 
         category.is_deleted = True
         await self._repository.save(category)

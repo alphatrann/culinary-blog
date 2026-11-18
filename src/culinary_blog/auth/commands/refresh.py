@@ -9,7 +9,7 @@ from culinary_blog.auth.schemas import AuthSession
 from culinary_blog.auth.security import TokenService
 from culinary_blog.auth.session_issuer import SessionIssuer
 from culinary_blog.cqrs import Command, CommandHandler
-from culinary_blog.errors import UnauthorizedError
+from culinary_blog.errors import ErrorCode, UnauthorizedError
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class RefreshHandler(CommandHandler[RefreshCommand, AuthSession]):
         if stored.revoked_at is not None:
             await self._reject_reuse(stored.user_id)
         if stored.expires_at <= datetime.now(UTC):
-            raise UnauthorizedError(INVALID_REFRESH)
+            raise UnauthorizedError(INVALID_REFRESH, code=ErrorCode.AUTH_REFRESH_TOKEN_EXPIRED)
 
         user = await self._repository.get_user_by_id(stored.user_id)
         if user is None or not user.is_active:
@@ -53,4 +53,4 @@ class RefreshHandler(CommandHandler[RefreshCommand, AuthSession]):
     async def _reject_reuse(self, user_id: uuid.UUID) -> NoReturn:
         logger.warning("SECURITY ALERT: revoked refresh token reused", extra={"user_id": str(user_id)})
         await self._repository.revoke_all_refresh_tokens(user_id)
-        raise UnauthorizedError(INVALID_REFRESH)
+        raise UnauthorizedError(INVALID_REFRESH, code=ErrorCode.AUTH_REFRESH_TOKEN_REVOKED)

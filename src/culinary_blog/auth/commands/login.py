@@ -8,7 +8,7 @@ from culinary_blog.auth.schemas import AuthSession
 from culinary_blog.auth.security import PasswordHasher
 from culinary_blog.auth.session_issuer import SessionIssuer
 from culinary_blog.cqrs import Command, CommandHandler
-from culinary_blog.errors import LockedError, UnauthorizedError
+from culinary_blog.errors import ErrorCode, LockedError, UnauthorizedError
 
 logger = logging.getLogger(__name__)
 
@@ -45,14 +45,14 @@ class LoginHandler(CommandHandler[LoginCommand, AuthSession]):
 
         # Checked before the password so a locked account can't be used as a password oracle.
         if user is not None and user.locked_until is not None and user.locked_until > now:
-            raise LockedError("Account is temporarily locked. Try again later.")
+            raise LockedError("Account is temporarily locked. Try again later.", code=ErrorCode.AUTH_ACCOUNT_LOCKED)
 
         # Always verifies (against a dummy hash when there is no user) to keep timing uniform.
         password_ok = await self._hasher.verify(command.password, user.password_hash if user else None)
         if user is None or not password_ok or not user.is_active:
             if user is not None and not password_ok:
                 await self._record_failure(user, now)
-            raise UnauthorizedError(INVALID_CREDENTIALS)
+            raise UnauthorizedError(INVALID_CREDENTIALS, code=ErrorCode.AUTH_INVALID_CREDENTIALS)
 
         user.failed_login_count = 0
         user.locked_until = None

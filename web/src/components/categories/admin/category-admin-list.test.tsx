@@ -69,7 +69,11 @@ describe("CategoryAdminList", () => {
 
   it("explains that a category still holding recipes cannot be deleted", async () => {
     del.mockRejectedValue(
-      new ApiError(409, { title: "Conflict", detail: "Category still has 1 recipe(s)" }),
+      new ApiError(409, {
+        title: "Conflict",
+        detail: "Category still has 1 recipe(s)",
+        code: "CATEGORY_DELETE_HAS_RECIPES",
+      }),
     );
     const user = setup();
     await screen.findByText("Món chính");

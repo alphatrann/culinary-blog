@@ -4,7 +4,7 @@ from culinary_blog.auth.principal import Principal
 from culinary_blog.cache import keys
 from culinary_blog.cache.service import Cache
 from culinary_blog.cqrs import Query, QueryHandler
-from culinary_blog.errors import ForbiddenError, NotFoundError
+from culinary_blog.errors import ErrorCode, ForbiddenError, NotFoundError
 from culinary_blog.recipes.enums import RecipeStatus
 from culinary_blog.recipes.mapping import recipe_fields
 from culinary_blog.recipes.repository import RecipeRepository
@@ -44,13 +44,13 @@ class GetRecipeHandler(QueryHandler[GetRecipeQuery, RecipeDetailOut]):
         viewer = query.viewer
         is_owner = viewer is not None and (viewer.is_admin or viewer.user_id == detail.author_id)
         if detail.status != RecipeStatus.PUBLISHED and not is_owner:
-            raise ForbiddenError("This recipe is not published")
+            raise ForbiddenError("This recipe is not published", code=ErrorCode.RECIPE_FORBIDDEN)
         return detail
 
     async def _load(self, slug: str) -> RecipeDetailOut:
         found = await self._repository.get_aggregate_by_slug(slug)
         if found is None:
-            raise NotFoundError("Recipe not found")
+            raise NotFoundError("Recipe not found", code=ErrorCode.RECIPE_NOT_FOUND)
         return RecipeDetailOut(
             **recipe_fields(found.recipe),  # type: ignore[arg-type]
             steps=[StepOut.model_validate(step) for step in found.steps],

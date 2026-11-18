@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from culinary_blog.errors import BadRequestError
+from culinary_blog.errors import BadRequestError, ErrorCode
 
 MAX_IMAGE_BYTES = 5 * 1024 * 1024  # CONS-007
 
@@ -34,12 +34,14 @@ def sniff_image_format(data: bytes) -> ImageFormat | None:
 def validate_image(content_type: str | None, data: bytes) -> ImageFormat:
     """FR-RCP-008 steps 2-3: allowed MIME type, size <= 5 MB, and magic bytes that agree with the MIME type."""
     if content_type not in ALLOWED_CONTENT_TYPES:
-        raise BadRequestError("Chỉ chấp nhận ảnh JPEG, PNG, WebP hoặc AVIF.")
+        raise BadRequestError("Chỉ chấp nhận ảnh JPEG, PNG, WebP hoặc AVIF.", code=ErrorCode.FILE_MIME_INVALID)
     if not data:
         raise BadRequestError("File ảnh rỗng.")
     if len(data) > MAX_IMAGE_BYTES:
-        raise BadRequestError("Ảnh vượt quá dung lượng tối đa 5 MB.")
+        raise BadRequestError("Ảnh vượt quá dung lượng tối đa 5 MB.", code=ErrorCode.FILE_SIZE_EXCEEDED)
     detected = sniff_image_format(data)
     if detected is None or detected.content_type != content_type:
-        raise BadRequestError("Nội dung file không khớp với định dạng ảnh đã khai báo.")
+        raise BadRequestError(
+            "Nội dung file không khớp với định dạng ảnh đã khai báo.", code=ErrorCode.FILE_MIME_INVALID
+        )
     return detected

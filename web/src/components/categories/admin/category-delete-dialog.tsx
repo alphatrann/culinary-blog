@@ -32,7 +32,7 @@ export function CategoryDeleteDialog({ category, onOpenChange }: Props) {
       onOpenChange(false);
     },
     onError: (error) => {
-      setBanner(isApiError(error) && error.status === 409 ? IN_USE : GENERIC);
+      setBanner(isApiError(error) && error.is("CATEGORY_DELETE_HAS_RECIPES") ? IN_USE : GENERIC);
     },
   });
 

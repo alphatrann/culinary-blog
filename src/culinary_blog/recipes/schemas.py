@@ -88,7 +88,7 @@ class RecipeWrite(BaseModel):
     """Recipe fields shared by create (FR-RCP-003) and update (FR-RCP-004)."""
 
     title: str = Field(min_length=5, max_length=200)
-    description: str = Field(min_length=1)
+    description: str = Field(min_length=1, max_length=2000)
     category_id: uuid.UUID
     prep_time_minutes: int = Field(gt=0)
     cook_time_minutes: int = Field(gt=0)

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from culinary_blog.auth.principal import Principal
 from culinary_blog.cqrs import Query, QueryHandler
-from culinary_blog.errors import ForbiddenError, NotFoundError
+from culinary_blog.errors import ErrorCode, ForbiddenError, NotFoundError
 from culinary_blog.recipes.mapping import recipe_fields
 from culinary_blog.recipes.repository import RecipeRepository
 from culinary_blog.recipes.schemas import (
@@ -34,10 +34,12 @@ class GetRecipeForEditHandler(QueryHandler[GetRecipeForEditQuery, RecipeDetailOu
     async def handle(self, query: GetRecipeForEditQuery) -> RecipeDetailOut:
         found = await self._repository.get_aggregate_by_id(query.recipe_id)
         if found is None:
-            raise NotFoundError("Không tìm thấy công thức nấu ăn.")
+            raise NotFoundError("Không tìm thấy công thức nấu ăn.", code=ErrorCode.RECIPE_NOT_FOUND)
         actor = query.actor
         if not (actor.is_admin or actor.user_id == found.recipe.author_id):
-            raise ForbiddenError("Only the recipe's author or an Admin can view it for editing")
+            raise ForbiddenError(
+                "Only the recipe's author or an Admin can view it for editing", code=ErrorCode.RECIPE_FORBIDDEN
+            )
         return RecipeDetailOut(
             **recipe_fields(found.recipe),  # type: ignore[arg-type]
             steps=[StepOut.model_validate(step) for step in found.steps],

@@ -8,7 +8,7 @@ from sqlalchemy.orm import load_only
 from sqlmodel import col, select
 
 from culinary_blog.auth.models import RefreshToken, User
-from culinary_blog.errors import ConflictError
+from culinary_blog.errors import ConflictError, ErrorCode
 
 UNIQUE_VIOLATION = "23505"  # PostgreSQL SQLSTATE
 
@@ -66,7 +66,7 @@ class AuthRepository:
                 if getattr(exc.orig, "sqlstate", None) != UNIQUE_VIOLATION:
                     raise
                 raise ConflictError(
-                    "Email is already registered"
+                    "Email is already registered", code=ErrorCode.AUTH_EMAIL_EXISTS
                 ) from exc  # the only unique column set on registration is email
 
     async def save_login_state(self, user: User) -> None:

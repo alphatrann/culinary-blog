@@ -10,7 +10,9 @@ COPY . .
 ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID=""
 ARG NEXT_PUBLIC_API_BASE_URL="/api/v1"
 ENV NEXT_TELEMETRY_DISABLED=1 NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
-RUN npm run build
+# next/font/google downloads the fonts at build time; one transient failure ("Cannot read properties of null" from
+# next/font) broke the Lighthouse job on main, so retry once before failing the image build.
+RUN npm run build || (sleep 5 && npm run build)
 
 FROM node:24-alpine AS runtime
 WORKDIR /app

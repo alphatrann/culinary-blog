@@ -22,6 +22,7 @@ import {
 export type AdminCategory = ResponseBody<"/categories", "get">[number];
 
 const GENERIC = "Đã có lỗi xảy ra. Vui lòng thử lại.";
+const NAME_EXISTS = "Tên danh mục này đã tồn tại. Vui lòng chọn tên khác.";
 
 interface Props {
   open: boolean;
@@ -71,7 +72,7 @@ export function CategoryFormDialog({ open, category, onOpenChange }: Props) {
         setError(field as keyof CategoryFormValues, { message });
       }
       if (Object.keys(fieldErrors).length) return setBanner(undefined);
-      setBanner(isApiError(error) && error.status === 409 ? error.detail : GENERIC);
+      setBanner(isApiError(error) && error.is("CATEGORY_NAME_EXISTS") ? NAME_EXISTS : GENERIC);
     },
   });
 

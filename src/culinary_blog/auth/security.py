@@ -9,7 +9,7 @@ from opentelemetry import trace
 from passlib.context import CryptContext
 
 from culinary_blog.auth.principal import Principal
-from culinary_blog.errors import UnauthorizedError
+from culinary_blog.errors import ErrorCode, UnauthorizedError
 
 # Argon2id verification showed up as a multi-hundred-ms gap between DB spans in Tempo traces
 # with nothing accounting for it (M6a/ADR-0009 finding) - these spans make that visible.
@@ -51,8 +51,10 @@ class TokenService:
         try:
             claims = jwt.decode(token, self._secret_key, algorithms=["HS256"], options={"require": ["exp", "sub"]})
             return Principal(user_id=uuid.UUID(claims["sub"]), roles=tuple(claims.get("roles", [])))
+        except jwt.ExpiredSignatureError as exc:
+            raise UnauthorizedError("Invalid or expired access token", code=ErrorCode.AUTH_TOKEN_EXPIRED) from exc
         except (jwt.InvalidTokenError, ValueError, TypeError) as exc:
-            raise UnauthorizedError("Invalid or expired access token") from exc
+            raise UnauthorizedError("Invalid or expired access token", code=ErrorCode.AUTH_TOKEN_INVALID) from exc
 
     @staticmethod
     def generate_refresh_token() -> str:

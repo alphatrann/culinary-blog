@@ -61,7 +61,11 @@ export const recipeFormSchema = z.object({
     .min(5, "Tiêu đề cần từ 5 đến 200 ký tự.")
     .max(200, "Tiêu đề cần từ 5 đến 200 ký tự.")
     .refine((v) => !/[<>]/.test(v), "Tiêu đề không được chứa ký tự < hoặc >."),
-  description: z.string().trim().min(1, "Vui lòng nhập mô tả."),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Vui lòng nhập mô tả.")
+    .max(2000, "Mô tả tối đa 2000 ký tự."),
   category_id: z.string().min(1, "Vui lòng chọn danh mục."),
   difficulty: z.enum(["1", "2", "3", "4"], "Vui lòng chọn độ khó."),
   prep_time_minutes: positiveInt("thời gian chuẩn bị"),

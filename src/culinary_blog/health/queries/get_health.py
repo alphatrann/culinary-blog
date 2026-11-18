@@ -12,15 +12,17 @@ class GetHealthQuery(Query):
 
 
 class GetHealthHandler(QueryHandler[GetHealthQuery, HealthReport]):
-    """Checks every dependency: database, the three Redis instances, and MinIO."""
+    """Checks the database, Job Queue Redis, Rate Limit Redis and MinIO.
+
+    Cache Redis is intentionally absent: it is an optimisation, reads fall back to the database (NFR-REL-002).
+    """
 
     def __init__(self, repository: HealthRepository) -> None:
         self._repository = repository
 
     async def handle(self, query: GetHealthQuery) -> HealthReport:
-        database, cache, queue, ratelimit, minio = await asyncio.gather(
+        database, queue, ratelimit, minio = await asyncio.gather(
             self._repository.check_database(),
-            self._repository.check_cache_redis(),
             self._repository.check_queue_redis(),
             self._repository.check_ratelimit_redis(),
             self._repository.check_minio(),
@@ -28,7 +30,6 @@ class GetHealthHandler(QueryHandler[GetHealthQuery, HealthReport]):
         return HealthReport.from_entries(
             {
                 "database": database,
-                "cache_redis": cache,
                 "queue_redis": queue,
                 "ratelimit_redis": ratelimit,
                 "minio": minio,
