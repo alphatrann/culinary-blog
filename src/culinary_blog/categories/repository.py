@@ -10,7 +10,7 @@ from sqlmodel import col, or_, select
 from culinary_blog.auth.models import User
 from culinary_blog.categories.models import Category
 from culinary_blog.categories.schemas import RecipeSummaryOut
-from culinary_blog.errors import ConflictError
+from culinary_blog.errors import ConflictError, ErrorCode
 from culinary_blog.recipes.enums import RecipeStatus
 from culinary_blog.recipes.models import Recipe
 from culinary_blog.recipes.summary import extra_columns, to_summary
@@ -166,4 +166,6 @@ class CategoryRepository:
         except IntegrityError as exc:
             if getattr(exc.orig, "sqlstate", None) != UNIQUE_VIOLATION:
                 raise
-            raise ConflictError("A category with this name already exists") from exc
+            raise ConflictError(
+                "A category with this name already exists", code=ErrorCode.CATEGORY_NAME_EXISTS
+            ) from exc

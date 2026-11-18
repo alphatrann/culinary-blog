@@ -6,7 +6,7 @@ from google.auth.exceptions import GoogleAuthError, TransportError
 from google.auth.transport.requests import Request
 from google.oauth2 import id_token
 
-from culinary_blog.errors import ServiceUnavailableError, UnauthorizedError
+from culinary_blog.errors import ErrorCode, ServiceUnavailableError, UnauthorizedError
 
 
 @dataclass(frozen=True)
@@ -34,7 +34,7 @@ class GoogleIdTokenVerifier:
         except TransportError as exc:
             raise ServiceUnavailableError("Google sign-in is temporarily unavailable") from exc
         except (ValueError, GoogleAuthError, jwt.PyJWTError) as exc:  # bad signature, aud, iss or expiry
-            raise UnauthorizedError("Invalid Google ID token") from exc
+            raise UnauthorizedError("Invalid Google ID token", code=ErrorCode.AUTH_GOOGLE_TOKEN_INVALID) from exc
         return GoogleProfile(
             sub=claims["sub"],
             email=claims.get("email"),

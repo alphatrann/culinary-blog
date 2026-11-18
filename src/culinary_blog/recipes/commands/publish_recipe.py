@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 
 from culinary_blog.auth.principal import Principal
 from culinary_blog.cqrs import Command, CommandHandler
-from culinary_blog.errors import NotFoundError, UnprocessableError
+from culinary_blog.errors import ErrorCode, NotFoundError, UnprocessableError
 from culinary_blog.recipes.access import ensure_can_edit
 from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.enums import RecipeStatus
@@ -34,16 +34,19 @@ class PublishRecipeHandler(CommandHandler[PublishRecipeCommand, RecipeOut]):
     async def handle(self, command: PublishRecipeCommand) -> RecipeOut:
         recipe = await self._repository.get_by_id(command.recipe_id)
         if recipe is None:
-            raise NotFoundError("Không tìm thấy công thức nấu ăn.")
+            raise NotFoundError("Không tìm thấy công thức nấu ăn.", code=ErrorCode.RECIPE_NOT_FOUND)
         ensure_can_edit(command.actor, recipe)
 
         steps, ingredients = await self._repository.get_children(recipe.id)
         if recipe.status != RecipeStatus.PUBLISHED:
             if not steps or not ingredients:
-                raise UnprocessableError("Recipe phải có ít nhất 1 nguyên liệu và 1 bước thực hiện.")
+                raise UnprocessableError(
+                    "Recipe phải có ít nhất 1 nguyên liệu và 1 bước thực hiện.",
+                    code=ErrorCode.RECIPE_PUBLISH_INCOMPLETE,
+                )
             updated = await self._repository.set_status(recipe.id, RecipeStatus.PUBLISHED, stamp_published_at=True)
             if updated is None:
-                raise NotFoundError("Không tìm thấy công thức nấu ăn.")
+                raise NotFoundError("Không tìm thấy công thức nấu ăn.", code=ErrorCode.RECIPE_NOT_FOUND)
             recipe = updated
             await self._cache.visibility_changed(recipe.slug)
             recipes_published.add(1)
@@ -58,6 +61,6 @@ class PublishRecipeHandler(CommandHandler[PublishRecipeCommand, RecipeOut]):
         else:  # no-op: get_by_id is a partial (authorization-only) load, so reload the full row to serialize it
             full = await self._repository.get_full_by_id(recipe.id)
             if full is None:
-                raise NotFoundError("Không tìm thấy công thức nấu ăn.")
+                raise NotFoundError("Không tìm thấy công thức nấu ăn.", code=ErrorCode.RECIPE_NOT_FOUND)
             recipe = full
         return to_recipe_out(recipe, steps, ingredients)

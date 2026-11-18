@@ -7,7 +7,7 @@ from culinary_blog.cache.service import Cache
 from culinary_blog.categories.repository import CategoryRepository
 from culinary_blog.categories.schemas import CategoryDetailOut, CategoryOut, RecipePage
 from culinary_blog.cqrs import Query, QueryHandler
-from culinary_blog.errors import NotFoundError
+from culinary_blog.errors import ErrorCode, NotFoundError
 
 
 @dataclass(frozen=True)
@@ -47,7 +47,7 @@ class GetCategoryHandler(QueryHandler[GetCategoryQuery, CategoryDetailOut]):
     async def _load(self, query: GetCategoryQuery) -> CategoryDetailOut:
         category = await self._repository.get_by_slug(query.slug)
         if category is None:
-            raise NotFoundError("Category not found")
+            raise NotFoundError("Category not found", code=ErrorCode.CATEGORY_NOT_FOUND)
 
         viewer = query.viewer
         recipes, total = await self._repository.list_recipes(

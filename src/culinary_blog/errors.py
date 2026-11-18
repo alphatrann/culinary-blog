@@ -1,14 +1,46 @@
+from enum import StrEnum
+
+
+class ErrorCode(StrEnum):
+    """Stable machine-readable error codes (SRS Appendix B), emitted as the `code` member of the problem response."""
+
+    AUTH_EMAIL_EXISTS = "AUTH_EMAIL_EXISTS"
+    AUTH_INVALID_CREDENTIALS = "AUTH_INVALID_CREDENTIALS"
+    AUTH_TOKEN_EXPIRED = "AUTH_TOKEN_EXPIRED"
+    AUTH_TOKEN_INVALID = "AUTH_TOKEN_INVALID"
+    AUTH_REFRESH_TOKEN_EXPIRED = "AUTH_REFRESH_TOKEN_EXPIRED"
+    AUTH_REFRESH_TOKEN_REVOKED = "AUTH_REFRESH_TOKEN_REVOKED"
+    AUTH_GOOGLE_TOKEN_INVALID = "AUTH_GOOGLE_TOKEN_INVALID"
+    AUTH_ACCOUNT_LOCKED = "AUTH_ACCOUNT_LOCKED"
+    RECIPE_NOT_FOUND = "RECIPE_NOT_FOUND"
+    RECIPE_PUBLISH_INCOMPLETE = "RECIPE_PUBLISH_INCOMPLETE"
+    RECIPE_FORBIDDEN = "RECIPE_FORBIDDEN"
+    RECIPE_CONCURRENCY_CONFLICT = "RECIPE_CONCURRENCY_CONFLICT"
+    INGREDIENT_QUANTITY_UNIT_MISMATCH = "INGREDIENT_QUANTITY_UNIT_MISMATCH"
+    CATEGORY_NOT_FOUND = "CATEGORY_NOT_FOUND"
+    CATEGORY_NAME_EXISTS = "CATEGORY_NAME_EXISTS"
+    CATEGORY_DELETE_HAS_RECIPES = "CATEGORY_DELETE_HAS_RECIPES"
+    FILE_SIZE_EXCEEDED = "FILE_SIZE_EXCEEDED"
+    FILE_MIME_INVALID = "FILE_MIME_INVALID"
+    VALIDATION_ERROR = "VALIDATION_ERROR"
+    RATE_LIMIT_EXCEEDED = "RATE_LIMIT_EXCEEDED"
+
+
 class DomainError(Exception):
     """Base for expected failures raised by handlers/repositories; the HTTP layer maps them to RFC 7807 responses."""
 
     status_code = 500
     title = "Internal Server Error"
-    code: str | None = None  # stable machine-readable code (SRS Appendix B), emitted as the `code` problem member
+    code: ErrorCode | None = None  # class-level default; an instance can override it via the `code` argument
 
-    def __init__(self, detail: str | None = None, headers: dict[str, str] | None = None) -> None:
+    def __init__(
+        self, detail: str | None = None, headers: dict[str, str] | None = None, code: ErrorCode | None = None
+    ) -> None:
         super().__init__(detail or self.title)
         self.detail = detail or self.title
         self.headers = headers or {}
+        if code is not None:
+            self.code = code
 
 
 class BadRequestError(DomainError):
@@ -58,4 +90,4 @@ class ServiceUnavailableError(DomainError):
 class RateLimitedError(DomainError):
     status_code = 429
     title = "Too Many Requests"
-    code = "RATE_LIMIT_EXCEEDED"
+    code = ErrorCode.RATE_LIMIT_EXCEEDED

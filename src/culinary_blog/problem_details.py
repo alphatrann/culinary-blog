@@ -5,7 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from culinary_blog.errors import DomainError
+from culinary_blog.errors import DomainError, ErrorCode
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,12 @@ async def _domain_error(request: Request, exc: DomainError) -> JSONResponse:
 
 async def _validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
     errors = [{"loc": list(e["loc"]), "msg": e["msg"], "type": e["type"]} for e in exc.errors()]
-    return _problem(request, 422, "Unprocessable Entity", "Request validation failed", errors=errors)
+    code = (
+        ErrorCode.INGREDIENT_QUANTITY_UNIT_MISMATCH
+        if any("quantity and unit must both" in e["msg"] for e in errors)
+        else ErrorCode.VALIDATION_ERROR
+    )
+    return _problem(request, 422, "Unprocessable Entity", "Request validation failed", code=code, errors=errors)
 
 
 async def _http_error(request: Request, exc: StarletteHTTPException) -> JSONResponse:

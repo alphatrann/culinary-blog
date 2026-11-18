@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 
 from culinary_blog.auth.principal import Principal
 from culinary_blog.cqrs import Command, CommandHandler
-from culinary_blog.errors import NotFoundError
+from culinary_blog.errors import ErrorCode, NotFoundError
 from culinary_blog.recipes.access import ensure_can_edit
 from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.models import RecipeIngredient
@@ -32,7 +32,7 @@ class AddIngredientHandler(CommandHandler[AddIngredientCommand, IngredientOut]):
     async def handle(self, command: AddIngredientCommand) -> IngredientOut:
         recipe = await self._repository.get_by_id(command.recipe_id)
         if recipe is None:
-            raise NotFoundError("Không tìm thấy công thức nấu ăn.")
+            raise NotFoundError("Không tìm thấy công thức nấu ăn.", code=ErrorCode.RECIPE_NOT_FOUND)
         ensure_can_edit(command.actor, recipe)
 
         data = command.data

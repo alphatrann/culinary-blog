@@ -8,7 +8,7 @@ from culinary_blog.auth.repository import AuthRepository
 from culinary_blog.auth.schemas import AuthSession
 from culinary_blog.auth.session_issuer import SessionIssuer
 from culinary_blog.cqrs import Command, CommandHandler
-from culinary_blog.errors import BadRequestError, LockedError, UnauthorizedError
+from culinary_blog.errors import BadRequestError, ErrorCode, LockedError, UnauthorizedError
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ class GoogleLoginHandler(CommandHandler[GoogleLoginCommand, AuthSession]):
         if not user.is_active:
             raise UnauthorizedError("Account is inactive")
         if user.locked_until is not None and user.locked_until > now:
-            raise LockedError("Account is temporarily locked. Try again later.")
+            raise LockedError("Account is temporarily locked. Try again later.", code=ErrorCode.AUTH_ACCOUNT_LOCKED)
 
         session, refresh_record = self._issuer.issue(user, command.client_ip)
         if created:

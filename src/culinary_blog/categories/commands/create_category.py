@@ -9,7 +9,7 @@ from culinary_blog.categories.repository import CategoryRepository
 from culinary_blog.categories.schemas import CategoryOut
 from culinary_blog.categories.slug import slugify
 from culinary_blog.cqrs import Command, CommandHandler
-from culinary_blog.errors import ConflictError, ForbiddenError
+from culinary_blog.errors import ConflictError, ErrorCode, ForbiddenError
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class CreateCategoryHandler(CommandHandler[CreateCategoryCommand, CategoryOut]):
         if not command.actor.is_admin:
             raise ForbiddenError("Admin role required")
         if await self._repository.name_taken(command.name):
-            raise ConflictError("A category with this name already exists")
+            raise ConflictError("A category with this name already exists", code=ErrorCode.CATEGORY_NAME_EXISTS)
 
         category = Category(
             name=command.name,
