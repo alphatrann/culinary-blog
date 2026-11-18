@@ -12,13 +12,11 @@ class HealthRepository:
     def __init__(
         self,
         engine: AsyncEngine,
-        cache_redis: Redis,
         queue_redis: Redis,
         ratelimit_redis: Redis,
         minio_health_url: str,
     ) -> None:
         self._engine = engine
-        self._cache_redis = cache_redis
         self._queue_redis = queue_redis
         self._ratelimit_redis = ratelimit_redis
         self._minio_health_url = minio_health_url
@@ -30,9 +28,6 @@ class HealthRepository:
             return HealthEntry(status="healthy")
         except Exception as exc:  # noqa: BLE001 - health checks must never raise
             return HealthEntry(status="unhealthy", detail=str(exc))
-
-    async def check_cache_redis(self) -> HealthEntry:
-        return await self._ping(self._cache_redis)
 
     async def check_queue_redis(self) -> HealthEntry:
         return await self._ping(self._queue_redis)

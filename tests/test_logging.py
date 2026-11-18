@@ -40,7 +40,7 @@ class FakeTokens:
 def make_app() -> FastAPI:
     authenticator = Authenticator(FakeTokens())  # type: ignore[arg-type]
     repository = AsyncMock(spec=HealthRepository)
-    for name in ("database", "cache_redis", "queue_redis", "ratelimit_redis", "minio"):
+    for name in ("database", "queue_redis", "ratelimit_redis", "minio"):
         getattr(repository, f"check_{name}").return_value = HealthEntry(status="healthy")
 
     app = FastAPI()
