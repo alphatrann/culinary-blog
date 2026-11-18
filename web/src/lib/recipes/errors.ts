@@ -9,6 +9,7 @@ export interface RecipeFailure {
 }
 
 const GENERIC = "Đã có lỗi xảy ra. Vui lòng thử lại.";
+const IMAGE_SIZE_ERROR = "Ảnh vượt quá dung lượng tối đa 5 MB.";
 
 /** Maps API `steps.N.title|description` / `ingredients.N.*` paths back onto form field names. */
 function toFormPath(path: string): string {
@@ -18,6 +19,9 @@ function toFormPath(path: string): string {
 /** Maps a create/publish failure onto a banner and/or per-field messages. */
 export function mapRecipeError(error: unknown): RecipeFailure {
   if (!isApiError(error)) return { banner: GENERIC, fields: {} };
+  if (error.is("RECIPE_PUBLISH_INCOMPLETE")) {
+    return { banner: PUBLISH_INCOMPLETE, fields: {} };
+  }
   if (error.status === 401) {
     return { banner: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", fields: {} };
   }
@@ -39,8 +43,9 @@ export function mapRecipeError(error: unknown): RecipeFailure {
 /** Maps an image upload, primary or delete failure onto one Vietnamese message. */
 export function mapImageError(error: unknown): string {
   if (!isApiError(error)) return GENERIC;
+  if (error.is("FILE_SIZE_EXCEEDED") || error.status === 413) return IMAGE_SIZE_ERROR;
+  if (error.is("FILE_MIME_INVALID")) return IMAGE_FORMAT_ERROR;
   if (error.status === 400) return error.detail || IMAGE_FORMAT_ERROR;
-  if (error.status === 413) return "Ảnh vượt quá dung lượng tối đa 5 MB.";
   if (error.status === 401) return "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
   if (error.status === 403) return "Bạn không có quyền chỉnh sửa ảnh của công thức này.";
   if (error.isRateLimited) return "Bạn tải ảnh quá nhanh. Vui lòng thử lại sau ít phút.";

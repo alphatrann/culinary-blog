@@ -22,16 +22,19 @@ export function mapAuthError(error: unknown, mode: "login" | "register"): AuthFa
   if (error.isRateLimited) {
     return { banner: "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.", fields: {} };
   }
-  if (error.status === 401) {
+  if (error.is("AUTH_INVALID_CREDENTIALS") || (error.code === undefined && error.status === 401)) {
     return { banner: "Email hoặc mật khẩu không đúng.", fields: {} };
   }
-  if (error.status === 409 && mode === "register") {
+  if (
+    mode === "register" &&
+    (error.is("AUTH_EMAIL_EXISTS") || (error.code === undefined && error.status === 409))
+  ) {
     return {
       banner: "Email này đã được đăng ký. Hãy đăng nhập hoặc dùng email khác.",
       fields: { email: "Email này đã được đăng ký." },
     };
   }
-  if (error.status === 422) {
+  if (error.status === 422 || error.is("VALIDATION_ERROR")) {
     const fields: AuthFailure["fields"] = {};
     for (const f of FIELDS) if (error.errors[f]) fields[f] = error.errors[f];
     return Object.keys(fields).length ? { fields } : { banner: GENERIC, fields };

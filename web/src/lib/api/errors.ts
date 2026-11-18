@@ -5,6 +5,38 @@ export interface ProblemFieldError {
   type: string;
 }
 
+/** Stable machine-readable codes the API sends in the `code` problem member (SRS Appendix B). */
+export const ERROR_CODES = [
+  "AUTH_EMAIL_EXISTS",
+  "AUTH_INVALID_CREDENTIALS",
+  "AUTH_TOKEN_EXPIRED",
+  "AUTH_TOKEN_INVALID",
+  "AUTH_REFRESH_TOKEN_EXPIRED",
+  "AUTH_REFRESH_TOKEN_REVOKED",
+  "AUTH_GOOGLE_TOKEN_INVALID",
+  "AUTH_ACCOUNT_LOCKED",
+  "RECIPE_NOT_FOUND",
+  "RECIPE_PUBLISH_INCOMPLETE",
+  "RECIPE_FORBIDDEN",
+  "RECIPE_CONCURRENCY_CONFLICT",
+  "INGREDIENT_QUANTITY_UNIT_MISMATCH",
+  "CATEGORY_NOT_FOUND",
+  "CATEGORY_NAME_EXISTS",
+  "CATEGORY_DELETE_HAS_RECIPES",
+  "FILE_SIZE_EXCEEDED",
+  "FILE_MIME_INVALID",
+  "VALIDATION_ERROR",
+  "RATE_LIMIT_EXCEEDED",
+] as const;
+
+export type ErrorCode = (typeof ERROR_CODES)[number];
+
+function toErrorCode(value: unknown): ErrorCode | undefined {
+  return typeof value === "string" && (ERROR_CODES as readonly string[]).includes(value)
+    ? (value as ErrorCode)
+    : undefined;
+}
+
 /** RFC 7807 body as emitted by the API. */
 export interface ProblemDetails {
   type?: string;
@@ -12,6 +44,8 @@ export interface ProblemDetails {
   status?: number;
   detail?: string;
   instance?: string;
+  /** Stable code (SRS Appendix B); absent for errors that have none. */
+  code?: string;
   errors?: ProblemFieldError[];
 }
 
@@ -21,6 +55,8 @@ export class ApiError extends Error {
   readonly title: string;
   readonly detail: string;
   readonly instance?: string;
+  /** Machine-readable code; prefer it over `status` when the API sends one. Unknown codes read as undefined. */
+  readonly code?: ErrorCode;
   /** Field path (`body.title`, `body.steps.0.text` → without the `body`/`query` prefix) → first message. */
   readonly errors: Record<string, string>;
   readonly correlationId?: string;
@@ -33,8 +69,14 @@ export class ApiError extends Error {
     this.title = title;
     this.detail = problem.detail ?? title;
     this.instance = problem.instance;
+    this.code = toErrorCode(problem.code);
     this.errors = fieldErrors(problem.errors);
     this.correlationId = correlationId;
+  }
+
+  /** True when the API sent exactly this code. */
+  is(code: ErrorCode): boolean {
+    return this.code === code;
   }
 
   get isUnauthorized(): boolean {
@@ -43,16 +85,19 @@ export class ApiError extends Error {
 
   /** Account temporarily locked after repeated failed logins. */
   get isLocked(): boolean {
-    return this.status === 423;
+    return this.is("AUTH_ACCOUNT_LOCKED") || (this.code === undefined && this.status === 423);
   }
 
   get isRateLimited(): boolean {
-    return this.status === 429;
+    return this.is("RATE_LIMIT_EXCEEDED") || (this.code === undefined && this.status === 429);
   }
 
   /** `If-Match` row_version mismatch (optimistic concurrency). */
   get isConflict(): boolean {
-    return this.status === 409 || this.status === 412;
+    return (
+      this.is("RECIPE_CONCURRENCY_CONFLICT") ||
+      (this.code === undefined && (this.status === 409 || this.status === 412))
+    );
   }
 }
 

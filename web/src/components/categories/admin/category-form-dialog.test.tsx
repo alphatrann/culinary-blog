@@ -96,14 +96,16 @@ describe("CategoryFormDialog", () => {
 
   it("explains a 409 conflict in a banner", async () => {
     post.mockRejectedValue(
-      new ApiError(409, { title: "Conflict", detail: "A category with this name already exists" }),
+      new ApiError(409, {
+        title: "Conflict",
+        detail: "A category with this name already exists",
+        code: "CATEGORY_NAME_EXISTS",
+      }),
     );
     const user = setup();
     await user.type(screen.getByLabelText("Tên danh mục"), "Món chính");
     await user.click(screen.getByRole("button", { name: "Lưu" }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      "A category with this name already exists",
-    );
+    expect(await screen.findByRole("alert")).toHaveTextContent("Tên danh mục này đã tồn tại");
   });
 });

@@ -20,6 +20,12 @@ describe("mapImageError", () => {
     expect(mapImageError(apiError(413))).toBe("Ảnh vượt quá dung lượng tối đa 5 MB.");
   });
 
+  it("maps FILE_SIZE_EXCEEDED and FILE_MIME_INVALID by code", () => {
+    const coded = (code: string) => new ApiError(400, { detail: "x", code });
+    expect(mapImageError(coded("FILE_SIZE_EXCEEDED"))).toBe("Ảnh vượt quá dung lượng tối đa 5 MB.");
+    expect(mapImageError(coded("FILE_MIME_INVALID"))).toBe(IMAGE_FORMAT_ERROR);
+  });
+
   it("maps 429 to the rate-limit message", () => {
     expect(mapImageError(apiError(429))).toContain("quá nhanh");
   });
