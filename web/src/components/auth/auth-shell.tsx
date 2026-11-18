@@ -45,7 +45,11 @@ export function AuthShell({
           <div className="min-[1000px]:hidden">
             <Brand />
           </div>
-          <Link href={switchHref} className="text-sm font-medium text-primary hover:underline">
+          <Link
+            href={switchHref}
+            prefetch={false}
+            className="text-sm font-medium text-primary hover:underline"
+          >
             {switchLabel}
           </Link>
         </div>
@@ -58,7 +62,11 @@ export function AuthShell({
             {children}
             <p className="text-center text-sm text-muted-foreground">
               {switchPrompt}{" "}
-              <Link href={switchHref} className="font-medium text-primary hover:underline">
+              <Link
+                href={switchHref}
+                prefetch={false}
+                className="font-medium text-primary hover:underline"
+              >
                 {switchLabel}
               </Link>
             </p>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Brand, BRAND_NAME } from "./brand";
+import { prefetchFor } from "./nav-links";
 
 const columns = [
   {
@@ -47,6 +48,7 @@ export function SiteFooter() {
                 <li key={l.href}>
                   <Link
                     href={l.href}
+                    prefetch={prefetchFor(l.href)}
                     className="flex min-h-11 items-center text-sm hover:text-foreground hover:underline"
                   >
                     {l.label}

@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, Search, X } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { hasRole, useUser } from "@/lib/session";
-import { mainNav } from "./nav-links";
+import { mainNav, prefetchFor } from "./nav-links";
 import { SearchForm } from "./search-form";
 
 const iconBtn =
@@ -49,7 +49,7 @@ export function MobileMenu() {
           <SearchForm id="hd-q-mobile" className="mb-2 md:hidden" />
           <nav aria-label="Điều hướng chính" className="flex flex-col">
             {mainNav.map((l) => (
-              <Link key={l.href} href={l.href} className={linkClass}>
+              <Link key={l.href} href={l.href} prefetch={prefetchFor(l.href)} className={linkClass}>
                 {l.label}
               </Link>
             ))}
@@ -57,11 +57,11 @@ export function MobileMenu() {
           <div className="mt-2 flex flex-col gap-2 border-t border-border pt-3 md:hidden">
             {user ? (
               <>
-                <Link href="/profile" className={linkClass}>
+                <Link href="/profile" prefetch={false} className={linkClass}>
                   Hồ sơ
                 </Link>
                 {hasRole(user, "author") && (
-                  <Link href="/dashboard/recipes" className={linkClass}>
+                  <Link href="/dashboard/recipes" prefetch={false} className={linkClass}>
                     Công thức của tôi
                   </Link>
                 )}
@@ -71,10 +71,14 @@ export function MobileMenu() {
               </>
             ) : (
               <>
-                <Link href="/auth/login" className={buttonVariants({ variant: "outline" })}>
+                <Link
+                  href="/auth/login"
+                  prefetch={false}
+                  className={buttonVariants({ variant: "outline" })}
+                >
                   Đăng nhập
                 </Link>
-                <Link href="/auth/register" className={buttonVariants()}>
+                <Link href="/auth/register" prefetch={false} className={buttonVariants()}>
                   Đăng ký
                 </Link>
               </>
