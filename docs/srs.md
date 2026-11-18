@@ -99,7 +99,7 @@ Culinary Blog là một nền tảng web cho phép người dùng chia sẻ, kh�
 
 - **Nền tảng chia sẻ công thức:** Tác giả (Author) đăng tải công thức với hình ảnh, danh sách nguyên liệu chi tiết, hướng dẫn từng bước thực hiện và thông tin dinh dưỡng.
 - **Tổ chức nội dung:** Phân loại công thức theo danh mục (Category), độ khó (Difficulty Level), thời gian chuẩn bị và nấu.
-- **Tìm kiếm thông minh:** Full-Text Search tiếng Việt sử dụng PostgreSQL tsvector/tsquery với unaccent extension.
+- **Tìm kiếm thông minh:** Tìm kiếm mờ (fuzzy) tiếng Việt không dấu, sử dụng PostgreSQL `pg_trgm` + `unaccent` trên tiêu đề công thức (ADR-0008).
 - **Bảo mật đa lớp:** Xác thực JWT stateless lưu trong HttpOnly cookie, phân quyền theo vai trò (RBAC) và theo tài nguyên (Resource-Based Authorization), đăng nhập Google (ID token).
 - **Tối ưu hiệu năng và SEO:** Redis distributed cache, Next.js ISR, Open Graph Protocol, JSON-LD Schema.org Recipe markup.
 - **Quan sát hệ thống:** Structured logging, distributed tracing (OpenTelemetry → Grafana stack), health check endpoints.
@@ -114,6 +114,7 @@ Các tính năng sau đây nằm ngoài phạm vi phiên bản 1.0.0:
 - Ứng dụng di động native (iOS/Android).
 - Thanh toán / Tính năng thương mại điện tử.
 - Hệ thống nhắn tin trực tiếp giữa người dùng.
+- Xác nhận email (email verification), policy "VerifiedAuthor" chặn tính năng theo `email_confirmed`, và đổi email/username có xác nhận OTP.
 - GraphQL API (định hướng sau khóa học).
 
 ## 1.3. Định nghĩa, Từ viết tắt và Ký hiệu
@@ -239,7 +240,7 @@ Hệ thống định nghĩa 3 loại tác nhân (Actor) với quyền hạn khá
 | Quản trị viên (Admin)                                                                                                | Người quản lý hệ thống với quyền cao nhất. Gán thủ công qua database seeding. | Có tài khoản & role Admin        | + Tất cả quyền của Author trên MỌI recipe (Admin luôn được xem là chủ sở hữu hợp lệ).        |
 | + Quản lý (CRUD) danh mục.                                                                                           | Trung bình (số lượng ít)                                                      |
 
-**Ghi chú về phân quyền:** Hệ thống triển khai 3 tầng phân quyền. (1) Role-Based Authorization: phân biệt quyền dựa trên role (Guest/Author/Admin). (2) Resource-Based Authorization: Author chỉ sửa/xóa/xem được recipe của chính mình (`author_id == current_user_id`); Admin không bao giờ bị xem là "không phải chủ sở hữu" trên bất kỳ resource nào — với mục đích authorization, Admin luôn được coi là đồng sở hữu. (3) Policy-Based Authorization: policy "VerifiedAuthor" yêu cầu email đã xác nhận.
+**Ghi chú về phân quyền:** Hệ thống triển khai 3 tầng phân quyền. (1) Role-Based Authorization: phân biệt quyền dựa trên role (Guest/Author/Admin). (2) Resource-Based Authorization: Author chỉ sửa/xóa/xem được recipe của chính mình (`author_id == current_user_id`); Admin không bao giờ bị xem là "không phải chủ sở hữu" trên bất kỳ resource nào — với mục đích authorization, Admin luôn được coi là đồng sở hữu. (3) Cờ `email_confirmed` được lưu và trả về ở `/auth/me` nhưng **chưa được dùng để chặn bất kỳ chức năng nào** ở phiên bản 1.0.0: người dùng đăng ký qua email/password được gán role "author" ngay (`email_confirmed = false`), tài khoản Google có `email_confirmed = true`. Policy "VerifiedAuthor" và luồng xác nhận email nằm ngoài phạm vi (xem 1.2.3).
 
 ## 2.4. Môi trường Vận hành
 
@@ -381,7 +382,8 @@ Module này quản lý toàn bộ vòng đời xác thực người dùng: đăn
 6. Reset `failed_login_count` về 0.
 7. Set-Cookie access/refresh token. Trả HTTP 200 OK với thông tin user (không chứa token). |
    | Luồng thay thế / Ngoại lệ | A1 – Tài khoản không tồn tại hoặc sai mật khẩu: HTTP 401 Unauthorized, message generic "Email hoặc mật khẩu không đúng" (chống User Enumeration).
-   A2 – Tài khoản bị khóa: HTTP 423 Locked.
+   A2 – Tài khoản đang bị khóa (`locked_until` chưa qua): HTTP 423 Locked, kiểm tra TRƯỚC khi verify password để tài khoản bị khóa không bị dùng làm password oracle. Đánh đổi chấp nhận: 423 chỉ xuất hiện sau khi chính tài khoản đó bị đoán sai 5 lần, nên chỉ tiết lộ sự tồn tại của tài khoản cho người đã đoán sai nhiều lần.
+ A2b – Tài khoản bị vô hiệu hóa (`is_active = false`): xử lý như sai thông tin — HTTP 401 message generic (không tiết lộ trạng thái).
    A3 – Vượt quá 5 lần thử sai: `failed_login_count` tăng, khóa 15 phút (`locked_until`). |
    | HTTP Method & Endpoint | `POST /api/v1/auth/login` |
    | Kết quả mong đợi | Access/refresh token mới được tạo và set vào cookie; refresh token hash lưu DB. |
@@ -636,7 +638,7 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 | Nhóm chức năng           | Module Quản lý Công thức Nấu ăn (FR-RCP)                                                                                                                                                                                                                                                                                                                                                                                                   |
 | Tác nhân                 | Tất cả (Guest / Author / Admin)                                                                                                                                                                                                                                                                                                                                                                                                            |
 | Mức ưu tiên (MoSCoW)     | M – Must Have                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Mô tả                    | Trả về danh sách phân trang các công thức. Guest và Author khác chỉ thấy `status == published`. Author thấy thêm draft/archived của chính mình. Admin thấy tất cả trạng thái (Admin luôn được coi là chủ sở hữu hợp lệ trên mọi recipe). Hỗ trợ lọc theo `category_id`, `difficulty`, thời gian nấu; sắp xếp theo `created_at`, `title`, `cook_time_minutes`. Kết quả cache trong Cache Redis, TTL = 30 phút, cache key theo query string. Chỉ cache góc nhìn của Guest (cùng một kết quả cho mọi người); request đã đăng nhập (Author/Admin) luôn đọc database vì tập kết quả phụ thuộc người xem — xem ADR-0010. |
+| Mô tả                    | Trả về danh sách phân trang các công thức. Guest và Author khác chỉ thấy `status == published`. Author thấy thêm draft/archived của chính mình. Admin thấy tất cả trạng thái (Admin luôn được coi là chủ sở hữu hợp lệ trên mọi recipe). Hỗ trợ lọc theo `category_id`, `difficulty` (`easy` | `medium` | `hard` | `expert`), thời gian nấu; sắp xếp theo `created_at`, `title`, `cook_time_minutes`. Kết quả cache trong Cache Redis, TTL = 30 phút, cache key theo query string. Chỉ cache góc nhìn của Guest (cùng một kết quả cho mọi người); request đã đăng nhập (Author/Admin) luôn đọc database vì tập kết quả phụ thuộc người xem — xem ADR-0010. |
 | Điều kiện tiên quyết     | 1. Không yêu cầu xác thực (endpoint public cho Published). 2. `page >= 1`, `page_size` trong [1, 50].                                                                                                                                                                                                                                                                                                                                      |
 | Luồng chính (Happy Path) | 1. Client gửi `GET /api/v1/recipes?page=1&page_size=12&category_id={id}&difficulty=easy&max_cook_time=30&sort=-created_at`.                                                                                                                                                                                                                                                                                                                |
 
@@ -700,10 +702,10 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 8. Trả HTTP 201 Created với `RecipeOut`. |
    | Luồng thay thế / Ngoại lệ | A1 – Không có quyền Author/Admin: HTTP 401/403.
    A2 – `category_id` không tồn tại: HTTP 422 ("Category không hợp lệ").
-   A3 – Slug đã tồn tại (title trùng): HTTP 409 Conflict. |
+   A3 – Slug đã tồn tại (title trùng): KHÔNG lỗi — hệ thống tự thêm suffix số (`slug-1`, `slug-2`, …) cho đến khi unique (giống FR-CAT-003). |
    | HTTP Method & Endpoint | `POST /api/v1/recipes` |
    | Kết quả mong đợi | Recipe mới được tạo với `status = draft`, `slug` tự sinh. Cache liên quan bị xóa. |
-   | HTTP Status Code trả về | 201 Created – Tạo thành công. 401/403 – Chưa đăng nhập / Không có quyền. 409 Conflict – Slug đã tồn tại. 422 Unprocessable Entity – Dữ liệu không hợp lệ. |
+   | HTTP Status Code trả về | 201 Created – Tạo thành công. 401/403 – Chưa đăng nhập / Không có quyền. 422 Unprocessable Entity – Dữ liệu không hợp lệ. |
 
 ### FR-RCP-004: Cập nhật Công thức [Author-Owner/Admin]
 
@@ -731,7 +733,7 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
    A4 – Thiếu hoặc sai định dạng header `If-Match`: HTTP 422. Giá trị chấp nhận `3`, `"3"` hoặc `W/"3"`. |
    | HTTP Method & Endpoint | `PUT /api/v1/recipes/{id}` |
    | Kết quả mong đợi | Recipe được cập nhật, cache bị xóa, trả về `RecipeOut` mới nhất. `slug`, `status`, steps và ingredients không thay đổi qua endpoint này; `nutrition` chỉ được thay thế (toàn bộ) khi có trong body. Response kèm header `ETag: "{row_version}"` (cũng có ở `POST /recipes` và `GET /recipes/{slug}`). Kiểm tra `row_version` và ghi dữ liệu là một câu lệnh `UPDATE ... WHERE id = ? AND row_version = ?` nguyên tử. |
-   | HTTP Status Code trả về | 200 OK. 403 Forbidden – Không phải owner. 404 Not Found. 409 Conflict – Concurrency hoặc slug trùng. 422 Unprocessable Entity. |
+   | HTTP Status Code trả về | 200 OK. 403 Forbidden – Không phải owner. 404 Not Found. 409 Conflict – Concurrency (`row_version` mismatch). 422 Unprocessable Entity. |
 
 ### FR-RCP-005: Xuất bản / Hủy Xuất bản Công thức
 
@@ -901,7 +903,7 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 | Mức ưu tiên (MoSCoW)     | M – Must Have                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | Mô tả                    | Tìm kiếm mờ (fuzzy), không phân biệt dấu tiếng Việt, trên `title` công thức bằng PostgreSQL `pg_trgm` (trigram) kết hợp `unaccent` — xem ADR-0008 cho lý do chọn trigram thay vì `tsvector`/`ts_rank` (Postgres không có cấu hình text search tiếng Việt dựng sẵn). GIN index trên biểu thức `f_unaccent(lower(title))`. Khớp bằng toán tử `word_similarity` (`%>`), tìm đoạn khớp gần đúng của `q` bên trong `title` dài hơn — hỗ trợ tìm gần đúng với `unaccent` ("pho" tìm được "phở"). Chỉ tìm trên `title` (không bao gồm `description`). Chỉ trả `status == published`. Cũng hỗ trợ lọc (`category_id`, `difficulty`, `max_cook_time`) như FR-RCP-001, cùng phân trang offset-based (`page`, `page_size`, mặc định `page_size=12`, tối đa 50). Kết quả tìm kiếm cache trong Cache Redis (key `search:v{generation}:{query_hash}`, TTL 5 phút, ADR-0003/ADR-0010) và bị vô hiệu hóa cùng danh sách recipe khi có thay đổi. |
 | Điều kiện tiên quyết     | 1. Extension `unaccent`, `pg_trgm` đã cài. 2. GIN index trên biểu thức `f_unaccent(lower(title))`. 3. `q` không rỗng, tối thiểu 2 ký tự.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| Luồng chính (Happy Path) | 1. Client gửi `GET /api/v1/recipes/search?q=pho+bo&page=1&page_size=10`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Luồng chính (Happy Path) | 1. Client gửi `GET /api/v1/recipes/search?q=pho+bo&page=1&page_size=12`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 2. Chuẩn hóa cả `q` và `title` qua `f_unaccent(lower(...))`.
 3. Query: `WHERE f_unaccent(lower(title)) %> f_unaccent(lower(:q))` (word_similarity, dùng GIN index).
@@ -945,9 +947,9 @@ Module cung cấp khả năng quan sát (Observability) theo ba trụ cột: Log
 | Mã yêu cầu              | FR-OBS-001                                                                                                                                                                                                                                                                                                                                                     |
 | Tên yêu cầu             | Health Check Endpoints                                                                                                                                                                                                                                                                                                                                         |
 | Mức ưu tiên (MoSCoW)    | S – Should Have                                                                                                                                                                                                                                                                                                                                                |
-| Mô tả                   | Hệ thống cung cấp 3 endpoint health check: `GET /health` (tổng hợp mọi dependency: database, Cache Redis, Job Queue Redis, Rate Limit Redis, MinIO), `GET /health/live` (liveness — chỉ kiểm tra process còn sống), `GET /health/ready` (readiness — kiểm tra kết nối database và Cache Redis; Rate Limit Redis không gating readiness do thiết kế fail-open). |
+| Mô tả                   | Hệ thống cung cấp 3 endpoint health check: `GET /health` (tổng hợp: database, Job Queue Redis, Rate Limit Redis, MinIO; Cache Redis không được kiểm tra vì chỉ là tối ưu hóa — mất cache thì đọc thẳng database, NFR-REL-002), `GET /health/live` (liveness — chỉ kiểm tra process còn sống), `GET /health/ready` (readiness — chỉ kiểm tra kết nối database; Cache Redis và Rate Limit Redis không gating readiness vì hệ thống vẫn phục vụ được khi chúng down: cache fallback database, rate limit fail-open). |
 | HTTP Method & Endpoint  | `GET /health`, `GET /health/live`, `GET /health/ready`                                                                                                                                                                                                                                                                                                         |
-| Kết quả mong đợi        | Readiness fail khi DB/Cache Redis down → Nginx ngừng route traffic tới instance đó.                                                                                                                                                                                                                                                                            |
+| Kết quả mong đợi        | Readiness fail khi database down → Nginx ngừng route traffic tới instance đó.                                                                                                                                                                                                                                                                            |
 | HTTP Status Code trả về | 200 OK – Healthy. 503 Service Unavailable – Unhealthy.                                                                                                                                                                                                                                                                                                         |
 
 **Ghi chú triển khai — Structured Logging:** Mọi HTTP request được log dạng JSON với `correlation_id` (header `X-Correlation-ID`), method/path/status, thời gian xử lý (ms), `user_id` (khi đã xác thực). Middleware `CorrelationIdMiddleware` gán/forward `correlation_id`. Cảnh báo khi request > 500ms. Log xuất ra stdout ở mọi môi trường; production thu thập qua OpenTelemetry Collector → Loki, development đọc trực tiếp qua console.
@@ -994,7 +996,7 @@ Toàn bộ yêu cầu bảo mật tuân thủ OWASP Top 10 (2021) và được k
 | --- | --- |
 
 | NFR-SEC-001
-Password & Hashing | Mật khẩu hash bằng Argon2id (qua `passlib`), không bao giờ lưu plaintext. Yêu cầu độ phức tạp: ≥ 8 ký tự, ≥1 chữ hoa + 1 chữ thường + 1 số + 1 ký tự đặc biệt. |
+Password & Hashing | Mật khẩu hash bằng Argon2id (qua `passlib`), không bao giờ lưu plaintext. Yêu cầu độ phức tạp: ≥ 8 ký tự, ≥1 chữ hoa + 1 chữ số + 1 ký tự đặc biệt (không bắt buộc chữ thường, khớp FR-AUTH-001). |
 | NFR-SEC-002
 JWT Token Security | Access Token: JWT ký HS256, TTL 15 phút, claim: `user_id`, `email`, `roles`, `jti`. Refresh Token: 512-bit cryptographically secure random bytes, hash SHA-256 trước khi lưu DB, TTL 7 ngày. Cả hai token truyền qua **HttpOnly cookie** (không qua header/body). Rotation: refresh token bị revoke ngay sau khi dùng, cấp token mới. Reuse Detection: nếu refresh token đã revoke được dùng lại → revoke toàn bộ token còn hiệu lực của user. |
 | NFR-SEC-003
@@ -1056,7 +1058,7 @@ Layering Compliance | Tuân thủ nghiêm ngặt CQRS phân lớp (CONS-001): ro
 | NFR-SCALE-001
 Stateless Backend | API stateless để hỗ trợ horizontal scaling: JWT authentication (không session server-side), Cache Redis cho mọi shared cache state (không in-process cache), Job Queue Redis (instance riêng) cho mọi background job, Rate Limit Redis (instance riêng) cho mọi bộ đếm rate limiting — không dùng in-process background task hay in-memory counter có thể mất khi restart/scale. |
 | NFR-SCALE-002
-Database Scaling | Connection pooling: `asyncpg` pool (max 100 connections/instance). Read replica (tùy chọn) cho tương lai. Index strategy: B-tree cho equality/range, GIN cho FTS (`tsvector`). Table partitioning (nâng cao): partition Recipe theo `created_at` khi > 1 triệu rows. |
+Database Scaling | Connection pooling: `asyncpg` pool (max 100 connections/instance). Read replica (tùy chọn) cho tương lai. Index strategy: B-tree cho equality/range, GIN trigram cho tìm kiếm (`pg_trgm`, ADR-0008). Table partitioning (nâng cao): partition Recipe theo `created_at` khi > 1 triệu rows. |
 | NFR-SCALE-003
 Infrastructure Scaling | Docker: mỗi service là container riêng biệt (API, Postgres, 2×Redis, MinIO, workers, CronJobs, Grafana stack). Nginx: load balancer upstream cho nhiều API instance. MinIO: Distributed Mode (4+ nodes) cho production. CDN cho static assets (`_next/static`). |
 
@@ -1112,7 +1114,7 @@ Backend cung cấp RESTful API theo chuẩn JSON. Toàn bộ endpoint tiền t�
 | Base URL (prod)    | `https://api.culinaryblog.com/api/v1`                                                                                                                                                                                                                                       |
 | Content-Type       | `application/json; charset=utf-8`. `multipart/form-data` cho file upload endpoints.                                                                                                                                                                                         |
 | Authentication     | Access token và refresh token truyền qua **HttpOnly cookie** (`access_token`, `refresh_token`) — không dùng `Authorization: Bearer` header. Trình duyệt tự động gửi cookie trên mỗi request cùng origin.                                                                    |
-| Response Format    | Success: `{ "data": {...}, "meta": { "page": 1, "page_size": 10, "total": 100 } }`. Error: RFC 7807 Problem Details `{ "type", "title", "status", "detail", "errors": {} }`.                                                                                                |
+| Response Format    | Success: object/array trực tiếp theo schema của endpoint; danh sách phân trang dùng `{ "items": [], "total_count", "page", "page_size", "total_pages" }` (xem Chương 8). Error: RFC 7807 Problem Details `{ "type", "title", "status", "detail", "errors": {} }`.                                                                                                |
 | Field Naming       | Toàn bộ field JSON dùng `snake_case` (CONS-005), khớp với tên cột database.                                                                                                                                                                                                 |
 | Versioning         | URL path versioning: `/api/v1/`. Breaking changes → `/api/v2/` (v1 duy trì tối thiểu 6 tháng).                                                                                                                                                                              |
 | CORS Headers       | `Access-Control-Allow-Origin: <configured-origins>` (không wildcard, `credentials: true` để cookie hoạt động cross-port trong dev). `Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS`. `Access-Control-Allow-Headers: Content-Type, X-Correlation-ID`. |
@@ -1141,9 +1143,9 @@ Hệ thống là web application, không giao tiếp trực tiếp với phần 
 | -------------- | ------------------------------------------------------------------------ | ----------------------------------- |
 | CPU            | 2 cores (Intel/AMD/ARM64 — Apple M-series hỗ trợ qua Docker)             | 2 vCPU (VPS/Cloud instance, x86_64) |
 | RAM            | 8 GB (Docker Compose đầy đủ: API + PG + 2×Redis + MinIO + Grafana stack) | 4 GB (API + dependencies riêng lẻ)  |
-| Storage        | 20 GB SSD (Docker images + database data + MinIO volumes)                | 50 GB SSD (production data growth)  |
+| Storage        | 20 GB SSD (Docker images + database data + MinIO volumes)                | 20 GB SSD tối thiểu, khuyến nghị 50 GB+ (khớp 2.4.1)  |
 | Network        | Kết nối internet (PyPI/npm packages, Google)                             | Bandwidth ≥ 1 Gbps, IP tĩnh         |
-| Browser Client | Chrome 112+, Firefox 113+, Safari 16+, Edge 112+ (ES2020+)               | Tương tự — không hỗ trợ IE11        |
+| Browser Client | Chrome 90+, Firefox 88+, Safari 14+, Edge 90+ (khớp 2.4.3)               | Tương tự — không hỗ trợ IE11        |
 
 # 6. Kiến trúc Hệ thống
 
@@ -1161,7 +1163,7 @@ Chương này mô tả tổng quan kiến trúc phần mềm của hệ thống 
 | Job Queue Redis     | Redis 7 (instance riêng)                                                                                                                                                     | Hàng đợi background job (3 queue + 3 DLQ, xem ADR-0004).                                                           | Backend API (enqueue), Workers/CronJobs (consume)                         |
 | Rate Limit Redis    | Redis 7 (instance riêng)                                                                                                                                                     | Bộ đếm rate limiting cho auth/API chung/upload, tách biệt Cache Redis và Job Queue Redis (xem ADR-0006, ADR-0007). | Backend API                                                               |
 | Object Storage      | MinIO (S3-compatible)                                                                                                                                                        | Lưu file ảnh: original, medium (800×600), thumbnail (300×300).                                                     | Backend API, Image Resize Worker                                          |
-| Database            | PostgreSQL 16                                                                                                                                                                | Persistent relational data storage. Full-text search via `tsvector`.                                               | Backend API (via SQLModel/asyncpg)                                        |
+| Database            | PostgreSQL 16                                                                                                                                                                | Persistent relational data storage. Tìm kiếm mờ qua `pg_trgm` + `unaccent` (ADR-0008).                                               | Backend API (via SQLModel/asyncpg)                                        |
 | Workers             | Python (Image Resize, Welcome Email, Sitemap Generator)                                                                                                                      | Consume job từ Job Queue Redis, xử lý độc lập, restart-safe.                                                       | Job Queue Redis, MinIO, Mail Service                                      |
 | CronJobs            | Python                                                                                                                                                                       | Enqueue job định kỳ (sitemap hàng ngày 02:00 AM UTC).                                                              | Job Queue Redis                                                           |
 | Observability       | Production: OpenTelemetry → Tempo (traces) / Loki (logs) / Prometheus (metrics) → Grafana (dashboard). Development: structured JSON console logs only, no collector/backends | Logging, metrics, distributed tracing.                                                                             | Backend API, Workers                                                      |
@@ -1256,13 +1258,13 @@ Thực thể trung tâm của hệ thống. Một Recipe thuộc một Category 
 | `slug`                                                  | varchar(220)    | NOT NULL, UNIQUE               | `idx_recipe_slug` (UNIQUE B-tree)                   | URL-friendly identifier. Sinh từ `title`, không đổi sau publish.                                                        |
 | `description`                                           | text            | NOT NULL                       | —                                                   | Mô tả ngắn (≤2000 ký tự). Dùng cho card preview và SEO meta description.                                                |
 | `prep_time_minutes`                                     | integer         | NOT NULL, CHECK > 0            | —                                                   | Thời gian chuẩn bị (phút).                                                                                              |
-| `cook_time_minutes`                                     | integer         | NOT NULL, CHECK >= 0           | —                                                   | Thời gian nấu (phút). 0 cho "no cook" recipe.                                                                           |
+| `cook_time_minutes` | integer | NOT NULL, CHECK >= 0 | — | Thời gian nấu (phút). API (FR-RCP-003/004) hiện chỉ nhận > 0; DB cho phép 0 để dành cho recipe "no cook" sau này. |
 | `servings`                                              | integer         | NOT NULL, CHECK > 0            | —                                                   | Số khẩu phần.                                                                                                           |
 | `difficulty`                                            | smallint (enum) | NOT NULL, DEFAULT 1            | `idx_recipe_difficulty`                             | `RecipeDifficulty`: 1=easy, 2=medium, 3=hard, 4=expert.                                                                 |
 | `status`                                                | smallint (enum) | NOT NULL, DEFAULT 0            | `idx_recipe_status`                                 | `RecipeStatus`: 0=draft, 1=published, 2=archived.                                                                       |
 | `category_id`                                           | uuid            | NOT NULL, FK → `categories.id` | `idx_recipe_category_id` (B-tree)                   | ON DELETE RESTRICT (không xóa category còn recipe).                                                                     |
 | `author_id`                                             | uuid            | NOT NULL, FK → `users.id`      | `idx_recipe_author_id` (B-tree)                     | Khóa ngoại đến User (tác giả).                                                                                          |
-| `search_vector`                                         | tsvector        | NULL                           | `idx_recipe_search` (GIN)                           | Full-text search vector, cập nhật bởi trigger PostgreSQL khi `title`/`description` đổi. Dùng `unaccent` cho tiếng Việt. |
+| `idx_recipe_title_trgm_gin` | — | — | GIN (`gin_trgm_ops`) trên `f_unaccent(lower(title))` | Chỉ mục phục vụ FR-SRCH-001 (tìm mờ theo `title`). Không có cột `search_vector`/`tsvector`. |
 | `published_at`                                          | timestamptz     | NULL                           | `idx_recipe_published_at`                           | Set khi `status` chuyển sang `published`. NULL nếu chưa publish.                                                        |
 | `created_at`, `updated_at`, `is_deleted`, `row_version` | —               | —                              | `idx_recipe_is_deleted` (partial trên `is_deleted`) | (BaseModel).                                                                                                            |
 
@@ -1347,7 +1349,7 @@ Bảng người dùng tự quản lý hoàn toàn (không kế thừa một fram
 | `bio`                                     | text          | NULL                         | Tiểu sử ngắn của tác giả, hiển thị trên author profile.          |
 | `roles`                                   | varchar(20)[] | NOT NULL, DEFAULT `{author}` | Danh sách role: `author`, `admin`.                               |
 | `is_active`                               | boolean       | NOT NULL, DEFAULT `true`     | Trạng thái tài khoản. Admin có thể deactivate user (ban).        |
-| `email_confirmed`                         | boolean       | NOT NULL, DEFAULT `false`    | Đã xác nhận email hay chưa (policy "VerifiedAuthor").            |
+| `email_confirmed`                         | boolean       | NOT NULL, DEFAULT `false`    | Đã xác nhận email hay chưa. Chỉ lưu/trả về, chưa gating chức năng nào (xác nhận email ngoài phạm vi 1.0.0). `true` khi tạo tài khoản qua Google. |
 | `google_sub`                              | varchar(255)  | NULL, UNIQUE                 | Subject claim từ Google ID token, dùng để liên kết Google login. |
 | `failed_login_count`                      | integer       | NOT NULL, DEFAULT 0          | Số lần đăng nhập sai liên tiếp.                                  |
 | `locked_until`                            | timestamptz   | NULL                         | Thời điểm hết khóa tài khoản (lockout). NULL = không bị khóa.    |
@@ -1373,7 +1375,7 @@ Chương này liệt kê tất cả API endpoint của hệ thống Culinary Blo
 |              |                                                                                                                                                                |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Convention   | HTTP Method + Path (tiền tố `/api/v1`). `auth = cookie` nghĩa là request cần cookie `access_token` hợp lệ. `role` = Role tối thiểu cần thiết (Author ⊂ Admin). |
-| Pagination   | Query params: `?page=1&page_size=10&sort=-created_at`. Response wrapper: `{ "items": [], "total_count", "page", "page_size", "total_pages" }`.                 |
+| Pagination   | Query params: `?page=1&page_size=12&sort=-created_at` (mặc định `page_size=12`, tối đa 50). Response wrapper: `{ "items": [], "total_count", "page", "page_size", "total_pages" }`.                 |
 | Error Format | RFC 7807 Problem Details: `{ "type": "about:blank", "title": "...", "status": 400, "detail": "...", "errors": {"field": ["msg"]} }`.                           |
 | Field Naming | Toàn bộ field `snake_case`.                                                                                                                                    |
 
@@ -1382,8 +1384,8 @@ Chương này liệt kê tất cả API endpoint của hệ thống Culinary Blo
 | Method | Endpoint         | Mô tả                              | Auth                     | Request Body / Params                                        | Response                                                                                                                                          |
 | ------ | ---------------- | ---------------------------------- | ------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | POST   | `/auth/register` | Đăng ký tài khoản mới (auto-login) | Không                    | `{ display_name, email, password }`                          | 201: `{ id, display_name, email, avatar_url, roles }` + Set-Cookie `access_token`/`refresh_token`. 409: email đã tồn tại. 422: validation errors. |
-| POST   | `/auth/login`    | Đăng nhập email/password           | Không                    | `{ email, password }`                                        | 200: `{ id, display_name, email, avatar_url, roles }` + Set-Cookie. 401: sai credentials. 429: rate limit.                                        |
-| POST   | `/auth/google`   | Đăng nhập/đăng ký qua Google       | Không                    | `{ id_token }` — ID Token từ Google Identity Services JS SDK | 200: `{ id, display_name, email, avatar_url, roles }` + Set-Cookie. 401: id_token không hợp lệ.                                                   |
+| POST   | `/auth/login`    | Đăng nhập email/password           | Không                    | `{ email, password }`                                        | 200: `{ id, display_name, email, avatar_url, roles }` + Set-Cookie. 401: sai credentials hoặc tài khoản bị vô hiệu hóa. 423: tài khoản đang bị khóa (sau 5 lần sai). 429: rate limit. |
+| POST   | `/auth/google`   | Đăng nhập/đăng ký qua Google       | Không                    | `{ id_token }` — ID Token từ Google Identity Services JS SDK | 200: `{ id, display_name, email, avatar_url, roles }` + Set-Cookie. 401: id_token không hợp lệ hoặc tài khoản bị vô hiệu hóa. 423: tài khoản đang bị khóa.                                                   |
 | POST   | `/auth/refresh`  | Làm mới Access Token               | Cookie (`refresh_token`) | — (token đọc từ cookie)                                      | 200: `{ id, display_name, email, avatar_url, roles }` + Set-Cookie mới. 401: token hết hạn/bị revoke.                                             |
 | POST   | `/auth/logout`   | Đăng xuất, revoke refresh token    | Cookie                   | —                                                            | 204: No Content, cookie bị xóa. 401: Unauthorized.                                                                                                |
 | GET    | `/auth/me`       | Lấy thông tin user hiện tại        | Cookie                   | —                                                            | 200: `{ id, display_name, email, avatar_url, bio, roles, email_confirmed, created_at }`. 401: Unauthorized.                                       |
@@ -1394,22 +1396,23 @@ Chương này liệt kê tất cả API endpoint của hệ thống Culinary Blo
 | Method | Endpoint             | Mô tả                                     | Auth / Role    | Request                                            | Response                                                                                           |
 | ------ | -------------------- | ----------------------------------------- | -------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | GET    | `/categories`        | Lấy danh sách tất cả categories           | Không          | —                                                  | 200: `[{ id, name, slug, description, image_url, recipe_count }]`                                  |
-| GET    | `/categories/{slug}` | Lấy chi tiết category + danh sách recipes | Không          | `?page=1&page_size=10&sort=...`                    | 200: `{ category, recipes: PagedResult }`. 404: Category not found.                                |
-| POST   | `/categories`        | Tạo category mới                          | Cookie + Admin | `{ name, description?, image_url? }`               | 201: `{ id, name, slug, description }`. 400/422: validation. 403: Forbidden. 409: name đã tồn tại. |
-| PUT    | `/categories/{id}`   | Cập nhật category                         | Cookie + Admin | `{ name, description?, image_url?, order_index? }` | 200: category updated. 400/403/404.                                                                |
+| GET    | `/categories/{slug}` | Lấy chi tiết category + danh sách recipes | Không          | `?page=1&page_size=12&sort=...`                    | 200: `{ category, recipes: PagedResult }`. 404: Category not found.                                |
+| POST   | `/categories`        | Tạo category mới                          | Cookie + Admin | `{ name, description?, image_url? }`               | 201: `{ id, name, slug, description }`. 422: validation. 403: Forbidden. 409: name đã tồn tại. |
+| PUT    | `/categories/{id}`   | Cập nhật category                         | Cookie + Admin | `{ name, description?, image_url?, order_index? }` | 200: category updated. 403/404/422.                                                                |
 | DELETE | `/categories/{id}`   | Xóa category (soft delete)                | Cookie + Admin | —                                                  | 204: No Content. 403: Forbidden. 404: Not found. 409: Có recipes thuộc category này.               |
 
 ## 8.3. Recipes Module (`/recipes`)
 
 | Method | Endpoint                  | Mô tả                                                                 | Auth / Role                         | Request                                                                                                              |
 | ------ | ------------------------- | --------------------------------------------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| GET    | `/recipes`                | Danh sách recipes (Published, paginated)                              | Không                               | `?page&page_size&sort&category_id&difficulty&max_cook_time`                                                          |
+| GET    | `/recipes`                | Danh sách recipes (paginated; Guest: published, Author: + draft/archived của mình, Admin: tất cả)                              | Không                               | `?page&page_size&sort&category_id&difficulty&max_cook_time`                                                          |
 | GET    | `/recipes/{slug}`         | Chi tiết recipe theo slug (kèm steps, ingredients, images, nutrition) | Không (draft/archived: Owner/Admin) | —                                                                                                                    |
 | GET    | `/recipes/search`         | Full-text search công thức                                            | Không                               | `?q={keyword}&page&page_size&category_id&sort`                                                                       |
 | POST   | `/recipes`                | Tạo recipe mới (trạng thái draft)                                     | Cookie (Author/Admin)               | `{ title, description, category_id, prep_time_minutes, cook_time_minutes, servings, difficulty, nutrition? }`        |
 | PUT    | `/recipes/{id}`           | Cập nhật thông tin cơ bản recipe (`If-Match: {row_version}`)          | Cookie (Owner/Admin)                | `{ title?, description?, category_id?, prep_time_minutes?, cook_time_minutes?, servings?, difficulty?, nutrition? }` |
 | PATCH  | `/recipes/{id}/publish`   | Publish recipe (draft → published; yêu cầu ≥1 step và ≥1 ingredient)  | Cookie (Owner/Admin)                | —                                                                                                                    |
 | PATCH  | `/recipes/{id}/unpublish` | Unpublish recipe (published → draft)                                  | Cookie (Owner/Admin)                | —                                                                                                                    |
+| PATCH  | `/recipes/{id}/unarchive` | Unarchive recipe (archived → draft, không tự publish lại) | Cookie (Owner/Admin) | — |
 | PATCH  | `/recipes/{id}/archive`   | Archive recipe                                                        | Cookie (Owner/Admin)                | —                                                                                                                    |
 | DELETE | `/recipes/{id}`           | Xóa recipe (soft delete, cascade con)                                 | Cookie (Owner/Admin)                | —                                                                                                                    |
 
@@ -1418,32 +1421,32 @@ Chương này liệt kê tất cả API endpoint của hệ thống Culinary Blo
 | Method | Endpoint                          | Mô tả                                                           | Auth                 | Request                                            | Response                                                                                          |
 | ------ | --------------------------------- | --------------------------------------------------------------- | -------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | POST   | `/recipes/{id}/images`            | Upload ảnh mới cho recipe                                       | Cookie (Owner/Admin) | `multipart/form-data`: `file` (image), `alt_text?` | 201: `{ image_id, original_url, alt_text, is_primary }`. 400: MIME invalid / size > 5MB. 403/404. |
-| PATCH  | `/recipes/{id}/images/{image_id}` | Cập nhật metadata ảnh (`alt_text`, `is_primary`, `order_index`) | Cookie (Owner/Admin) | `{ alt_text?, is_primary?, order_index? }`         | 200: image updated. 403/404.                                                                      |
+| PATCH  | `/recipes/{id}/images/{image_id}/primary` | Đặt ảnh chính (`is_primary=true`, các ảnh khác bỏ chính) | Cookie (Owner/Admin) | — | 200: `RecipeImageOut`. 403/404. |
 | DELETE | `/recipes/{id}/images/{image_id}` | Xóa ảnh (file MinIO xóa bất đồng bộ qua Job Queue Redis)        | Cookie (Owner/Admin) | —                                                  | 204: No Content. 403/404.                                                                         |
 
 ## 8.5. Recipe Steps (`/recipes/{id}/steps`)
 
 | Method | Endpoint                        | Mô tả                                                   | Auth                 | Request                                                   | Response                              |
 | ------ | ------------------------------- | ------------------------------------------------------- | -------------------- | --------------------------------------------------------- | ------------------------------------- |
-| POST   | `/recipes/{id}/steps`           | Thêm bước mới vào recipe (`step_number` do server tính) | Cookie (Owner/Admin) | `{ title, description, duration_minutes?, image_url? }`   | 201: `RecipeStepOut`. 400/403/404/422 |
-| PUT    | `/recipes/{id}/steps/{step_id}` | Cập nhật một bước                                       | Cookie (Owner/Admin) | `{ title?, description?, duration_minutes?, image_url? }` | 200: `RecipeStepOut`. 400/403/404/422 |
+| POST   | `/recipes/{id}/steps`           | Thêm bước mới vào recipe (`step_number` do server tính) | Cookie (Owner/Admin) | `{ title, description, duration_minutes?, image_url? }`   | 201: `RecipeStepOut`. 403/404/422 |
+| PUT    | `/recipes/{id}/steps/{step_id}` | Cập nhật một bước                                       | Cookie (Owner/Admin) | `{ title?, description?, duration_minutes?, image_url? }` | 200: `RecipeStepOut`. 403/404/422 |
 | DELETE | `/recipes/{id}/steps/{step_id}` | Xóa một bước (renumber các bước còn lại)                | Cookie (Owner/Admin) | —                                                         | 204: No Content. 403/404              |
 
 ## 8.6. Recipe Ingredients (`/recipes/{id}/ingredients`)
 
 | Method | Endpoint                                    | Mô tả                | Auth                 | Request                                                                                          | Response                                    |
 | ------ | ------------------------------------------- | -------------------- | -------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------- |
-| POST   | `/recipes/{id}/ingredients`                 | Thêm nguyên liệu     | Cookie (Owner/Admin) | `{ name, quantity?, unit?, notes?, order_index? }` (quantity/unit cùng null hoặc cùng khác null) | 201: `RecipeIngredientOut`. 400/403/404/422 |
-| PUT    | `/recipes/{id}/ingredients/{ingredient_id}` | Cập nhật nguyên liệu | Cookie (Owner/Admin) | `{ name?, quantity?, unit?, notes?, order_index? }`                                              | 200: `RecipeIngredientOut`. 400/403/404/422 |
+| POST   | `/recipes/{id}/ingredients`                 | Thêm nguyên liệu     | Cookie (Owner/Admin) | `{ name, quantity?, unit?, notes?, order_index? }` (quantity/unit cùng null hoặc cùng khác null) | 201: `RecipeIngredientOut`. 403/404/422 |
+| PUT    | `/recipes/{id}/ingredients/{ingredient_id}` | Cập nhật nguyên liệu | Cookie (Owner/Admin) | `{ name?, quantity?, unit?, notes?, order_index? }`                                              | 200: `RecipeIngredientOut`. 403/404/422 |
 | DELETE | `/recipes/{id}/ingredients/{ingredient_id}` | Xóa nguyên liệu      | Cookie (Owner/Admin) | —                                                                                                | 204: No Content. 403/404                    |
 
 ## 8.7. Health Check Endpoints
 
 | Method | Endpoint        | Mô tả                                                                                         | Auth  | Response                                                                                                        |
 | ------ | --------------- | --------------------------------------------------------------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------- |
-| GET    | `/health`       | Tổng hợp health tất cả dependency (DB, Cache Redis, Job Queue Redis, Rate Limit Redis, MinIO) | Không | 200: Healthy. 503: Unhealthy `{ "status": "unhealthy", "entries": { "database": {"status": "healthy"}, ... } }` |
+| GET    | `/health`       | Tổng hợp health các dependency (DB, Job Queue Redis, Rate Limit Redis, MinIO; không gồm Cache Redis) | Không | 200: Healthy. 503: Unhealthy `{ "status": "unhealthy", "entries": { "database": {"status": "healthy"}, ... } }` |
 | GET    | `/health/live`  | Liveness probe — chỉ kiểm tra process còn sống                                                | Không | 200: Healthy (luôn luôn, trừ khi process crashed).                                                              |
-| GET    | `/health/ready` | Readiness probe — kiểm tra DB và Cache Redis sẵn sàng                                         | Không | 200: Healthy (DB + Cache Redis up). 503: Unhealthy (không nhận traffic).                                        |
+| GET    | `/health/ready` | Readiness probe — chỉ kiểm tra DB sẵn sàng                                         | Không | 200: Healthy (DB up, kể cả khi Cache Redis down). 503: Unhealthy (không nhận traffic).                                        |
 
 ## Phụ lục A – HTTP Status Codes
 
@@ -1458,13 +1461,14 @@ Chương này liệt kê tất cả API endpoint của hệ thống Culinary Blo
 | 404  | Not Found             | Resource không tồn tại hoặc đã soft-delete (`is_deleted=true`).                                                                                                                                            |
 | 409  | Conflict              | Trùng lặp unique field (email đã đăng ký, category name/slug đã tồn tại); Xóa category đang có recipes; **RowVersion mismatch (Optimistic Concurrency)**.                                                  |
 | 422  | Unprocessable Entity  | Dữ liệu hợp lệ về cú pháp (Pydantic pass) nhưng vi phạm business rule ngữ nghĩa — ví dụ: **publish recipe khi chưa có đủ ≥1 ingredient và ≥1 step**, hoặc vi phạm ràng buộc co-nullable `quantity`/`unit`. |
+| 423  | Locked                | Tài khoản tạm khóa 15 phút sau 5 lần đăng nhập sai liên tiếp (`POST /auth/login`, `POST /auth/google`). |
 | 429  | Too Many Requests     | Rate limit bị vượt. Response kèm header `Retry-After` (giây).                                                                                                                                              |
 | 500  | Internal Server Error | Lỗi không xử lý được (unhandled exception). Trả RFC 7807, log đầy đủ. Không lộ stack trace.                                                                                                                |
-| 503  | Service Unavailable   | Health check failed (DB/Cache Redis down); hoặc server overloaded.                                                                                                                                         |
+| 503  | Service Unavailable   | Health check failed (DB down); hoặc server overloaded.                                                                                                                                         |
 
 ## Phụ lục B – Application Error Codes
 
-Hệ thống sử dụng Application Error Codes (mã lỗi tùy chỉnh) trong trường RFC 7807 `type` để frontend xử lý lỗi theo cách lập trình được, không phụ thuộc chuỗi message (có thể đổi theo locale).
+Hệ thống sử dụng Application Error Codes (mã lỗi tùy chỉnh) trong member mở rộng `code` của RFC 7807 Problem Details (`type` giữ `about:blank`) để frontend xử lý lỗi theo cách lập trình được, không phụ thuộc chuỗi message (có thể đổi theo locale).
 
 | Error Code                          | HTTP Status | Mô tả                                                                                     | Module   |
 | ----------------------------------- | ----------- | ----------------------------------------------------------------------------------------- | -------- |
@@ -1475,9 +1479,8 @@ Hệ thống sử dụng Application Error Codes (mã lỗi tùy chỉnh) trong 
 | `AUTH_REFRESH_TOKEN_EXPIRED`        | 401         | Refresh Token đã hết hạn (7 ngày).                                                        | Auth     |
 | `AUTH_REFRESH_TOKEN_REVOKED`        | 401         | Refresh Token đã bị thu hồi (reuse detection).                                            | Auth     |
 | `AUTH_GOOGLE_TOKEN_INVALID`         | 401         | Google ID Token không hợp lệ hoặc đã hết hạn.                                             | Auth     |
-| `AUTH_ACCOUNT_DISABLED`             | 403         | Tài khoản bị vô hiệu hóa (`is_active=false`) bởi Admin.                                   | Auth     |
+| `AUTH_ACCOUNT_LOCKED`               | 423         | Tài khoản đang bị khóa tạm thời do đăng nhập sai quá 5 lần.                               | Auth     |
 | `RECIPE_NOT_FOUND`                  | 404         | Recipe với id/slug không tồn tại hoặc đã bị xóa.                                          | Recipe   |
-| `RECIPE_SLUG_EXISTS`                | 409         | Slug đã tồn tại — tự động thêm suffix (slug-1, slug-2...).                                | Recipe   |
 | `RECIPE_PUBLISH_INCOMPLETE`         | 422         | Recipe thiếu điều kiện publish: phải có ít nhất 1 ingredient VÀ 1 step.                   | Recipe   |
 | `RECIPE_FORBIDDEN`                  | 403         | User không phải owner và không phải Admin.                                                | Recipe   |
 | `RECIPE_CONCURRENCY_CONFLICT`       | 409         | `row_version` không khớp — resource đã được cập nhật bởi request khác. Client cần reload. | Recipe   |
@@ -1496,7 +1499,7 @@ Hệ thống sử dụng Application Error Codes (mã lỗi tùy chỉnh) trong 
 | ----------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | Access Token                        | AT       | JWT dùng xác thực API request, truyền qua HttpOnly cookie. TTL = 15 phút. Ký bằng HS256.                                       |
 | ADR                                 | —        | Architecture Decision Record — tài liệu ghi nhận một quyết định kiến trúc kèm bối cảnh và hệ quả (xem `docs/adr/`).            |
-| Application Error Code              | AEC      | Mã lỗi tùy chỉnh dạng `SCREAMING_SNAKE_CASE` trong trường `type` của RFC 7807 Problem Details.                                 |
+| Application Error Code              | AEC      | Mã lỗi tùy chỉnh dạng `SCREAMING_SNAKE_CASE` trong member `code` của RFC 7807 Problem Details.                                 |
 | Archive                             | —        | Trạng thái Recipe khi bị ẩn khỏi public listing nhưng không bị xóa. `RecipeStatus.archived`.                                   |
 | Author                              | —        | Role người dùng mặc định sau khi đăng ký. Có thể tạo/quản lý recipe của mình.                                                  |
 | Background Job                      | —        | Tác vụ xử lý bất đồng bộ, enqueue lên Job Queue Redis, xử lý bởi worker container độc lập.                                     |
@@ -1506,7 +1509,7 @@ Hệ thống sử dụng Application Error Codes (mã lỗi tùy chỉnh) trong 
 | Dead-Letter Queue                   | DLQ      | Hàng đợi Redis chứa job đã hết lượt retry và thất bại vĩnh viễn, dùng để triage thủ công.                                      |
 | Docker Compose                      | —        | Công cụ định nghĩa và chạy multi-container Docker application qua file YAML.                                                   |
 | Draft                               | —        | Trạng thái mặc định của Recipe khi mới tạo. Chỉ Author sở hữu/Admin thấy.                                                      |
-| Full-Text Search                    | FTS      | Tìm kiếm ngôn ngữ tự nhiên trong PostgreSQL qua `tsvector`/`tsquery` + `unaccent`.                                             |
+| Full-Text Search (Fuzzy Search) | FTS | Tìm kiếm gần đúng, không phân biệt dấu, trên `title` bằng `pg_trgm` (`word_similarity`) + `unaccent` (ADR-0008). |
 | HTTP Status Code                    | —        | Mã phản hồi HTTP chuẩn (RFC 7231): 2xx thành công, 4xx client error, 5xx server error.                                         |
 | Incremental Static Regeneration     | ISR      | Tính năng Next.js tái sinh trang tĩnh theo chu kỳ thay vì build lại toàn bộ.                                                   |
 | JSON Web Token                      | JWT      | Chuẩn mở (RFC 7519) truyền thông tin an toàn giữa các bên dưới dạng JSON object được ký.                                       |
@@ -1520,4 +1523,4 @@ Hệ thống sử dụng Application Error Codes (mã lỗi tùy chỉnh) trong 
 | Soft Delete                         | —        | Đánh dấu `is_deleted=true` thay vì xóa vật lý khỏi database. Áp dụng cho MỌI entity, bao gồm Recipe. Dữ liệu có thể khôi phục. |
 | Software Requirements Specification | SRS      | Tài liệu đặc tả yêu cầu phần mềm theo IEEE 830 / ISO/IEC/IEEE 29148.                                                           |
 | TanStack Query                      | —        | Thư viện React quản lý server state: caching, background refetch, optimistic updates.                                          |
-| tsvector / tsquery                  | —        | Kiểu dữ liệu PostgreSQL cho full-text search. `tsvector` là chỉ mục đã xử lý, `tsquery` là biểu thức tìm kiếm.                 |
+| Trigram (`pg_trgm`) | — | Phép so khớp dựa trên chuỗi con 3 ký tự của PostgreSQL; dùng với GIN index để tìm gần đúng. |
