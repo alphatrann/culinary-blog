@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import ColumnElement, Row, func, text, update
+from sqlalchemy import ColumnElement, func, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import load_only
@@ -19,9 +19,6 @@ from culinary_blog.recipes.summary import extra_columns, to_summary
 
 UNIQUE_VIOLATION = "23505"  # PostgreSQL SQLSTATE
 FOREIGN_KEY_VIOLATION = "23503"
-
-# Step renumbering parks live rows this far out of the way so the per-row unique check never collides.
-_RENUMBER_OFFSET = 1_000_000
 
 _SORT_COLUMNS = {
     "created_at": col(Recipe.created_at),
@@ -187,7 +184,7 @@ class RecipeRepository:
         see_all: bool,
         category_id: uuid.UUID | None,
         difficulty: RecipeDifficulty | None,
-        max_cook_time: int | None,
+        max_total_time: int | None,
         sort: str,
         page: int,
         page_size: int,
@@ -209,8 +206,8 @@ class RecipeRepository:
             conditions.append(col(Recipe.category_id) == category_id)
         if difficulty is not None:
             conditions.append(col(Recipe.difficulty) == difficulty)
-        if max_cook_time is not None:
-            conditions.append(col(Recipe.cook_time_minutes) <= max_cook_time)
+        if max_total_time is not None:
+            conditions.append(col(Recipe.prep_time_minutes) + col(Recipe.cook_time_minutes) <= max_total_time)
 
         sort_column = _SORT_COLUMNS[sort.removeprefix("-")]
         ordering = sort_column.desc() if sort.startswith("-") else sort_column.asc()
@@ -242,7 +239,7 @@ class RecipeRepository:
         query: str,
         category_id: uuid.UUID | None,
         difficulty: RecipeDifficulty | None,
-        max_cook_time: int | None,
+        max_total_time: int | None,
         page: int,
         page_size: int,
     ) -> tuple[list[tuple[RecipeSummaryOut, float]], int]:
@@ -264,8 +261,8 @@ class RecipeRepository:
             conditions.append(col(Recipe.category_id) == category_id)
         if difficulty is not None:
             conditions.append(col(Recipe.difficulty) == difficulty)
-        if max_cook_time is not None:
-            conditions.append(col(Recipe.cook_time_minutes) <= max_cook_time)
+        if max_total_time is not None:
+            conditions.append(col(Recipe.prep_time_minutes) + col(Recipe.cook_time_minutes) <= max_total_time)
 
         async with self._read_session_factory() as session:
             total = (await session.execute(select(func.count()).select_from(Recipe).where(*conditions))).scalar_one()
@@ -291,7 +288,14 @@ class RecipeRepository:
                 self._raise_domain_error(exc)
                 raise
 
-    async def update(self, recipe_id: uuid.UUID, expected_version: int, values: dict[str, object]) -> Recipe | None:
+    async def update(
+        self,
+        recipe_id: uuid.UUID,
+        expected_version: int,
+        values: dict[str, object],
+        ingredients: list[RecipeIngredient],
+        steps: list[RecipeStep],
+    ) -> Recipe | None:
         """Optimistic-concurrency update: one atomic compare-and-swap on `row_version`.
 
         Returns the updated recipe, or None when no live row matched both the id and `expected_version`
@@ -300,6 +304,7 @@ class RecipeRepository:
         """
         async with self._session_factory() as session:
             try:
+                now = datetime.now(UTC)
                 result = await session.execute(
                     update(Recipe)
                     .where(
@@ -307,10 +312,19 @@ class RecipeRepository:
                         col(Recipe.row_version) == expected_version,
                         col(Recipe.is_deleted).is_(False),
                     )
-                    .values(**values, row_version=col(Recipe.row_version) + 1, updated_at=datetime.now(UTC))
+                    .values(**values, row_version=col(Recipe.row_version) + 1, updated_at=now)
                     .returning(Recipe)
                 )
                 recipe = result.scalar_one_or_none()
+                if recipe is None:
+                    return None
+                for model in (RecipeIngredient, RecipeStep):
+                    await session.execute(
+                        update(model)
+                        .where(col(model.recipe_id) == recipe_id, col(model.is_deleted).is_(False))
+                        .values(is_deleted=True, row_version=col(model.row_version) + 1, updated_at=now)
+                    )
+                session.add_all([*steps, *ingredients])
                 await session.commit()
             except IntegrityError as exc:
                 self._raise_domain_error(exc)
@@ -372,158 +386,6 @@ class RecipeRepository:
                 .options(_INGREDIENT_ONLY)
             )
             return result.scalars().first()
-
-    async def add_ingredient(self, ingredient: RecipeIngredient, *, append: bool) -> RecipeIngredient:
-        """Persist an ingredient; with `append` its `order_index` is set to follow the current last one."""
-        async with self._session_factory() as session:
-            if append:
-                last = await session.execute(
-                    select(func.max(RecipeIngredient.order_index)).where(
-                        RecipeIngredient.recipe_id == ingredient.recipe_id,
-                        col(RecipeIngredient.is_deleted).is_(False),
-                    )
-                )
-                highest = last.scalar_one_or_none()
-                ingredient.order_index = 0 if highest is None else highest + 1
-            session.add(ingredient)
-            await session.commit()
-            await session.refresh(ingredient)
-            return ingredient
-
-    async def update_ingredient(self, ingredient_id: uuid.UUID, values: dict[str, object]) -> Row[Any] | None:
-        """Returns just the columns `IngredientOut` surfaces; the caller never re-persists this row."""
-        async with self._session_factory() as session:
-            result = await session.execute(
-                update(RecipeIngredient)
-                .where(col(RecipeIngredient.id) == ingredient_id, col(RecipeIngredient.is_deleted).is_(False))
-                .values(**values, row_version=col(RecipeIngredient.row_version) + 1, updated_at=datetime.now(UTC))
-                .returning(
-                    RecipeIngredient.id,
-                    RecipeIngredient.name,
-                    RecipeIngredient.quantity,
-                    RecipeIngredient.unit,
-                    RecipeIngredient.notes,
-                    RecipeIngredient.order_index,
-                )
-            )
-            ingredient = result.one_or_none()
-            await session.commit()
-            return ingredient
-
-    async def delete_ingredient(self, ingredient_id: uuid.UUID) -> None:
-        async with self._session_factory() as session:
-            await session.execute(
-                update(RecipeIngredient)
-                .where(col(RecipeIngredient.id) == ingredient_id)
-                .values(
-                    is_deleted=True, row_version=col(RecipeIngredient.row_version) + 1, updated_at=datetime.now(UTC)
-                )
-            )
-            await session.commit()
-
-    async def get_step(self, recipe_id: uuid.UUID, step_id: uuid.UUID) -> RecipeStep | None:
-        async with self._read_session_factory() as session:
-            result = await session.execute(
-                select(RecipeStep)
-                .where(
-                    RecipeStep.id == step_id,
-                    RecipeStep.recipe_id == recipe_id,
-                    col(RecipeStep.is_deleted).is_(False),
-                )
-                .options(_STEP_ONLY)
-            )
-            return result.scalars().first()
-
-    async def add_step(self, step: RecipeStep) -> RecipeStep:
-        """Persist a step numbered `max(step_number) + 1`, computed inside the INSERT itself (one statement).
-
-        The recipe row is locked first (held until commit), so concurrent adds and deletes on the same recipe queue up
-        and never pick the same number; the unique index on live steps stays as a backstop (409).
-        """
-        async with self._session_factory() as session:
-            try:
-                await session.execute(select(Recipe.id).where(Recipe.id == step.recipe_id).with_for_update())
-                result = await session.execute(
-                    text(
-                        "INSERT INTO recipe_steps (id, recipe_id, step_number, title, description, duration_minutes, "
-                        "image_url) VALUES (:id, :recipe_id, "
-                        "(SELECT COALESCE(MAX(step_number), 0) + 1 FROM recipe_steps "
-                        " WHERE recipe_id = :recipe_id AND is_deleted = false), "
-                        ":title, :description, :duration_minutes, :image_url) "
-                        "RETURNING id, recipe_id, step_number, title, description, duration_minutes, image_url, "
-                        "created_at, updated_at, is_deleted, row_version"
-                    ),
-                    {
-                        "id": step.id,
-                        "recipe_id": step.recipe_id,
-                        "title": step.title,
-                        "description": step.description,
-                        "duration_minutes": step.duration_minutes,
-                        "image_url": step.image_url,
-                    },
-                )
-                saved = RecipeStep(**result.mappings().one())
-                await session.commit()
-            except IntegrityError as exc:
-                if getattr(exc.orig, "sqlstate", None) != UNIQUE_VIOLATION:
-                    raise
-                raise ConflictError("Another step was added at the same time, please retry") from exc
-            return saved
-
-    async def update_step(self, step_id: uuid.UUID, values: dict[str, object]) -> Row[Any] | None:
-        """Returns just the columns `StepOut` surfaces; the caller never re-persists this row."""
-        async with self._session_factory() as session:
-            result = await session.execute(
-                update(RecipeStep)
-                .where(col(RecipeStep.id) == step_id, col(RecipeStep.is_deleted).is_(False))
-                .values(**values, row_version=col(RecipeStep.row_version) + 1, updated_at=datetime.now(UTC))
-                .returning(
-                    RecipeStep.id,
-                    RecipeStep.step_number,
-                    RecipeStep.title,
-                    RecipeStep.description,
-                    RecipeStep.duration_minutes,
-                    RecipeStep.image_url,
-                )
-            )
-            step = result.one_or_none()
-            await session.commit()
-            return step
-
-    async def delete_step(self, recipe_id: uuid.UUID, step_id: uuid.UUID) -> None:
-        """Soft-delete a step and renumber the survivors to 1..n, in one transaction and a constant 3 statements.
-
-        The unique index on live (recipe_id, step_number) is checked row by row, so a single shift-down UPDATE can
-        collide with itself depending on scan order. Hence two set-based passes: park every survivor above the
-        offset, then assign 1..n from a window function over the parked order.
-        """
-        async with self._session_factory() as session:
-            # Held until commit: serialises with add_step and other deletes on this recipe (avoids deadlocks).
-            await session.execute(select(Recipe.id).where(Recipe.id == recipe_id).with_for_update())
-            now = datetime.now(UTC)
-            await session.execute(
-                update(RecipeStep)
-                .where(col(RecipeStep.id) == step_id)
-                .values(is_deleted=True, row_version=col(RecipeStep.row_version) + 1, updated_at=now)
-            )
-            await session.execute(
-                text(
-                    "UPDATE recipe_steps SET step_number = step_number + :offset "
-                    "WHERE recipe_id = :recipe_id AND is_deleted = false"
-                ),
-                {"offset": _RENUMBER_OFFSET, "recipe_id": recipe_id},
-            )
-            await session.execute(
-                text(
-                    "UPDATE recipe_steps AS s "
-                    "SET step_number = ranked.position, row_version = s.row_version + 1, updated_at = :now "
-                    "FROM (SELECT id, row_number() OVER (ORDER BY step_number) AS position "
-                    "      FROM recipe_steps WHERE recipe_id = :recipe_id AND is_deleted = false) AS ranked "
-                    "WHERE s.id = ranked.id"
-                ),
-                {"recipe_id": recipe_id, "now": now},
-            )
-            await session.commit()
 
     async def get_image(self, recipe_id: uuid.UUID, image_id: uuid.UUID) -> RecipeImage | None:
         async with self._read_session_factory() as session:

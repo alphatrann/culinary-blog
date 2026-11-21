@@ -15,14 +15,14 @@ describe("ActiveFilterChips", () => {
       <ActiveFilterChips
         basePath="/search"
         q="pho"
-        filters={{ category_id: cat, difficulty: "easy", max_cook_time: 30 }}
+        filters={{ category_id: cat, difficulty: "easy", max_total_time: 30 }}
         categories={[{ id: cat, name: "Món nước" }]}
       />,
     );
     expect(screen.getByRole("list", { name: "Bộ lọc đang áp dụng" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Bỏ lọc Độ khó: Dễ" })).toHaveAttribute(
       "href",
-      `/search?q=pho&category_id=${cat}&max_cook_time=30`,
+      `/search?q=pho&category_id=${cat}&max_total_time=30`,
     );
     expect(screen.getByRole("link", { name: "Bỏ lọc Danh mục: Món nước" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Bỏ lọc Thời gian/ })).toBeInTheDocument();

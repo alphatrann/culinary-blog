@@ -154,6 +154,8 @@ class CategoryRepository:
                         Recipe.status,
                         Recipe.author_id,
                         Recipe.published_at,
+                        Recipe.updated_at,
+                        Recipe.row_version,
                     )
                 )
             )

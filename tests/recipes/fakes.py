@@ -143,7 +143,7 @@ class FakeRecipeRepository(RecipeRepository):
         see_all: bool,
         category_id: uuid.UUID | None,
         difficulty: RecipeDifficulty | None,
-        max_cook_time: int | None,
+        max_total_time: int | None,
         sort: str,
         page: int,
         page_size: int,
@@ -158,7 +158,7 @@ class FakeRecipeRepository(RecipeRepository):
             and (status is None or r.status == status)
             and (category_id is None or r.category_id == category_id)
             and (difficulty is None or r.difficulty == difficulty)
-            and (max_cook_time is None or r.cook_time_minutes <= max_cook_time)
+            and (max_total_time is None or r.prep_time_minutes + r.cook_time_minutes <= max_total_time)
         ]
         visible.sort(key=lambda r: getattr(r, sort.removeprefix("-")), reverse=sort.startswith("-"))
         start = (page - 1) * page_size
@@ -177,7 +177,7 @@ class FakeRecipeRepository(RecipeRepository):
         query: str,
         category_id: uuid.UUID | None,
         difficulty: RecipeDifficulty | None,
-        max_cook_time: int | None,
+        max_total_time: int | None,
         page: int,
         page_size: int,
     ) -> tuple[list[tuple[RecipeSummaryOut, float]], int]:
@@ -190,7 +190,7 @@ class FakeRecipeRepository(RecipeRepository):
                 continue
             if difficulty is not None and recipe.difficulty != difficulty:
                 continue
-            if max_cook_time is not None and recipe.cook_time_minutes > max_cook_time:
+            if max_total_time is not None and recipe.prep_time_minutes + recipe.cook_time_minutes > max_total_time:
                 continue
             haystack = _fold(recipe.title)
             if needle not in haystack:
@@ -208,16 +208,31 @@ class FakeRecipeRepository(RecipeRepository):
         self.steps.extend(steps)
         self.ingredients.extend(ingredients)
 
-    async def update(self, recipe_id: uuid.UUID, expected_version: int, values: dict[str, object]) -> Recipe | None:
+    async def update(
+        self,
+        recipe_id: uuid.UUID,
+        expected_version: int,
+        values: dict[str, object],
+        ingredients: list[RecipeIngredient],
+        steps: list[RecipeStep],
+    ) -> Recipe | None:
         recipe = await self.get_by_id(recipe_id)
         if recipe is None or recipe.row_version != expected_version:
             return None
         if "category_id" in values:
             self._check_category_fk(values["category_id"])  # type: ignore[arg-type]
+        now = datetime.now(UTC)
         for name, value in values.items():
             setattr(recipe, name, value)
         recipe.row_version += 1
-        recipe.updated_at = datetime.now(UTC)
+        recipe.updated_at = now
+        for child in (*self.ingredients, *self.steps):
+            if child.recipe_id == recipe_id and not child.is_deleted:
+                child.is_deleted = True
+                child.row_version += 1
+                child.updated_at = now
+        self.ingredients.extend(ingredients)
+        self.steps.extend(steps)
         return recipe
 
     async def set_status(
@@ -246,59 +261,6 @@ class FakeRecipeRepository(RecipeRepository):
                 child.row_version += 1
                 child.updated_at = recipe.updated_at
         return recipe
-
-    async def get_ingredient(self, recipe_id: uuid.UUID, ingredient_id: uuid.UUID) -> RecipeIngredient | None:
-        return next(
-            (i for i in self.ingredients if i.id == ingredient_id and i.recipe_id == recipe_id and not i.is_deleted),
-            None,
-        )
-
-    async def add_ingredient(self, ingredient: RecipeIngredient, *, append: bool) -> RecipeIngredient:
-        if append:
-            live = [i.order_index for i in self.ingredients if i.recipe_id == ingredient.recipe_id and not i.is_deleted]
-            ingredient.order_index = max(live, default=-1) + 1
-        self.ingredients.append(ingredient)
-        return ingredient
-
-    async def update_ingredient(self, ingredient_id: uuid.UUID, values: dict[str, object]) -> RecipeIngredient | None:
-        ingredient = next((i for i in self.ingredients if i.id == ingredient_id and not i.is_deleted), None)
-        if ingredient is None:
-            return None
-        for name, value in values.items():
-            setattr(ingredient, name, value)
-        return ingredient
-
-    async def delete_ingredient(self, ingredient_id: uuid.UUID) -> None:
-        for ingredient in self.ingredients:
-            if ingredient.id == ingredient_id:
-                ingredient.is_deleted = True
-
-    async def get_step(self, recipe_id: uuid.UUID, step_id: uuid.UUID) -> RecipeStep | None:
-        return next((s for s in self.steps if s.id == step_id and s.recipe_id == recipe_id and not s.is_deleted), None)
-
-    async def add_step(self, step: RecipeStep) -> RecipeStep:
-        live = [s.step_number for s in self.steps if s.recipe_id == step.recipe_id and not s.is_deleted]
-        step.step_number = max(live, default=0) + 1
-        self.steps.append(step)
-        return step
-
-    async def update_step(self, step_id: uuid.UUID, values: dict[str, object]) -> RecipeStep | None:
-        step = next((s for s in self.steps if s.id == step_id and not s.is_deleted), None)
-        if step is None:
-            return None
-        for name, value in values.items():
-            setattr(step, name, value)
-        return step
-
-    async def delete_step(self, recipe_id: uuid.UUID, step_id: uuid.UUID) -> None:
-        for step in self.steps:
-            if step.id == step_id:
-                step.is_deleted = True
-        survivors = sorted(
-            (s for s in self.steps if s.recipe_id == recipe_id and not s.is_deleted), key=lambda s: s.step_number
-        )
-        for position, step in enumerate(survivors, start=1):
-            step.step_number = position
 
     async def get_image(self, recipe_id: uuid.UUID, image_id: uuid.UUID) -> RecipeImage | None:
         return next(

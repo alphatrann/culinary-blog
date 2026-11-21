@@ -189,12 +189,22 @@ def put(client, recipe, body: dict, if_match: str | None = "0"):
 
 def test_owner_updates_recipe_200_with_new_etag(client, owned):
     as_user(client, AUTHOR)
-    response = put(client, owned, update_body(owned))
+    response = put(
+        client,
+        owned,
+        update_body(
+            owned,
+            ingredients=[{"name": "Thịt bò", "quantity": 500, "unit": "g"}],
+            steps=[{"title": "Ninh xương", "description": "Ninh 3 giờ"}],
+        ),
+    )
 
     assert response.status_code == 200
     body = response.json()
     assert (body["title"], body["servings"], body["difficulty"], body["row_version"]) == ("Phở Bò Tái", 6, 3, 1)
     assert body["slug"] == owned.slug and body["status"] == 1  # slug and status are not editable here
+    assert [i["name"] for i in body["ingredients"]] == ["Thịt bò"]
+    assert [(s["step_number"], s["title"]) for s in body["steps"]] == [(1, "Ninh xương")]
     assert response.headers["etag"] == '"1"'
 
 
@@ -275,7 +285,17 @@ def test_update_with_unknown_category_is_422(client, owned):
     assert_problem(put(client, owned, body), 422)
 
 
-@pytest.mark.parametrize("overrides", [{"title": "Pho"}, {"servings": 0}, {"difficulty": 9}, {"prep_time_minutes": -1}])
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"title": "Pho"},
+        {"servings": 0},
+        {"difficulty": 9},
+        {"prep_time_minutes": -1},
+        {"steps": [{"title": "", "description": "y"}]},
+        {"ingredients": [{"name": "Salt", "quantity": 1}]},
+    ],
+)
 def test_update_with_invalid_payload_is_422(client, repo, owned, overrides):
     as_user(client, AUTHOR)
 
@@ -283,13 +303,15 @@ def test_update_with_invalid_payload_is_422(client, repo, owned, overrides):
     assert repo.recipes[owned.id].row_version == 0
 
 
-def test_update_ignores_client_supplied_slug_status_and_steps(client, owned):
+def test_update_ignores_client_supplied_slug_status_and_step_number(client, owned):
     as_user(client, AUTHOR)
-    body = update_body(owned, slug="hijacked", status=2, steps=[{"title": "x", "description": "y"}])
+    body = update_body(owned, slug="hijacked", status=2, steps=[{"title": "x", "description": "y", "step_number": 9}])
     response = put(client, owned, body)
 
     assert response.status_code == 200
-    assert response.json()["slug"] == owned.slug and response.json()["status"] == 1 and response.json()["steps"] == []
+    data = response.json()
+    assert data["slug"] == owned.slug and data["status"] == 1
+    assert [(s["step_number"], s["title"]) for s in data["steps"]] == [(1, "x")]
 
 
 # --- detail ---------------------------------------------------------------------------------------------------------
@@ -374,14 +396,14 @@ def test_admin_list_includes_everything(client, repo):
     assert client.get(BASE).json()["total_count"] == 2
 
 
-def test_list_filters_by_category_difficulty_name_and_max_cook_time(client, repo):
+def test_list_filters_by_category_difficulty_name_and_max_total_time(client, repo):
     soups = repo.add_category("Soups")
     easy, hard = RecipeDifficulty.EASY, RecipeDifficulty.HARD
     repo.seed_recipe(AUTHOR, title="Match", category_id=soups, difficulty=easy, cook_time_minutes=20)
     repo.seed_recipe(AUTHOR, title="Too slow", category_id=soups, difficulty=easy, cook_time_minutes=90)
     repo.seed_recipe(AUTHOR, title="Too hard", category_id=soups, difficulty=hard, cook_time_minutes=20)
     repo.seed_recipe(AUTHOR, title="Wrong category", difficulty=easy, cook_time_minutes=20)
-    response = client.get(BASE, params={"category_id": str(soups), "difficulty": "easy", "max_cook_time": 30})
+    response = client.get(BASE, params={"category_id": str(soups), "difficulty": "easy", "max_total_time": 30})
 
     assert [i["title"] for i in response.json()["items"]] == ["Match"]
 
@@ -413,7 +435,7 @@ def test_list_with_unknown_category_is_200_and_empty(client, repo):
         {"page_size": 51},
         {"difficulty": "impossible"},
         {"difficulty": "1"},
-        {"max_cook_time": -1},
+        {"max_total_time": -1},
         {"sort": "password"},
         {"sort": "--title"},
         {"category_id": "not-a-uuid"},
@@ -452,7 +474,7 @@ def test_search_does_not_leak_other_authors_drafts_even_when_authenticated(clien
     assert response.json()["items"] == []
 
 
-def test_search_filters_by_category_difficulty_and_max_cook_time(client, repo):
+def test_search_filters_by_category_difficulty_and_max_total_time(client, repo):
     soups = repo.add_category("Soups")
     repo.seed_recipe(
         AUTHOR, title="Pho Bo Soup", category_id=soups, difficulty=RecipeDifficulty.EASY, cook_time_minutes=20
@@ -462,7 +484,7 @@ def test_search_filters_by_category_difficulty_and_max_cook_time(client, repo):
     )
     response = client.get(
         f"{BASE}/search",
-        params={"q": "pho bo", "category_id": str(soups), "difficulty": "easy", "max_cook_time": 30},
+        params={"q": "pho bo", "category_id": str(soups), "difficulty": "easy", "max_total_time": 30},
     )
 
     assert [i["title"] for i in response.json()["items"]] == ["Pho Bo Soup"]
@@ -485,7 +507,7 @@ def test_search_no_match_is_200_with_empty_page(client, repo):
         {"q": "pho", "page": 0},
         {"q": "pho", "page_size": 51},
         {"q": "pho", "difficulty": "impossible"},
-        {"q": "pho", "max_cook_time": -1},
+        {"q": "pho", "max_total_time": -1},
         {"q": "pho", "category_id": "not-a-uuid"},
     ],
 )

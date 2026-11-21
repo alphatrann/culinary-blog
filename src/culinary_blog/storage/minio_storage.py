@@ -19,7 +19,12 @@ class MinioFileStorage(FileStorageService):
     def __init__(self, settings: Settings) -> None:
         self._bucket = settings.minio_bucket_name
         scheme = "https" if settings.minio_secure else "http"
-        self._prefix = f"{scheme}://{settings.minio_endpoint}/{self._bucket}/"
+        internal_prefix = f"{scheme}://{settings.minio_endpoint}/{self._bucket}/"
+        self._prefix = (
+            f"{settings.minio_public_url.rstrip('/')}/{self._bucket}/" if settings.minio_public_url else internal_prefix
+        )
+        # URLs stored before minio_public_url was set still carry the internal prefix.
+        self._known_prefixes = (self._prefix, internal_prefix)
         self._client = Minio(
             settings.minio_endpoint,
             access_key=settings.minio_access_key,
@@ -47,7 +52,7 @@ class MinioFileStorage(FileStorageService):
         return await self._run(self._get_if_exists, key)
 
     def _key_from_url(self, url: str) -> str:
-        if not url.startswith(self._prefix):
+        if not url.startswith(self._known_prefixes):
             raise ValueError(f"URL does not belong to bucket {self._bucket}: {url}")
         return urlparse(url).path.removeprefix(f"/{self._bucket}/")
 

@@ -22,6 +22,9 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    // Thumbnails are already resized by the image worker, and `/_next/image` fetches them server-side from inside
+    // the web container, where the public MinIO URL (http://localhost/...) is unreachable.
+    unoptimized: true,
     remotePatterns: [
       ...(imageHost ? [{ protocol: "https" as const, hostname: imageHost }] : []),
       // Local MinIO from compose.development.yml.

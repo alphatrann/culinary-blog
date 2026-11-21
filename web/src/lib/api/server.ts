@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { serverApiBaseUrl } from "@/lib/env";
 import { apiErrorFromResponse } from "./errors";
 import { resolvePath } from "./url";
@@ -43,7 +44,12 @@ export async function serverGet<P extends PathsWith<"get">>(
       credentials: "omit",
       next: { revalidate, tags },
     },
-  );
+  ).catch((error: unknown) => {
+    // API unreachable (e.g. `docker build` has no API): opt out of static caching so the page's error state isn't
+    // frozen into the prerender for a whole ISR window.
+    noStore();
+    throw error;
+  });
   if (!response.ok) throw await apiErrorFromResponse(response);
   return (await response.json()) as ResponseBody<P, "get">;
 }

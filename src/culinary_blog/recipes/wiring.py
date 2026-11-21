@@ -8,21 +8,15 @@ from culinary_blog.database.session import async_session_factory, read_session_f
 from culinary_blog.jobs.queue import RedisJobQueue
 from culinary_blog.ratelimit.wiring import upload_rate_limit
 from culinary_blog.recipes.cache import RecipeCacheInvalidator
-from culinary_blog.recipes.commands.add_ingredient import AddIngredientHandler
-from culinary_blog.recipes.commands.add_step import AddStepHandler
 from culinary_blog.recipes.commands.archive_recipe import ArchiveRecipeHandler
 from culinary_blog.recipes.commands.create_recipe import CreateRecipeHandler
 from culinary_blog.recipes.commands.delete_image import DeleteImageHandler
-from culinary_blog.recipes.commands.delete_ingredient import DeleteIngredientHandler
 from culinary_blog.recipes.commands.delete_recipe import DeleteRecipeHandler
-from culinary_blog.recipes.commands.delete_step import DeleteStepHandler
 from culinary_blog.recipes.commands.publish_recipe import PublishRecipeHandler
 from culinary_blog.recipes.commands.set_primary_image import SetPrimaryImageHandler
 from culinary_blog.recipes.commands.unarchive_recipe import UnarchiveRecipeHandler
 from culinary_blog.recipes.commands.unpublish_recipe import UnpublishRecipeHandler
-from culinary_blog.recipes.commands.update_ingredient import UpdateIngredientHandler
 from culinary_blog.recipes.commands.update_recipe import UpdateRecipeHandler
-from culinary_blog.recipes.commands.update_step import UpdateStepHandler
 from culinary_blog.recipes.commands.upload_image import UploadImageHandler
 from culinary_blog.recipes.queries.get_recipe import GetRecipeHandler
 from culinary_blog.recipes.queries.get_recipe_for_edit import GetRecipeForEditHandler
@@ -54,12 +48,6 @@ def build_recipes_router() -> APIRouter:
         archive_recipe=ArchiveRecipeHandler(repository, invalidator),
         unarchive_recipe=UnarchiveRecipeHandler(repository, invalidator),
         delete_recipe=DeleteRecipeHandler(repository, invalidator),
-        add_ingredient=AddIngredientHandler(repository, invalidator),
-        update_ingredient=UpdateIngredientHandler(repository, invalidator),
-        delete_ingredient=DeleteIngredientHandler(repository, invalidator),
-        add_step=AddStepHandler(repository, invalidator),
-        update_step=UpdateStepHandler(repository, invalidator),
-        delete_step=DeleteStepHandler(repository, invalidator),
         upload_image=UploadImageHandler(repository, storage, queue, invalidator),
         set_primary_image=SetPrimaryImageHandler(repository, invalidator),
         delete_image=DeleteImageHandler(repository, queue, invalidator),

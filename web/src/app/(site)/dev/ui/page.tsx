@@ -71,7 +71,7 @@ export default function UiKitchenSink() {
         action={<Button variant="outline">Xóa bộ lọc</Button>}
       />
       <Pagination page={5} pageCount={12} hrefFor={(p) => `?page=${p}`} />
-      <RecipeFilterBar basePath="/dev/ui" difficulty="easy" maxCookTime={30} />
+      <RecipeFilterBar basePath="/dev/ui" difficulty="easy" maxTotalTime={30} />
       <RecipeGrid
         recipes={[
           {

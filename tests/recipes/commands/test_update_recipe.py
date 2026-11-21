@@ -7,7 +7,7 @@ from culinary_blog.errors import ConflictError, ForbiddenError, NotFoundError, U
 from culinary_blog.recipes.commands.update_recipe import UpdateRecipeCommand, UpdateRecipeHandler
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 from culinary_blog.recipes.models import Recipe, RecipeIngredient, RecipeStep
-from culinary_blog.recipes.schemas import NutritionIn
+from culinary_blog.recipes.schemas import IngredientIn, NutritionIn, StepIn
 from tests.recipes.fakes import ADMIN, AUTHOR, NO_ROLES, OTHER_AUTHOR, READER, FakeRecipeRepository, invalidator
 
 
@@ -67,13 +67,28 @@ async def test_update_can_move_recipe_to_another_category():
 
 
 @pytest.mark.anyio
-async def test_update_returns_existing_steps_and_ingredients_unchanged():
+async def test_update_replaces_steps_and_ingredients_atomically():
     repo, handler, recipe = make_handler()
-    repo.steps.append(RecipeStep(recipe_id=recipe.id, step_number=1, title="Boil", description="x"))
-    repo.ingredients.append(RecipeIngredient(recipe_id=recipe.id, name="Salt", order_index=0))
-    out = await handler.handle(command(recipe, repo))
+    old_step = RecipeStep(recipe_id=recipe.id, step_number=1, title="Old", description="x")
+    old_ingredient = RecipeIngredient(recipe_id=recipe.id, name="Old Salt", order_index=0)
+    repo.steps.append(old_step)
+    repo.ingredients.append(old_ingredient)
 
-    assert [s.title for s in out.steps] == ["Boil"] and [i.name for i in out.ingredients] == ["Salt"]
+    out = await handler.handle(
+        command(
+            recipe,
+            repo,
+            steps=[StepIn(title="Simmer", description="Slow"), StepIn(title="Serve", description="Hot")],
+            ingredients=[IngredientIn(name="Beef", quantity=Decimal("500"), unit="g"), IngredientIn(name="Salt")],
+        )
+    )
+
+    assert old_step.is_deleted and old_ingredient.is_deleted
+    assert [(s.step_number, s.title) for s in out.steps] == [(1, "Simmer"), (2, "Serve")]
+    assert [(i.order_index, i.name) for i in out.ingredients] == [(0, "Beef"), (1, "Salt")]
+    live_steps, live_ingredients = await repo.get_children(recipe.id)
+    assert [s.title for s in live_steps] == ["Simmer", "Serve"]
+    assert [i.name for i in live_ingredients] == ["Beef", "Salt"]
 
 
 @pytest.mark.anyio
@@ -106,11 +121,33 @@ async def test_nutrition_is_left_alone_when_omitted():
 @pytest.mark.anyio
 async def test_stale_row_version_conflicts_and_changes_nothing():
     repo, handler, recipe = make_handler()
-    await handler.handle(command(recipe, repo, title="First edit wins"))  # someone else got there first
+    repo.steps.append(RecipeStep(recipe_id=recipe.id, step_number=1, title="Keep", description="x"))
+    repo.ingredients.append(RecipeIngredient(recipe_id=recipe.id, name="Keep Salt", order_index=0))
+    await handler.handle(
+        command(
+            recipe,
+            repo,
+            title="First edit wins",
+            steps=[StepIn(title="First", description="x")],
+            ingredients=[IngredientIn(name="First Salt")],
+        )
+    )  # someone else got there first
 
     with pytest.raises(ConflictError, match="thay đổi"):
-        await handler.handle(command(recipe, repo, expected_version=0, title="Stale edit loses"))
+        await handler.handle(
+            command(
+                recipe,
+                repo,
+                expected_version=0,
+                title="Stale edit loses",
+                steps=[StepIn(title="Stale", description="x")],
+                ingredients=[IngredientIn(name="Stale Salt")],
+            )
+        )
     assert repo.recipes[recipe.id].title == "First edit wins" and repo.recipes[recipe.id].row_version == 1
+    live_steps, live_ingredients = await repo.get_children(recipe.id)
+    assert [s.title for s in live_steps] == ["First"]
+    assert [i.name for i in live_ingredients] == ["First Salt"]
 
 
 @pytest.mark.anyio
@@ -135,9 +172,9 @@ async def test_losing_the_compare_and_swap_race_is_a_conflict():
     """The row passes the read check, then another writer bumps it before our UPDATE lands."""
 
     class RacyRepository(FakeRecipeRepository):
-        async def update(self, recipe_id, expected_version, values):
+        async def update(self, recipe_id, expected_version, values, ingredients, steps):
             self.recipes[recipe_id].row_version += 1  # the concurrent writer
-            return await super().update(recipe_id, expected_version, values)
+            return await super().update(recipe_id, expected_version, values, ingredients, steps)
 
     repo = RacyRepository()
     recipe = repo.seed_recipe(AUTHOR)

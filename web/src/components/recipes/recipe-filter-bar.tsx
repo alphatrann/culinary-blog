@@ -6,13 +6,13 @@ import { buildHref, cookTimeOptions, sortOptions as defaultSortOptions } from "@
 const selectClass = "w-full min-w-0 min-[768px]:w-auto min-[768px]:min-w-44";
 
 /**
- * GET form → URL params `category_id`, `difficulty`, `max_cook_time`, `sort`; works without JS and with SSR.
+ * GET form → URL params `category_id`, `difficulty`, `max_total_time`, `sort`; works without JS and with SSR.
  * `hidden` carries params that must survive a filter change (e.g. `q` on search). Page resets to 1.
  */
 function RecipeFilterBar({
   basePath,
   difficulty,
-  maxCookTime,
+  maxTotalTime,
   sort,
   categoryId,
   categories,
@@ -21,7 +21,7 @@ function RecipeFilterBar({
 }: {
   basePath: string;
   difficulty?: DifficultyName;
-  maxCookTime?: number;
+  maxTotalTime?: number;
   sort?: string;
   categoryId?: string;
   /** When given, renders a category select (`category_id`). */
@@ -29,7 +29,7 @@ function RecipeFilterBar({
   sortOptions?: readonly { value: string; label: string }[];
   hidden?: Record<string, string>;
 }) {
-  const active = Boolean(difficulty || maxCookTime || sort || categoryId);
+  const active = Boolean(difficulty || maxTotalTime || sort || categoryId);
   return (
     <form
       action={basePath}
@@ -66,11 +66,11 @@ function RecipeFilterBar({
         </Select>
       </label>
       <label className="grid gap-1.5 text-sm font-medium">
-        Thời gian nấu
+        Tổng thời gian
         <Select
           className={selectClass}
-          name="max_cook_time"
-          defaultValue={maxCookTime ? String(maxCookTime) : ""}
+          name="max_total_time"
+          defaultValue={maxTotalTime ? String(maxTotalTime) : ""}
         >
           <option value="">Bất kỳ</option>
           {cookTimeOptions.map((m) => (

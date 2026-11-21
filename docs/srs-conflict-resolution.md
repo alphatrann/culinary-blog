@@ -138,3 +138,11 @@ The code only emitted `RATE_LIMIT_EXCEEDED`; Appendix B listed 20 codes. Added `
 | File / common | `FILE_MIME_INVALID`, `FILE_SIZE_EXCEEDED`, `VALIDATION_ERROR`, `RATE_LIMIT_EXCEEDED` |
 
 Not coded on purpose: errors with no Appendix B entry (missing cookie, unknown refresh token, inactive account, child-resource 404s such as step/ingredient/image, empty file, admin-role 403s).
+
+## Round 4: atomic recipe updates (FR-RCP-004 vs. FR-RCP-009/010)
+
+The SRS split recipe editing across `PUT /api/v1/recipes/{id}` (scalar fields + nutrition, guarded by `If-Match`) and separate child endpoints for ingredients (`FR-RCP-009`) and steps (`FR-RCP-010`) with no reorder endpoint and no `If-Match` guard. Editing a recipe in the web UI required N+1 sequential calls (deleting and recreating every step on reorder), risking half-saved live recipes on mid-flight failure and unguarded concurrent child writes.
+
+| Decision | SRS change | Code change |
+| -------- | ---------- | ----------- |
+| Replace `ingredients` and `steps` atomically inside `PUT /api/v1/recipes/{id}` (one DB transaction, guarded by `If-Match`), and remove the standalone ingredient/step CRUD endpoints | Updated `FR-RCP-004` and `§8.3` to include `ingredients?` and `steps?` in `PUT /api/v1/recipes/{id}` | `RecipeUpdateRequest` inherits `RecipeCreateRequest`; `RecipeRepository.update` soft-deletes old children and inserts replacements in the same transaction as the `row_version` CAS; removed standalone child command handlers/routes and frontend `diff.ts`/`save-edit.ts` |

@@ -12,7 +12,7 @@ function RecipePagination({
   basePath: string;
   page: number;
   totalPages: number;
-  /** Active filters (`difficulty`, `max_cook_time`, `sort`, `q`, …); `page` is added per link. */
+  /** Active filters (`difficulty`, `max_total_time`, `sort`, `q`, …); `page` is added per link. */
   params?: Record<string, string | number | undefined>;
   className?: string;
 }) {

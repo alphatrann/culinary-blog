@@ -91,12 +91,12 @@ async def test_filters_combine():
 
 
 @pytest.mark.anyio
-async def test_max_cook_time_is_inclusive():
+async def test_max_total_time_is_inclusive():
     repo, handler = make_handler()
-    repo.seed_recipe(AUTHOR, title="Pho Quick", cook_time_minutes=30)
-    repo.seed_recipe(AUTHOR, title="Pho Slow", cook_time_minutes=31)
+    repo.seed_recipe(AUTHOR, title="Pho Quick", prep_time_minutes=10, cook_time_minutes=20)
+    repo.seed_recipe(AUTHOR, title="Pho Slow", prep_time_minutes=11, cook_time_minutes=20)
 
-    out = await handler.handle(query(q="pho", max_cook_time=30))
+    out = await handler.handle(query(q="pho", max_total_time=30))
 
     assert titles(out) == ["Pho Quick"]
 

@@ -41,7 +41,7 @@ function RadioGroup({
 }
 
 /**
- * GET form → `category_id`, `difficulty`, `max_cook_time` (+ hidden `q`); resets paging.
+ * GET form → `category_id`, `difficulty`, `max_total_time` (+ hidden `q`); resets paging.
  * Always visible from 1000px; below that it sits behind a "Bộ lọc" toggle with an active-count badge.
  */
 function SearchFilterPanel({
@@ -50,18 +50,18 @@ function SearchFilterPanel({
   categories = [],
   categoryId,
   difficulty,
-  maxCookTime,
+  maxTotalTime,
 }: {
   basePath: string;
   q: string;
   categories?: { id: string; name: string }[];
   categoryId?: string;
   difficulty?: DifficultyName;
-  maxCookTime?: number;
+  maxTotalTime?: number;
 }) {
   const [open, setOpen] = React.useState(false);
   const panelId = React.useId();
-  const activeCount = [categoryId, difficulty, maxCookTime].filter(Boolean).length;
+  const activeCount = [categoryId, difficulty, maxTotalTime].filter(Boolean).length;
 
   return (
     <aside aria-label="Bộ lọc" className="rounded-xl border border-border bg-card p-4">
@@ -113,9 +113,9 @@ function SearchFilterPanel({
           ]}
         />
         <RadioGroup
-          legend="Thời gian nấu"
-          name="max_cook_time"
-          value={maxCookTime ? String(maxCookTime) : ""}
+          legend="Tổng thời gian"
+          name="max_total_time"
+          value={maxTotalTime ? String(maxTotalTime) : ""}
           options={[
             { value: "", label: "Bất kỳ" },
             ...cookTimeOptions.map((m) => ({

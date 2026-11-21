@@ -120,8 +120,8 @@ class RecipeCreateRequest(RecipeWrite):
     ingredients: list[IngredientIn] = Field(default_factory=list)
 
 
-class RecipeUpdateRequest(RecipeWrite):
-    """Steps and ingredients are managed through their own endpoints (FR-RCP-009/010)."""
+class RecipeUpdateRequest(RecipeCreateRequest):
+    """Full atomic replacement of a recipe with its ingredients and steps (FR-RCP-004)."""
 
 
 class StepOut(BaseModel):

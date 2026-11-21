@@ -6,8 +6,6 @@ import pytest
 
 from culinary_blog.cache import keys
 from culinary_blog.errors import ForbiddenError, NotFoundError
-from culinary_blog.recipes.commands.add_ingredient import AddIngredientCommand, AddIngredientHandler
-from culinary_blog.recipes.commands.add_step import AddStepCommand, AddStepHandler
 from culinary_blog.recipes.commands.create_recipe import CreateRecipeCommand, CreateRecipeHandler
 from culinary_blog.recipes.commands.delete_recipe import DeleteRecipeCommand, DeleteRecipeHandler
 from culinary_blog.recipes.commands.publish_recipe import PublishRecipeCommand, PublishRecipeHandler
@@ -19,7 +17,6 @@ from culinary_blog.recipes.models import RecipeIngredient, RecipeStep
 from culinary_blog.recipes.queries.get_recipe import GetRecipeHandler, GetRecipeQuery
 from culinary_blog.recipes.queries.list_recipes import ListRecipesHandler, ListRecipesQuery
 from culinary_blog.recipes.queries.search_recipes import SearchRecipesHandler, SearchRecipesQuery
-from culinary_blog.recipes.schemas import IngredientIn, StepIn
 from culinary_blog.storage.images import JPEG
 from tests.cache.fakes import FakeCache
 from tests.recipes.fakes import (
@@ -71,7 +68,7 @@ async def test_list_cache_key_includes_every_query_parameter(repo, cache):
     await handler.handle(list_query())
     await handler.handle(list_query(page=2))
     await handler.handle(list_query(sort="title"))
-    await handler.handle(list_query(max_cook_time=10))
+    await handler.handle(list_query(max_total_time=10))
 
     assert cache.loads == 4
 
@@ -221,20 +218,14 @@ async def test_update_drops_the_detail_and_bumps_lists_but_keeps_category_counts
 
 
 @pytest.mark.anyio
-async def test_children_changes_drop_only_the_detail(repo, cache):
+async def test_image_upload_drops_only_the_detail(repo, cache):
     recipe = repo.seed_recipe(AUTHOR, RecipeStatus.PUBLISHED)
 
-    await AddStepHandler(repo, invalidator(cache)).handle(
-        AddStepCommand(AUTHOR, recipe.id, StepIn(title="a", description="b"))
-    )
-    await AddIngredientHandler(repo, invalidator(cache)).handle(
-        AddIngredientCommand(AUTHOR, recipe.id, IngredientIn(name="x"))
-    )
     await UploadImageHandler(repo, FakeStorage(), FakeJobQueue(), invalidator(cache)).handle(
         UploadImageCommand(AUTHOR, recipe.id, b"x", JPEG, None)
     )
 
-    assert cache.deleted == [keys.recipe(recipe.slug)] * 3
+    assert cache.deleted == [keys.recipe(recipe.slug)]
     assert cache.generation == 0
 
 

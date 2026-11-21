@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { FormProvider, useForm, useWatch, type Path } from "react-hook-form";
@@ -9,14 +9,12 @@ import { toast } from "sonner";
 import { Alert } from "@/components/ui/alert";
 import { api, isApiError, type ResponseBody } from "@/lib/api";
 import {
-  editStateFromRecipe,
   PUBLISHED_STATUS,
   toFormValues,
-  type EditState,
+  toUpdatePayload,
   type RecipeDetail,
 } from "@/lib/recipes/edit";
 import { mapRecipeError } from "@/lib/recipes/errors";
-import { saveRecipeEdit } from "@/lib/recipes/save-edit";
 import {
   emptyRecipeForm,
   isPublishable,
@@ -47,6 +45,7 @@ export type RecipeEditorProps =
 
 export function RecipeEditor(props: RecipeEditorProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const recipe = props.mode === "edit" ? props.recipe : null;
   const onReload = props.mode === "edit" ? props.onReload : null;
 
@@ -58,8 +57,8 @@ export function RecipeEditor(props: RecipeEditorProps) {
   const [images, setImages] = useState(recipe?.images ?? []);
   // Create: a draft that was created but failed to publish; retries only call publish.
   const created = useRef<CreatedRecipe | null>(null);
-  // Edit: what the server last confirmed (row version and children), updated by each successful save call.
-  const serverState = useRef<EditState | null>(recipe ? editStateFromRecipe(recipe) : null);
+  // Edit: the row version the server last confirmed, sent via If-Match on the next PUT.
+  const rowVersion = useRef<number | null>(recipe ? recipe.row_version : null);
 
   const form = useForm<RecipeFormValues>({
     resolver: zodResolver(recipeFormSchema),
@@ -117,19 +116,22 @@ export function RecipeEditor(props: RecipeEditorProps) {
 
   const save = useMutation({
     mutationFn: (values: RecipeFormValues) => {
-      if (!recipe || !serverState.current) throw new Error("Edit mode without a loaded recipe");
-      return saveRecipeEdit({
-        api,
-        recipeId: recipe.id,
-        state: serverState.current,
-        values,
-        onCreated: (list, rowIndex, id) => setValue(`${list}.${rowIndex}.id` as const, id),
+      if (!recipe || rowVersion.current === null) {
+        throw new Error("Edit mode without a loaded recipe");
+      }
+      return api.put("/recipes/{recipe_id}", {
+        path: { recipe_id: recipe.id },
+        rowVersion: rowVersion.current,
+        body: toUpdatePayload(values),
       });
     },
-    onSuccess: () => {
+    onSuccess: (saved) => {
+      rowVersion.current = saved.row_version;
       setBanner(undefined);
       setNotice("Đã lưu thay đổi.");
       reset(getValues());
+      void queryClient.invalidateQueries({ queryKey: ["recipe-edit", recipe?.id] });
+      void queryClient.invalidateQueries({ queryKey: ["my-recipes"] });
     },
     onError: (error) => {
       setNotice(undefined);
@@ -138,9 +140,7 @@ export function RecipeEditor(props: RecipeEditorProps) {
         return;
       }
       const failure = mapRecipeError(error);
-      setBanner(
-        `Một số thay đổi chưa được lưu. Lưu lại để thử tiếp. ${failure.banner ?? ""}`.trim(),
-      );
+      setBanner(failure.banner);
       for (const [field, message] of Object.entries(failure.fields)) {
         setError(field as Path<RecipeFormValues>, { message });
       }
@@ -156,7 +156,7 @@ export function RecipeEditor(props: RecipeEditorProps) {
         : api.patch("/recipes/{recipe_id}/publish", { path });
     },
     onSuccess: (updated) => {
-      if (serverState.current) serverState.current.rowVersion = updated.row_version;
+      rowVersion.current = updated.row_version;
       setStatus(updated.status);
       setBanner(undefined);
       setNotice(
@@ -164,6 +164,8 @@ export function RecipeEditor(props: RecipeEditorProps) {
           ? "Đã xuất bản công thức."
           : "Đã gỡ xuất bản công thức.",
       );
+      void queryClient.invalidateQueries({ queryKey: ["recipe-edit", recipe?.id] });
+      void queryClient.invalidateQueries({ queryKey: ["my-recipes"] });
     },
     onError: (error) => setBanner(mapRecipeError(error).banner),
   });
@@ -175,6 +177,7 @@ export function RecipeEditor(props: RecipeEditorProps) {
     },
     onSuccess: () => {
       setDone(true);
+      void queryClient.invalidateQueries({ queryKey: ["my-recipes"] });
       router.push("/dashboard/recipes");
     },
     onError: (error) => setBanner(mapRecipeError(error).banner),
@@ -200,7 +203,7 @@ export function RecipeEditor(props: RecipeEditorProps) {
     if (!recipe || !onReload) return;
     const local = getValues();
     const latest = await onReload();
-    serverState.current = editStateFromRecipe(latest);
+    rowVersion.current = latest.row_version;
     setImages(latest.images);
     setStatus(latest.status);
     setConflict(false);
