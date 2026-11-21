@@ -48,6 +48,8 @@ class Settings(BaseSettings):
     minio_secret_key: str = "minioadmin"
     minio_bucket_name: str = "culinary-blog"
     minio_secure: bool = False
+    # Browser-reachable base for stored file URLs (e.g. https://example.com); empty = the internal endpoint.
+    minio_public_url: str = ""
 
     otel_enabled: bool = True  # False in local dev without a collector: no exporters, so no connection-refused noise
     otel_exporter_otlp_endpoint: str = "http://localhost:4317"

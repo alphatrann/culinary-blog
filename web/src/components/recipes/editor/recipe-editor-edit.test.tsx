@@ -81,7 +81,17 @@ describe("RecipeEditor in edit mode", () => {
         expect.objectContaining({
           path: { recipe_id: sampleRecipe.id },
           rowVersion: 4,
-          body: expect.objectContaining({ title: "Phở bò Hà Nội (sửa)" }),
+          body: expect.objectContaining({
+            title: "Phở bò Hà Nội (sửa)",
+            ingredients: [
+              { name: "Thịt bò", quantity: null, unit: null, order_index: 0 },
+              { name: "Bánh phở", quantity: 500, unit: "g", order_index: 1 },
+            ],
+            steps: [
+              { title: "Ninh xương", description: "Ninh xương\nNinh xương 3 giờ." },
+              { title: "Ăn khi nóng.", description: "Ăn khi nóng." },
+            ],
+          }),
         }),
       ),
     );

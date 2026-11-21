@@ -5,21 +5,15 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, Form, Header, Query, Request, Response, UploadFile
 
 from culinary_blog.auth.dependencies import Authenticator
-from culinary_blog.recipes.commands.add_ingredient import AddIngredientCommand, AddIngredientHandler
-from culinary_blog.recipes.commands.add_step import AddStepCommand, AddStepHandler
 from culinary_blog.recipes.commands.archive_recipe import ArchiveRecipeCommand, ArchiveRecipeHandler
 from culinary_blog.recipes.commands.create_recipe import CreateRecipeCommand, CreateRecipeHandler
 from culinary_blog.recipes.commands.delete_image import DeleteImageCommand, DeleteImageHandler
-from culinary_blog.recipes.commands.delete_ingredient import DeleteIngredientCommand, DeleteIngredientHandler
 from culinary_blog.recipes.commands.delete_recipe import DeleteRecipeCommand, DeleteRecipeHandler
-from culinary_blog.recipes.commands.delete_step import DeleteStepCommand, DeleteStepHandler
 from culinary_blog.recipes.commands.publish_recipe import PublishRecipeCommand, PublishRecipeHandler
 from culinary_blog.recipes.commands.set_primary_image import SetPrimaryImageCommand, SetPrimaryImageHandler
 from culinary_blog.recipes.commands.unarchive_recipe import UnarchiveRecipeCommand, UnarchiveRecipeHandler
 from culinary_blog.recipes.commands.unpublish_recipe import UnpublishRecipeCommand, UnpublishRecipeHandler
-from culinary_blog.recipes.commands.update_ingredient import UpdateIngredientCommand, UpdateIngredientHandler
 from culinary_blog.recipes.commands.update_recipe import UpdateRecipeCommand, UpdateRecipeHandler
-from culinary_blog.recipes.commands.update_step import UpdateStepCommand, UpdateStepHandler
 from culinary_blog.recipes.commands.upload_image import UploadImageCommand, UploadImageHandler
 from culinary_blog.recipes.enums import RecipeDifficulty, RecipeStatus
 from culinary_blog.recipes.queries.get_recipe import GetRecipeHandler, GetRecipeQuery
@@ -29,8 +23,6 @@ from culinary_blog.recipes.queries.search_recipes import SearchRecipesHandler, S
 from culinary_blog.recipes.schemas import (
     DifficultyName,
     IfMatchVersion,
-    IngredientIn,
-    IngredientOut,
     RecipeCreateRequest,
     RecipeDetailOut,
     RecipeImageOut,
@@ -40,8 +32,6 @@ from culinary_blog.recipes.schemas import (
     RecipeSort,
     RecipeUpdateRequest,
     StatusName,
-    StepIn,
-    StepOut,
 )
 from culinary_blog.storage.images import MAX_IMAGE_BYTES, validate_image
 
@@ -66,12 +56,6 @@ class RecipeRouter:
         unpublish_recipe: UnpublishRecipeHandler,
         archive_recipe: ArchiveRecipeHandler,
         unarchive_recipe: UnarchiveRecipeHandler,
-        add_ingredient: AddIngredientHandler,
-        update_ingredient: UpdateIngredientHandler,
-        delete_ingredient: DeleteIngredientHandler,
-        add_step: AddStepHandler,
-        update_step: UpdateStepHandler,
-        delete_step: DeleteStepHandler,
         upload_image: UploadImageHandler,
         set_primary_image: SetPrimaryImageHandler,
         delete_image: DeleteImageHandler,
@@ -90,12 +74,6 @@ class RecipeRouter:
         self._unpublish_recipe = unpublish_recipe
         self._archive_recipe = archive_recipe
         self._unarchive_recipe = unarchive_recipe
-        self._add_ingredient = add_ingredient
-        self._update_ingredient = update_ingredient
-        self._delete_ingredient = delete_ingredient
-        self._add_step = add_step
-        self._update_step = update_step
-        self._delete_step = delete_step
         self._upload_image = upload_image
         self._set_primary_image = set_primary_image
         self._delete_image = delete_image
@@ -116,29 +94,6 @@ class RecipeRouter:
         self.router.add_api_route("/{recipe_id}/unpublish", self.unpublish, methods=["PATCH"], response_model=RecipeOut)
         self.router.add_api_route("/{recipe_id}/archive", self.archive, methods=["PATCH"], response_model=RecipeOut)
         self.router.add_api_route("/{recipe_id}/unarchive", self.unarchive, methods=["PATCH"], response_model=RecipeOut)
-        self.router.add_api_route(
-            "/{recipe_id}/ingredients",
-            self.add_ingredient,
-            methods=["POST"],
-            response_model=IngredientOut,
-            status_code=201,
-        )
-        self.router.add_api_route(
-            "/{recipe_id}/ingredients/{ingredient_id}",
-            self.update_ingredient,
-            methods=["PUT"],
-            response_model=IngredientOut,
-        )
-        self.router.add_api_route(
-            "/{recipe_id}/ingredients/{ingredient_id}", self.delete_ingredient, methods=["DELETE"], status_code=204
-        )
-        self.router.add_api_route(
-            "/{recipe_id}/steps", self.add_step, methods=["POST"], response_model=StepOut, status_code=201
-        )
-        self.router.add_api_route(
-            "/{recipe_id}/steps/{step_id}", self.update_step, methods=["PUT"], response_model=StepOut
-        )
-        self.router.add_api_route("/{recipe_id}/steps/{step_id}", self.delete_step, methods=["DELETE"], status_code=204)
         self.router.add_api_route(
             "/{recipe_id}/images",
             self.upload_image,
@@ -164,7 +119,7 @@ class RecipeRouter:
         page_size: Annotated[int, Query(ge=1, le=50)] = 12,
         category_id: uuid.UUID | None = None,
         difficulty: DifficultyName | None = None,
-        max_cook_time: Annotated[int | None, Query(ge=0)] = None,
+        max_total_time: Annotated[int | None, Query(ge=0)] = None,
         sort: RecipeSort = "-created_at",
         author_id: Annotated[str | None, Query(pattern=r"^(me|[0-9a-fA-F-]{36})$")] = None,
         status: StatusName | None = None,
@@ -185,7 +140,7 @@ class RecipeRouter:
                 sort=sort,
                 category_id=category_id,
                 difficulty=RecipeDifficulty[difficulty.upper()] if difficulty else None,
-                max_cook_time=max_cook_time,
+                max_total_time=max_total_time,
                 viewer=viewer,
                 author_id=author,
                 status=RecipeStatus[status.upper()] if status else None,
@@ -199,7 +154,7 @@ class RecipeRouter:
         page_size: Annotated[int, Query(ge=1, le=50)] = 12,
         category_id: uuid.UUID | None = None,
         difficulty: DifficultyName | None = None,
-        max_cook_time: Annotated[int | None, Query(ge=0)] = None,
+        max_total_time: Annotated[int | None, Query(ge=0)] = None,
     ) -> RecipeSearchResultsOut:
         return await self._search_recipes.handle(
             SearchRecipesQuery(
@@ -208,7 +163,7 @@ class RecipeRouter:
                 page_size=page_size,
                 category_id=category_id,
                 difficulty=RecipeDifficulty[difficulty.upper()] if difficulty else None,
-                max_cook_time=max_cook_time,
+                max_total_time=max_total_time,
             )
         )
 
@@ -267,6 +222,8 @@ class RecipeRouter:
                 servings=body.servings,
                 difficulty=body.difficulty,
                 nutrition=body.nutrition,
+                ingredients=body.ingredients,
+                steps=body.steps,
             )
         )
         response.headers["ETag"] = _etag(recipe.row_version)
@@ -300,34 +257,6 @@ class RecipeRouter:
         recipe = await self._unarchive_recipe.handle(UnarchiveRecipeCommand(actor, recipe_id))
         response.headers["ETag"] = _etag(recipe.row_version)
         return recipe
-
-    async def add_ingredient(self, recipe_id: uuid.UUID, body: IngredientIn, request: Request) -> IngredientOut:
-        actor = await self._authenticator.require_principal(request)
-        return await self._add_ingredient.handle(AddIngredientCommand(actor, recipe_id, body))
-
-    async def update_ingredient(
-        self, recipe_id: uuid.UUID, ingredient_id: uuid.UUID, body: IngredientIn, request: Request
-    ) -> IngredientOut:
-        actor = await self._authenticator.require_principal(request)
-        return await self._update_ingredient.handle(UpdateIngredientCommand(actor, recipe_id, ingredient_id, body))
-
-    async def delete_ingredient(self, recipe_id: uuid.UUID, ingredient_id: uuid.UUID, request: Request) -> Response:
-        actor = await self._authenticator.require_principal(request)
-        await self._delete_ingredient.handle(DeleteIngredientCommand(actor, recipe_id, ingredient_id))
-        return Response(status_code=204)
-
-    async def add_step(self, recipe_id: uuid.UUID, body: StepIn, request: Request) -> StepOut:
-        actor = await self._authenticator.require_principal(request)
-        return await self._add_step.handle(AddStepCommand(actor, recipe_id, body))
-
-    async def update_step(self, recipe_id: uuid.UUID, step_id: uuid.UUID, body: StepIn, request: Request) -> StepOut:
-        actor = await self._authenticator.require_principal(request)
-        return await self._update_step.handle(UpdateStepCommand(actor, recipe_id, step_id, body))
-
-    async def delete_step(self, recipe_id: uuid.UUID, step_id: uuid.UUID, request: Request) -> Response:
-        actor = await self._authenticator.require_principal(request)
-        await self._delete_step.handle(DeleteStepCommand(actor, recipe_id, step_id))
-        return Response(status_code=204)
 
     async def upload_image(
         self,

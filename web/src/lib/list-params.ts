@@ -31,14 +31,14 @@ const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{1
 /** Parse + sanitise URL params so invalid values never reach the API. */
 export function parseListParams(sp: ListSearchParams) {
   const difficulty = first(sp.difficulty) as DifficultyName | undefined;
-  const maxCook = Number(first(sp.max_cook_time));
+  const maxCook = Number(first(sp.max_total_time));
   const sort = sortOptions.find((o) => o.value === first(sp.sort))?.value;
   const page = Number(first(sp.page));
   const categoryId = first(sp.category_id);
   return {
     page: Number.isInteger(page) && page >= 1 ? page : 1,
     difficulty: difficulty && difficulties.includes(difficulty) ? difficulty : undefined,
-    max_cook_time: Number.isInteger(maxCook) && maxCook > 0 ? maxCook : undefined,
+    max_total_time: Number.isInteger(maxCook) && maxCook > 0 ? maxCook : undefined,
     category_id: categoryId && uuidPattern.test(categoryId) ? categoryId : undefined,
     sort,
   };

@@ -95,6 +95,10 @@
   * {
     @apply border-border;
   }
+  /* Sticky 4rem header: keep anchor jumps from landing underneath it. */
+  html {
+    scroll-padding-top: 4rem;
+  }
   body {
     @apply bg-background text-sm text-foreground;
   }

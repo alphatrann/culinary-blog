@@ -46,7 +46,7 @@ function listParams(data) {
   const params = [`page=${page}`, `sort=${pick(SORTS)}`];
   if (Math.random() < 0.5) params.push(`category_id=${pick(data.categories).id}`);
   if (Math.random() < 0.3) params.push(`difficulty=${pick(DIFFICULTIES)}`);
-  if (Math.random() < 0.2) params.push(`max_cook_time=${15 + Math.floor(Math.random() * 60)}`);
+  if (Math.random() < 0.2) params.push(`max_total_time=${15 + Math.floor(Math.random() * 60)}`);
   return params;
 }
 

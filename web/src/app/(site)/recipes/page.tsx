@@ -45,7 +45,7 @@ export default async function RecipesPage({
     <RecipeFilterBar
       basePath={BASE_PATH}
       difficulty={filters.difficulty}
-      maxCookTime={filters.max_cook_time}
+      maxTotalTime={filters.max_total_time}
       sort={filters.sort}
       categoryId={filters.category_id}
       categories={categories}

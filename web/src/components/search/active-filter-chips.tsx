@@ -5,7 +5,7 @@ import { buildHref } from "@/lib/list-params";
 type Filters = {
   category_id?: string;
   difficulty?: DifficultyName;
-  max_cook_time?: number;
+  max_total_time?: number;
 };
 
 /** One removable chip per active filter; each is a plain link that drops only that param (and resets paging). */
@@ -28,10 +28,10 @@ function ActiveFilterChips({
   if (filters.difficulty) {
     chips.push({ key: "difficulty", label: `Độ khó: ${difficultyLabels[filters.difficulty]}` });
   }
-  if (filters.max_cook_time) {
+  if (filters.max_total_time) {
     chips.push({
-      key: "max_cook_time",
-      label: `Thời gian: tối đa ${formatMinutes(filters.max_cook_time)}`,
+      key: "max_total_time",
+      label: `Thời gian: tối đa ${formatMinutes(filters.max_total_time)}`,
     });
   }
   if (chips.length === 0) return null;

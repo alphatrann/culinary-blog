@@ -19,7 +19,7 @@ class ListRecipesQuery(Query):
     sort: str
     category_id: uuid.UUID | None = None
     difficulty: RecipeDifficulty | None = None
-    max_cook_time: int | None = None
+    max_total_time: int | None = None
     viewer: Principal | None = None
     # Owner filter ("my recipes"). Only the owner or an Admin may set it; the router resolves `me` first.
     author_id: uuid.UUID | None = None
@@ -54,7 +54,7 @@ class ListRecipesHandler(QueryHandler[ListRecipesQuery, RecipeListOut]):
                 sort=query.sort,
                 category_id=query.category_id,
                 difficulty=query.difficulty,
-                max_cook_time=query.max_cook_time,
+                max_total_time=query.max_total_time,
                 status=query.status,
             ),
             self._ttl_seconds,
@@ -69,7 +69,7 @@ class ListRecipesHandler(QueryHandler[ListRecipesQuery, RecipeListOut]):
             see_all=bool(viewer and viewer.is_admin),
             category_id=query.category_id,
             difficulty=query.difficulty,
-            max_cook_time=query.max_cook_time,
+            max_total_time=query.max_total_time,
             sort=query.sort,
             page=query.page,
             page_size=query.page_size,

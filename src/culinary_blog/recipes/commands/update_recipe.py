@@ -1,6 +1,6 @@
 import logging
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 from culinary_blog.auth.principal import Principal
@@ -9,8 +9,9 @@ from culinary_blog.errors import ConflictError, ErrorCode, ForbiddenError, NotFo
 from culinary_blog.recipes.cache import RecipeCacheInvalidator
 from culinary_blog.recipes.enums import RecipeDifficulty
 from culinary_blog.recipes.mapping import to_recipe_out
+from culinary_blog.recipes.models import RecipeIngredient, RecipeStep
 from culinary_blog.recipes.repository import RecipeRepository
-from culinary_blog.recipes.schemas import NutritionIn, RecipeOut
+from culinary_blog.recipes.schemas import IngredientIn, NutritionIn, RecipeOut, StepIn
 
 logger = logging.getLogger(__name__)
 
@@ -26,15 +27,17 @@ class UpdateRecipeCommand(Command):
     prep_time_minutes: int
     cook_time_minutes: int
     servings: int
+    ingredients: list[IngredientIn] = field(default_factory=list)
+    steps: list[StepIn] = field(default_factory=list)
     difficulty: RecipeDifficulty = RecipeDifficulty.EASY
     nutrition: NutritionIn | None = None
 
 
 class UpdateRecipeHandler(CommandHandler[UpdateRecipeCommand, RecipeOut]):
-    """FR-RCP-004: the owning Author or an Admin updates a recipe's own fields.
+    """FR-RCP-004: the owning Author or an Admin updates a recipe together with its ingredients and steps atomically.
 
-    Guarded by optimistic concurrency: the client's `If-Match` row_version must still be current, else 409. The slug,
-    status and steps/ingredients are not touched; nutrition is replaced only when supplied.
+    Guarded by optimistic concurrency: the client's `If-Match` row_version must still be current, else 409. The slug
+    and status are not touched; nutrition is replaced only when supplied.
     """
 
     def __init__(self, repository: RecipeRepository, cache: RecipeCacheInvalidator) -> None:
@@ -61,8 +64,25 @@ class UpdateRecipeHandler(CommandHandler[UpdateRecipeCommand, RecipeOut]):
         }
         if command.nutrition is not None:
             values.update({f"nutrition_{name}": value for name, value in command.nutrition.model_dump().items()})
+        steps = [
+            RecipeStep(recipe_id=command.recipe_id, step_number=number, **step.model_dump())
+            for number, step in enumerate(command.steps, start=1)
+        ]
 
-        recipe = await self._repository.update(command.recipe_id, command.expected_version, values)
+        ingredients = [
+            RecipeIngredient(
+                recipe_id=command.recipe_id,
+                name=ingredient.name,
+                quantity=ingredient.quantity,
+                unit=ingredient.unit,
+                notes=ingredient.notes,
+                # a missing order_index defaults to the ingredient's position in the request
+                order_index=position if ingredient.order_index is None else ingredient.order_index,
+            )
+            for position, ingredient in enumerate(command.ingredients)
+        ]
+        recipe = await self._repository.update(command.recipe_id, command.expected_version, values, ingredients, steps)
+
         if recipe is None:
             raise ConflictError(
                 "Dữ liệu đã bị thay đổi bởi người dùng khác.", code=ErrorCode.RECIPE_CONCURRENCY_CONFLICT
@@ -77,5 +97,4 @@ class UpdateRecipeHandler(CommandHandler[UpdateRecipeCommand, RecipeOut]):
                 "at": datetime.now(UTC).isoformat(),
             },
         )
-        steps, ingredients = await self._repository.get_children(recipe.id)
         return to_recipe_out(recipe, steps, ingredients)

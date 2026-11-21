@@ -8,11 +8,11 @@ describe("parseListParams", () => {
       parseListParams({
         category_id: id,
         difficulty: "easy",
-        max_cook_time: "30",
+        max_total_time: "30",
         sort: "title",
         page: "3",
       }),
-    ).toEqual({ category_id: id, difficulty: "easy", max_cook_time: 30, sort: "title", page: 3 });
+    ).toEqual({ category_id: id, difficulty: "easy", max_total_time: 30, sort: "title", page: 3 });
   });
 
   it("drops invalid values", () => {
@@ -20,14 +20,14 @@ describe("parseListParams", () => {
       parseListParams({
         category_id: "nope",
         difficulty: "x",
-        max_cook_time: "-1",
+        max_total_time: "-1",
         sort: "bad",
         page: "0",
       }),
     ).toEqual({
       category_id: undefined,
       difficulty: undefined,
-      max_cook_time: undefined,
+      max_total_time: undefined,
       sort: undefined,
       page: 1,
     });

@@ -84,17 +84,17 @@ async def test_filters_combine():
 
     assert (await handler.handle(query(category_id=soups))).total_count == 3
     assert (await handler.handle(query(difficulty=RecipeDifficulty.EASY))).total_count == 3
-    both = await handler.handle(query(category_id=soups, difficulty=RecipeDifficulty.EASY, max_cook_time=30))
+    both = await handler.handle(query(category_id=soups, difficulty=RecipeDifficulty.EASY, max_total_time=30))
     assert titles(both) == ["Quick easy soup"]
 
 
 @pytest.mark.anyio
-async def test_max_cook_time_is_inclusive():
+async def test_max_total_time_is_inclusive():
     repo, handler = make_handler()
-    repo.seed_recipe(AUTHOR, title="Exactly 30", cook_time_minutes=30)
-    repo.seed_recipe(AUTHOR, title="31 minutes", cook_time_minutes=31)
+    repo.seed_recipe(AUTHOR, title="Exactly 30", prep_time_minutes=10, cook_time_minutes=20)
+    repo.seed_recipe(AUTHOR, title="31 minutes", prep_time_minutes=11, cook_time_minutes=20)
 
-    assert titles(await handler.handle(query(max_cook_time=30))) == ["Exactly 30"]
+    assert titles(await handler.handle(query(max_total_time=30))) == ["Exactly 30"]
 
 
 @pytest.mark.anyio

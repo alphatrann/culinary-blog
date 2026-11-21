@@ -282,41 +282,6 @@ export interface paths {
     patch: operations["set_primary_image_api_v1_recipes__recipe_id__images__image_id__primary_patch"];
     trace?: never;
   };
-  "/api/v1/recipes/{recipe_id}/ingredients": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Add Ingredient */
-    post: operations["add_ingredient_api_v1_recipes__recipe_id__ingredients_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/recipes/{recipe_id}/ingredients/{ingredient_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    /** Update Ingredient */
-    put: operations["update_ingredient_api_v1_recipes__recipe_id__ingredients__ingredient_id__put"];
-    post?: never;
-    /** Delete Ingredient */
-    delete: operations["delete_ingredient_api_v1_recipes__recipe_id__ingredients__ingredient_id__delete"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/api/v1/recipes/{recipe_id}/publish": {
     parameters: {
       query?: never;
@@ -332,41 +297,6 @@ export interface paths {
     head?: never;
     /** Publish */
     patch: operations["publish_api_v1_recipes__recipe_id__publish_patch"];
-    trace?: never;
-  };
-  "/api/v1/recipes/{recipe_id}/steps": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Add Step */
-    post: operations["add_step_api_v1_recipes__recipe_id__steps_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/recipes/{recipe_id}/steps/{step_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    /** Update Step */
-    put: operations["update_step_api_v1_recipes__recipe_id__steps__step_id__put"];
-    post?: never;
-    /** Delete Step */
-    delete: operations["delete_step_api_v1_recipes__recipe_id__steps__step_id__delete"];
-    options?: never;
-    head?: never;
-    patch?: never;
     trace?: never;
   };
   "/api/v1/recipes/{recipe_id}/unarchive": {
@@ -984,7 +914,7 @@ export interface components {
     };
     /**
      * RecipeUpdateRequest
-     * @description Steps and ingredients are managed through their own endpoints (FR-RCP-009/010).
+     * @description Full atomic replacement of a recipe with its ingredients and steps (FR-RCP-004).
      */
     RecipeUpdateRequest: {
       /**
@@ -998,11 +928,15 @@ export interface components {
       description: string;
       /** @default 1 */
       difficulty: components["schemas"]["RecipeDifficulty"];
+      /** Ingredients */
+      ingredients?: components["schemas"]["IngredientIn"][];
       nutrition?: components["schemas"]["NutritionIn"] | null;
       /** Prep Time Minutes */
       prep_time_minutes: number;
       /** Servings */
       servings: number;
+      /** Steps */
+      steps?: components["schemas"]["StepIn"][];
       /** Title */
       title: string;
     };
@@ -1448,7 +1382,7 @@ export interface operations {
         page_size?: number;
         category_id?: string | null;
         difficulty?: ("easy" | "medium" | "hard" | "expert") | null;
-        max_cook_time?: number | null;
+        max_total_time?: number | null;
         sort?:
           | "created_at"
           | "-created_at"
@@ -1526,7 +1460,7 @@ export interface operations {
         page_size?: number;
         category_id?: string | null;
         difficulty?: ("easy" | "medium" | "hard" | "expert") | null;
-        max_cook_time?: number | null;
+        max_total_time?: number | null;
       };
       header?: never;
       path?: never;
@@ -1779,107 +1713,6 @@ export interface operations {
       };
     };
   };
-  add_ingredient_api_v1_recipes__recipe_id__ingredients_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        recipe_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["IngredientIn"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["IngredientOut"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  update_ingredient_api_v1_recipes__recipe_id__ingredients__ingredient_id__put: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        recipe_id: string;
-        ingredient_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["IngredientIn"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["IngredientOut"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  delete_ingredient_api_v1_recipes__recipe_id__ingredients__ingredient_id__delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        recipe_id: string;
-        ingredient_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
   publish_api_v1_recipes__recipe_id__publish_patch: {
     parameters: {
       query?: never;
@@ -1899,107 +1732,6 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["RecipeOut"];
         };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  add_step_api_v1_recipes__recipe_id__steps_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        recipe_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["StepIn"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["StepOut"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  update_step_api_v1_recipes__recipe_id__steps__step_id__put: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        recipe_id: string;
-        step_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["StepIn"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["StepOut"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  delete_step_api_v1_recipes__recipe_id__steps__step_id__delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        recipe_id: string;
-        step_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
       };
       /** @description Validation Error */
       422: {

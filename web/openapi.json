@@ -1413,7 +1413,7 @@
         "type": "object"
       },
       "RecipeUpdateRequest": {
-        "description": "Steps and ingredients are managed through their own endpoints (FR-RCP-009/010).",
+        "description": "Full atomic replacement of a recipe with its ingredients and steps (FR-RCP-004).",
         "properties": {
           "category_id": {
             "format": "uuid",
@@ -1435,6 +1435,13 @@
             "$ref": "#/components/schemas/RecipeDifficulty",
             "default": 1
           },
+          "ingredients": {
+            "items": {
+              "$ref": "#/components/schemas/IngredientIn"
+            },
+            "title": "Ingredients",
+            "type": "array"
+          },
           "nutrition": {
             "anyOf": [
               {
@@ -1454,6 +1461,13 @@
             "exclusiveMinimum": 0.0,
             "title": "Servings",
             "type": "integer"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/StepIn"
+            },
+            "title": "Steps",
+            "type": "array"
           },
           "title": {
             "maxLength": 200,
@@ -2173,7 +2187,7 @@
           },
           {
             "in": "query",
-            "name": "max_cook_time",
+            "name": "max_total_time",
             "required": false,
             "schema": {
               "anyOf": [
@@ -2185,7 +2199,7 @@
                   "type": "null"
                 }
               ],
-              "title": "Max Cook Time"
+              "title": "Max Total Time"
             }
           },
           {
@@ -2378,7 +2392,7 @@
           },
           {
             "in": "query",
-            "name": "max_cook_time",
+            "name": "max_total_time",
             "required": false,
             "schema": {
               "anyOf": [
@@ -2390,7 +2404,7 @@
                   "type": "null"
                 }
               ],
-              "title": "Max Cook Time"
+              "title": "Max Total Time"
             }
           }
         ],
@@ -2739,160 +2753,6 @@
         "tags": ["recipes"]
       }
     },
-    "/api/v1/recipes/{recipe_id}/ingredients": {
-      "post": {
-        "operationId": "add_ingredient_api_v1_recipes__recipe_id__ingredients_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "recipe_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Recipe Id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/IngredientIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IngredientOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Add Ingredient",
-        "tags": ["recipes"]
-      }
-    },
-    "/api/v1/recipes/{recipe_id}/ingredients/{ingredient_id}": {
-      "delete": {
-        "operationId": "delete_ingredient_api_v1_recipes__recipe_id__ingredients__ingredient_id__delete",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "recipe_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Recipe Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "ingredient_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Ingredient Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Delete Ingredient",
-        "tags": ["recipes"]
-      },
-      "put": {
-        "operationId": "update_ingredient_api_v1_recipes__recipe_id__ingredients__ingredient_id__put",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "recipe_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Recipe Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "ingredient_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Ingredient Id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/IngredientIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IngredientOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Update Ingredient",
-        "tags": ["recipes"]
-      }
-    },
     "/api/v1/recipes/{recipe_id}/publish": {
       "patch": {
         "operationId": "publish_api_v1_recipes__recipe_id__publish_patch",
@@ -2931,160 +2791,6 @@
           }
         },
         "summary": "Publish",
-        "tags": ["recipes"]
-      }
-    },
-    "/api/v1/recipes/{recipe_id}/steps": {
-      "post": {
-        "operationId": "add_step_api_v1_recipes__recipe_id__steps_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "recipe_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Recipe Id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StepIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StepOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Add Step",
-        "tags": ["recipes"]
-      }
-    },
-    "/api/v1/recipes/{recipe_id}/steps/{step_id}": {
-      "delete": {
-        "operationId": "delete_step_api_v1_recipes__recipe_id__steps__step_id__delete",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "recipe_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Recipe Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "step_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Step Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Delete Step",
-        "tags": ["recipes"]
-      },
-      "put": {
-        "operationId": "update_step_api_v1_recipes__recipe_id__steps__step_id__put",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "recipe_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Recipe Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "step_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Step Id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StepIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StepOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Update Step",
         "tags": ["recipes"]
       }
     },

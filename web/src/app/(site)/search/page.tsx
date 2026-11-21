@@ -152,7 +152,7 @@ export default async function SearchPage({
           categories={categories}
           categoryId={searchFilters.category_id}
           difficulty={searchFilters.difficulty}
-          maxCookTime={searchFilters.max_cook_time}
+          maxTotalTime={searchFilters.max_total_time}
         />
         <div className="min-w-0 space-y-6">{body}</div>
       </div>

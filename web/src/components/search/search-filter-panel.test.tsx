@@ -13,7 +13,7 @@ describe("SearchFilterPanel", () => {
         q="pho"
         categories={categories}
         difficulty="easy"
-        maxCookTime={30}
+        maxTotalTime={30}
       />,
     );
     expect(container.querySelector('input[name="q"]')).toHaveValue("pho");

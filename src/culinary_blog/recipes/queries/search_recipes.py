@@ -17,7 +17,7 @@ class SearchRecipesQuery(Query):
     page_size: int
     category_id: uuid.UUID | None = None
     difficulty: RecipeDifficulty | None = None
-    max_cook_time: int | None = None
+    max_total_time: int | None = None
 
 
 class SearchRecipesHandler(QueryHandler[SearchRecipesQuery, RecipeSearchResultsOut]):
@@ -40,7 +40,7 @@ class SearchRecipesHandler(QueryHandler[SearchRecipesQuery, RecipeSearchResultsO
                 page_size=query.page_size,
                 category_id=query.category_id,
                 difficulty=query.difficulty,
-                max_cook_time=query.max_cook_time,
+                max_total_time=query.max_total_time,
             ),
             self._ttl_seconds,
             RecipeSearchResultsOut,
@@ -52,7 +52,7 @@ class SearchRecipesHandler(QueryHandler[SearchRecipesQuery, RecipeSearchResultsO
             query=query.q,
             category_id=query.category_id,
             difficulty=query.difficulty,
-            max_cook_time=query.max_cook_time,
+            max_total_time=query.max_total_time,
             page=query.page,
             page_size=query.page_size,
         )

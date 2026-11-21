@@ -7,21 +7,15 @@ from fastapi.testclient import TestClient
 from culinary_blog.auth.dependencies import Authenticator
 from culinary_blog.auth.security import TokenService
 from culinary_blog.problem_details import register_problem_handlers
-from culinary_blog.recipes.commands.add_ingredient import AddIngredientHandler
-from culinary_blog.recipes.commands.add_step import AddStepHandler
 from culinary_blog.recipes.commands.archive_recipe import ArchiveRecipeHandler
 from culinary_blog.recipes.commands.create_recipe import CreateRecipeHandler
 from culinary_blog.recipes.commands.delete_image import DeleteImageHandler
-from culinary_blog.recipes.commands.delete_ingredient import DeleteIngredientHandler
 from culinary_blog.recipes.commands.delete_recipe import DeleteRecipeHandler
-from culinary_blog.recipes.commands.delete_step import DeleteStepHandler
 from culinary_blog.recipes.commands.publish_recipe import PublishRecipeHandler
 from culinary_blog.recipes.commands.set_primary_image import SetPrimaryImageHandler
 from culinary_blog.recipes.commands.unarchive_recipe import UnarchiveRecipeHandler
 from culinary_blog.recipes.commands.unpublish_recipe import UnpublishRecipeHandler
-from culinary_blog.recipes.commands.update_ingredient import UpdateIngredientHandler
 from culinary_blog.recipes.commands.update_recipe import UpdateRecipeHandler
-from culinary_blog.recipes.commands.update_step import UpdateStepHandler
 from culinary_blog.recipes.commands.upload_image import UploadImageHandler
 from culinary_blog.recipes.queries.get_recipe import GetRecipeHandler
 from culinary_blog.recipes.queries.get_recipe_for_edit import GetRecipeForEditHandler
@@ -74,12 +68,6 @@ def client(repo, storage, queue, cache) -> TestClient:
         archive_recipe=ArchiveRecipeHandler(repo, invalidator(cache)),
         unarchive_recipe=UnarchiveRecipeHandler(repo, invalidator(cache)),
         delete_recipe=DeleteRecipeHandler(repo, invalidator(cache)),
-        add_ingredient=AddIngredientHandler(repo, invalidator(cache)),
-        update_ingredient=UpdateIngredientHandler(repo, invalidator(cache)),
-        delete_ingredient=DeleteIngredientHandler(repo, invalidator(cache)),
-        add_step=AddStepHandler(repo, invalidator(cache)),
-        update_step=UpdateStepHandler(repo, invalidator(cache)),
-        delete_step=DeleteStepHandler(repo, invalidator(cache)),
         upload_image=UploadImageHandler(repo, storage, queue, invalidator(cache)),
         set_primary_image=SetPrimaryImageHandler(repo, invalidator(cache)),
         delete_image=DeleteImageHandler(repo, queue, invalidator(cache)),
