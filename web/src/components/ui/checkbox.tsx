@@ -11,7 +11,7 @@ function Checkbox({ className, ...props }: Omit<React.ComponentProps<"input">, "
       type="checkbox"
       className={cn(
         base,
-        "checked:bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%223%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M5 12l5 5 9-10%22/></svg>')] rounded-sm checked:bg-center checked:bg-no-repeat",
+        "rounded-sm checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2024%2024%27%20fill=%27none%27%20stroke=%27white%27%20stroke-width=%273%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%3E%3Cpath%20d=%27M5%2012l5%205%209-10%27/%3E%3C/svg%3E')] checked:bg-center checked:bg-no-repeat",
         className,
       )}
       {...props}

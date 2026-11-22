@@ -12,9 +12,9 @@ Tiêu chuẩn IEEE 830 / ISO/IEC/IEEE 29148:2018
 
 |                    |                                                 |
 | ------------------ | ----------------------------------------------- |
-| Phiên bản tài liệu | 2.2.0                                           |
-| Ngày phát hành     | 20/09/2026                                      |
-| Trạng thái         | Đã duyệt (Approved)                             |
+| Phiên bản tài liệu | 2.4.0                                           |
+| Ngày phát hành     | 22/11/2026                                      |
+| Trạng thái         | Draft (chờ duyệt)                               |
 | Công nghệ Backend  | Python 3.12, FastAPI                            |
 | ORM / Migration    | SQLModel + Alembic                              |
 | Công nghệ Frontend | Next.js App Router, TypeScript                  |
@@ -30,6 +30,7 @@ Tài liệu này được biên soạn theo tiêu chuẩn IEEE 830 / ISO/IEC/IEE
 
 | Phiên bản | Ngày       | Tác giả / Vai trò     | Nội dung thay đổi                                                                                                                                                                                              | Trạng thái   |
 | --------- | ---------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| 2.4.0     | 22/11/2026 | Senior BA / Architect | Tách FR-OBS thành FR-OBS-001 (Health Check), FR-OBS-002 (Structured Logging, M) và FR-OBS-003 (Distributed Tracing & Metrics, S). Logging/tracing đã bị hạ thành ghi chú triển khai khi đối chiếu số lượng FR (xem `srs-conflict-resolution.md`, mục 1), nay khôi phục thành yêu cầu riêng. Tổng FR: 29 → 31; cập nhật §1.5, §2.2, Chương 3. | Draft        |
 | 2.3.0     | 02/10/2026 | Senior BA / Architect | Triển khai tầng cache (M6b): cache-aside cho category/recipe/search, chỉ cache góc nhìn Guest cho danh sách, vô hiệu hóa theo `generation` thay cho xóa `recipes:list:*` — xem ADR-0010. | Approved     |
 | 2.2.0     | 20/09/2026 | Senior BA / Architect | Chuyển kiến trúc backend từ phân lớp `routers → services → repositories` sang CQRS nhẹ (không MediatR, không event sourcing, một database): `router → command/query handlers → repositories → models`; cập nhật CONS-001, NFR-MAINT-004, mục 6.2, 6.3 — xem ADR-0001. | Approved     |
 | 2.1.0     | 17/09/2026 | Senior BA / Architect | Bổ sung instance Redis thứ ba (Rate Limit Redis), tách biệt hoàn toàn với Cache Redis và Job Queue Redis, cho bộ đếm rate limiting (`allkeys-lru`, `maxmemory` 4GB, RDB `save 60 1` — xem ADR-0006, ADR-0007). | Approved     |
@@ -178,7 +179,7 @@ Các tính năng sau đây nằm ngoài phạm vi phiên bản 1.0.0:
 Tài liệu SRS này được tổ chức thành 8 chương chính và 3 phụ lục, theo cấu trúc từ tổng quan đến chi tiết:
 
 - **Chương 2 – Mô tả Tổng quan:** Bối cảnh sản phẩm, chức năng tóm tắt, các lớp người dùng, môi trường vận hành và ràng buộc thiết kế.
-- **Chương 3 – Yêu cầu Chức năng:** 29 FR được đặc tả chi tiết theo format chuẩn, nhóm thành 7 module chức năng.
+- **Chương 3 – Yêu cầu Chức năng:** 31 FR được đặc tả chi tiết theo format chuẩn, nhóm thành 7 module chức năng.
 - **Chương 4 – Yêu cầu Phi chức năng:** Hiệu năng, bảo mật, khả năng sử dụng, độ tin cậy, khả năng bảo trì/mở rộng và SEO.
 - **Chương 5 – Giao diện Ngoài:** Tích hợp với các hệ thống và dịch vụ ngoài (Google Identity Services, MinIO, Redis, SMTP).
 - **Chương 6 – Kiến trúc Hệ thống:** Kiến trúc FastAPI backend, Next.js App Router frontend, hai instance Redis (cache + job queue), observability stack và deployment.
@@ -215,7 +216,7 @@ Sơ đồ bối cảnh hệ thống (Container Diagram)
 
 ## 2.2. Chức năng Sản phẩm Tổng quát
 
-Culinary Blog cung cấp 7 nhóm chức năng chính, được hiện thực hóa qua 29 Functional Requirements chi tiết tại Chương 3:
+Culinary Blog cung cấp 7 nhóm chức năng chính, được hiện thực hóa qua 31 Functional Requirements chi tiết tại Chương 3:
 
 | Nhóm chức năng                | Mã nhóm  | Số FR  | Mô tả tóm tắt                                                                         |
 | ----------------------------- | -------- | ------ | ------------------------------------------------------------------------------------- |
@@ -225,8 +226,8 @@ Culinary Blog cung cấp 7 nhóm chức năng chính, được hiện thực hó
 | Tìm kiếm & Phân trang         | FR-SRCH  | 1      | Full-Text Search (PostgreSQL); filter/sort/pagination gộp vào FR-RCP-001/FR-SRCH-001. |
 | Quản lý Tệp tin               | FR-FILE  | 2      | Upload/Delete ảnh trên MinIO S3-compatible.                                           |
 | Background Jobs               | FR-JOB   | 3      | Welcome email, thumbnail generation, sitemap XML (Redis Job Queue + worker riêng).    |
-| Quan sát Hệ thống             | FR-OBS   | 1      | Health checks (logging/tracing là ghi chú triển khai, không tính FR riêng).           |
-|                               | **Tổng** | **29** |                                                                                       |
+| Quan sát Hệ thống             | FR-OBS   | 3      | Health checks, structured logging, distributed tracing & metrics.                     |
+|                               | **Tổng** | **31** |                                                                                       |
 
 ## 2.3. Các Lớp Người dùng và Đặc điểm
 
@@ -318,7 +319,7 @@ Các ràng buộc sau đây là bắt buộc và không thể thương lượng 
 | Phụ thuộc                | Phiên bản           | Mức độ ảnh hưởng nếu không khả dụng           | Kế hoạch dự phòng                                                                                                                                                                |
 | ------------------------ | ------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Google Identity Services | v2 (ID Token)       | Cao – Mất chức năng đăng nhập Google          | Vẫn có đăng nhập email/password. Hiển thị thông báo "Google login tạm thời không khả dụng".                                                                                      |
-| MinIO / S3               | MinIO RELEASE.2024+ | Cao – Không upload/xem được ảnh mới           | Fallback về local FileSystem storage (development only). Production cần MinIO.                                                                                                   |
+| MinIO / S3               | MinIO RELEASE.2024+ | Cao – Không upload/xem được ảnh mới           | Không có fallback sang disk (ADR-0016). MinIO bắt buộc ở mọi môi trường; khi MinIO down, upload trả HTTP 503 (luồng A4 của FR ảnh công thức).                                                                                                   |
 | Cache Redis              | 7.x                 | Trung bình – Mất cache, hiệu năng giảm        | Hệ thống tiếp tục hoạt động nhưng mọi request đều query database (cache-aside miss, graceful).                                                                                   |
 | Job Queue Redis          | 7.x                 | Thấp/Trung bình – Job nền không chạy          | `noeviction` bảo vệ job đã enqueue; nếu instance down, job mới không được enqueue được, API vẫn phục vụ request chính.                                                           |
 | Rate Limit Redis         | 7.x                 | Thấp – Rate limiting tạm thời không hoạt động | Fail-open: nếu instance down, request được cho qua không giới hạn (graceful) thay vì chặn toàn bộ API; chấp nhận tạm mất bảo vệ brute-force/abuse cho đến khi instance phục hồi. |
@@ -326,7 +327,7 @@ Các ràng buộc sau đây là bắt buộc và không thể thương lượng 
 
 # CHƯƠNG 3. YÊU CẦU CHỨC NĂNG CHI TIẾT
 
-Chương này đặc tả chi tiết 29 Functional Requirements (FR) được nhóm thành 7 module chức năng. Mỗi FR được mô tả theo template chuẩn: Mã yêu cầu, Tên, Nhóm chức năng, Tác nhân, Mức ưu tiên (MoSCoW), Mô tả, Điều kiện tiên quyết, Luồng chính, Luồng thay thế/Ngoại lệ, HTTP Endpoint, Kết quả mong đợi và HTTP Status Code. Toàn bộ field trong request/response JSON dùng `snake_case` (CONS-005).
+Chương này đặc tả chi tiết 31 Functional Requirements (FR) được nhóm thành 7 module chức năng. Mỗi FR được mô tả theo template chuẩn: Mã yêu cầu, Tên, Nhóm chức năng, Tác nhân, Mức ưu tiên (MoSCoW), Mô tả, Điều kiện tiên quyết, Luồng chính, Luồng thay thế/Ngoại lệ, HTTP Endpoint, Kết quả mong đợi và HTTP Status Code. Toàn bộ field trong request/response JSON dùng `snake_case` (CONS-005).
 
 **Quy ước mức ưu tiên MoSCoW:** M (Must Have – Bắt buộc), S (Should Have – Nên có), C (Could Have – Có thể có), W (Won't Have – Không trong scope hiện tại).
 
@@ -919,7 +920,7 @@ Module cốt lõi của hệ thống. Recipe là aggregate root chứa các chil
 
 ## 3.5. Module Quản lý Tệp tin (FR-FILE)
 
-Module xử lý mọi thao tác với file binary trên MinIO S3-compatible. Abstraction `FileStorageService` cho phép swap implementation (MinIO ↔ AWS S3 ↔ local filesystem) mà không đổi handler layer.
+Module xử lý mọi thao tác với file binary trên MinIO S3-compatible. Abstraction `FileStorageService` cho phép swap implementation (MinIO ↔ AWS S3; không có backend local filesystem, xem ADR-0016) mà không đổi handler layer.
 
 | Mã FR       | Tên                   | Mức ưu tiên   | Mô tả                                                                                                                                                     | Ràng buộc kỹ thuật                                                                                                     |
 | ----------- | --------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -938,7 +939,7 @@ Module xử lý các tác vụ nền không đồng bộ qua **Job Queue Redis**
 
 ## 3.7. Module Quan sát Hệ thống (FR-OBS)
 
-Module cung cấp khả năng quan sát (Observability) theo ba trụ cột: Logging, Metrics, Distributed Tracing. Logging có cấu trúc (JSON, `correlation_id`) là bắt buộc theo CONS-010 ở **mọi** môi trường. Ở production, cả ba trụ cột xuất qua OpenTelemetry tới bộ Grafana stack (Tempo/Loki/Prometheus/Grafana, xem Chương 6); ở development, structured log chỉ xuất ra console (`docker compose logs`) — không chạy OTel Collector/Tempo/Loki/Prometheus/Grafana. Ở mức FR chỉ Health Check được đặc tả như một yêu cầu chức năng riêng biệt; logging/tracing được mô tả dưới dạng ghi chú triển khai đi kèm.
+Module cung cấp khả năng quan sát (Observability) theo ba trụ cột: Logging, Metrics, Distributed Tracing. Mỗi trụ cột là một yêu cầu riêng (FR-OBS-001 đến FR-OBS-003). Ở production, logging/metrics/tracing xuất qua OpenTelemetry tới bộ Grafana stack (Tempo/Loki/Prometheus/Grafana, xem Chương 6); ở development, structured log chỉ xuất ra console (`docker compose logs`) — không chạy OTel Collector/Tempo/Loki/Prometheus/Grafana.
 
 ### FR-OBS-001: Health Check Endpoints
 
@@ -952,9 +953,29 @@ Module cung cấp khả năng quan sát (Observability) theo ba trụ cột: Log
 | Kết quả mong đợi        | Readiness fail khi database down → Nginx ngừng route traffic tới instance đó.                                                                                                                                                                                                                                                                            |
 | HTTP Status Code trả về | 200 OK – Healthy. 503 Service Unavailable – Unhealthy.                                                                                                                                                                                                                                                                                                         |
 
-**Ghi chú triển khai — Structured Logging:** Mọi HTTP request được log dạng JSON với `correlation_id` (header `X-Correlation-ID`), method/path/status, thời gian xử lý (ms), `user_id` (khi đã xác thực). Middleware `CorrelationIdMiddleware` gán/forward `correlation_id`. Cảnh báo khi request > 500ms. Log xuất ra stdout ở mọi môi trường; production thu thập qua OpenTelemetry Collector → Loki, development đọc trực tiếp qua console.
+### FR-OBS-002: Structured Logging
 
-**Ghi chú triển khai — Distributed Tracing & Metrics:** OpenTelemetry Python SDK instrument cho: HTTP request traces, database query traces (SQLModel/asyncpg), custom business metrics (recipe created/published count). Ở production, traces/metrics xuất qua OTLP tới Tempo/Prometheus và xem trên Grafana Dashboard; `trace_id` được include trong structured log để log-trace correlation. Ở development, pipeline OTLP/Tempo/Prometheus/Grafana không chạy — `trace_id` vẫn xuất hiện trong console log nhưng không có dashboard để xem.
+|                         |                                                                                                                                                                                                                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Mã yêu cầu              | FR-OBS-002                                                                                                                                                                                                                                                                                       |
+| Tên yêu cầu             | Structured Logging                                                                                                                                                                                                                                                                               |
+| Mức ưu tiên (MoSCoW)    | M – Must Have (bắt buộc theo CONS-010)                                                                                                                                                                                                                                                           |
+| Mô tả                   | Mọi HTTP request được log dạng JSON ra stdout ở mọi môi trường, gồm: `correlation_id` (header `X-Correlation-ID`, middleware `CorrelationIdMiddleware` gán hoặc forward), `request_path`, method, status, thời gian xử lý (ms), `user_id` (khi đã xác thực). Cảnh báo (WARNING) khi request > 500 ms. Mức log: DEBUG (development), INFO (production), WARNING/ERROR luôn bật. Production thu thập qua OpenTelemetry Collector → Loki; development đọc trực tiếp qua console. |
+| HTTP Method & Endpoint  | N/A (cross-cutting, áp dụng cho mọi endpoint)                                                                                                                                                                                                                                                    |
+| Kết quả mong đợi        | Mọi log entry có `correlation_id` và `request_path`; các log của cùng một request có cùng `correlation_id`; log không chứa mật khẩu hay token.                                                                                                                                                  |
+| HTTP Status Code trả về | N/A                                                                                                                                                                                                                                                                                              |
+
+### FR-OBS-003: Distributed Tracing & Metrics
+
+|                         |                                                                                                                                                                                                                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Mã yêu cầu              | FR-OBS-003                                                                                                                                                                                                                                                                                       |
+| Tên yêu cầu             | Distributed Tracing & Metrics                                                                                                                                                                                                                                                                    |
+| Mức ưu tiên (MoSCoW)    | S – Should Have                                                                                                                                                                                                                                                                                  |
+| Mô tả                   | OpenTelemetry Python SDK instrument cho: HTTP request traces, database query traces (SQLModel/asyncpg), custom business metrics (số công thức được tạo / publish), và metrics HTTP (request count, duration histogram, error rate). `trace_id` được include trong structured log để log-trace correlation. |
+| HTTP Method & Endpoint  | N/A (cross-cutting)                                                                                                                                                                                                                                                                              |
+| Kết quả mong đợi        | Production: traces/metrics xuất qua OTLP tới Tempo/Prometheus, xem trên Grafana. Development: pipeline OTLP/Tempo/Prometheus/Grafana không chạy; `trace_id` vẫn xuất hiện trong console log nhưng không có dashboard.                                                                              |
+| HTTP Status Code trả về | N/A                                                                                                                                                                                                                                                                                              |
 
 # 4. Yêu cầu Phi Chức năng (NFR)
 

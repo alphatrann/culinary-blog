@@ -22,7 +22,7 @@ function mockApi(items: unknown[], totalCount = items.length) {
   serverGet.mockImplementation(async (path: string) =>
     path === "/categories"
       ? [{ slug: "mon-nuoc", name: "Món nước" }]
-      : { items, total_count: totalCount, page: 1, page_size: 8, total_pages: 1 },
+      : { items, total_count: totalCount, page: 1, page_size: 12, total_pages: 1 },
   );
 }
 

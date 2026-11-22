@@ -17,7 +17,8 @@ export const metadata: Metadata = {
     "Công thức nấu ăn Việt từng bước, nguyên liệu rõ ràng. Tìm món bạn muốn nấu hôm nay.",
 };
 
-const PAGE_SIZE = 8;
+// Must match /recipes (page_size 12): the pager links there, so a different size shifts every page.
+const PAGE_SIZE = 12;
 
 async function loadHome() {
   try {
