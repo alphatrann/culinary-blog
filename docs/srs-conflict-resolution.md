@@ -20,7 +20,7 @@ Legend: ✅ resolved · ⚠️ partly resolved (leftover inconsistency) · ❌ s
 
 | # | Conflict in original | Current SRS | Status |
 | - | -------------------- | ----------- | ------ |
-| 1 | §1.5/§2.2/Ch.3 say **27 FR**, but the table sums to 34 | Now **29**, and the table sums to 29 (SRCH 4→1, OBS 3→1; FR-SRCH-002/3/4 folded into FR-RCP-001/SRCH-001, logging and tracing demoted to "implementation notes") | ✅ |
+| 1 | §1.5/§2.2/Ch.3 say **27 FR**, but the table sums to 34 | Now **31**, and the table sums to 31 (SRCH 4→1; FR-SRCH-002/3/4 folded into FR-RCP-001/SRCH-001). OBS restored to 3 (FR-OBS-002 Structured Logging, FR-OBS-003 Distributed Tracing & Metrics) in v2.4.0: the earlier demotion to "implementation notes" was a count fix, not a requirement decision | ✅ |
 | 2 | NFR-SEC count says **6**, 7 are listed | Count is **7** | ✅ |
 
 ## 2. Delete semantics
